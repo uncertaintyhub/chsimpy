@@ -7,13 +7,13 @@ class Parameters:
     def __init__(self):
         "docstring"
         self.seed = 2023
-        self.N = 512
+        self.N = 8
         self.L = 2
         self.XXX = 0.875
         self.temp = 650 + 273.15
         self.N_A = 6.02214076e+23
-        self.Vm = (25.13 * 1e-06) # (micrometer^3/mol) vs. Vm = (25.13*1e6) (micrometer^3/mol)
-        self.Vmm = 25.13 * 1000000.0
+        self.Vm = 25.13 * 1e-06 # (micrometer^3/mol) # FIXME: validate incl Vmm
+        self.Vmm = 25.13 * 1e6
         self.B = 12.86
 
         self.R = 0.0083144626181532  # Universelle Gaskonstante
@@ -26,22 +26,25 @@ class Parameters:
         Vm = self.Vm
         Vmm = self.Vmm
         N_A = self.N_A
-        self.Amolecule = (Vmm / N_A) ** (2 / 3)
-        # self.Am = (Vmm / N_A) ** (2 / 3) * N_A # ** (1/3) ?
+        # self.Amolecule = (Vmm / N_A) ** (2 / 3) # TODO: required?
+        # FIXME: validate by sources
+        # self.Am = (Vmm / N_A) ** (2 / 3) * N_A # ** (1/3) ? #1 see #2 below
         # vs.
-        # we compute the molar area (cf. molar volume above (line 72))
-        self.Am = (25.13 * 1000000.0 / N_A) ** (2 / 3) * N_A ** (1 / 3)
+        # # we compute the molar area (cf. molar volume above (line 72))
+        self.Am = (25.13 * 1e6 / N_A) ** (2 / 3) * N_A ** (1 / 3)
 
-        self.Nmix3d = (1 / Vmm) * N_A
-        self.Nmix = (1 / self.Am) * N_A
+        # TODO: required?
+        # self.Nmix3d = 1 / Vmm * N_A
+        # TODO: required? only used for M, see below commented M = ...
+        # self.Nmix = 1 / ( (Vmm/self.N_A)**(2/3) ) # #2 differs from original, as Am in Preprint...m is different from ch_DCT...m
 
-        # M = (D * Nmix) / (EnergiePP(XXX,temp))
         self.kappa = 30 / 105.1939
         self.eps2 = self.kappa ** 2
         self.ntmax = 1000 #5000
         self.delt = 1e-11
 
-        self.D = -3.474 * 0.0001 * np.exp(- 272.4 / (self.R * self.temp)) * 1000000000000.0
+        self.D = -3.474 * 1e-4 * np.exp(- 272.4 / (self.R * self.temp)) * 1e12
+        # M = (D * Nmix) / (EnergiePP(XXX,temp)) # TODO: used?
         self.M = self.D / utils.EnergiePP(self.XXX, self.temp)
         #self.RiniU = self.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
 

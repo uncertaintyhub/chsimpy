@@ -36,7 +36,7 @@ class PlotView:
         self.ax_Umap.set_title(title)
 
     def set_Uline(self, U=None, title=""):
-        self.Uline.set_ydata(U[int(self.N / 2),:])
+        self.Uline.set_ydata(U[int(self.N / 2)+1,:])
         self.ax_Uline.set_ylim(0.7, 0.9)
         self.ax_Uline.set_title(title)
 

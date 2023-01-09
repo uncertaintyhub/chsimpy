@@ -94,7 +94,8 @@ class Model:
         #     writeVideo(writer,frame)
 
         self.params = params
-        x = np.transpose(np.arange(0, params.L+params.delx, params.delx))
+        # TODO: required? if so, check port from matlab (0:delx:L)'
+        # x = np.transpose(np.arange(0, params.L+params.delx, params.delx))
 
         N = params.N
         ntmax = params.ntmax
@@ -118,10 +119,10 @@ class Model:
         DUx,DUy = mport.gradient(U, params.delx)
         self.E[0] = utils.E_fun(U, DUx ** 2 + DUy ** 2, params.temp, params.B, params.eps2, params.Am, params.R)
         self.E2[0] = utils.E2_fun(U, DUx ** 2 + DUy ** 2, params.eps2)
-        self.PS[0] = sum(sum(np.abs(U - np.multiply(mport.mean(mport.mean(U)), np.ones((N,N))))))
-        self.Ra[0] = mport.mean(np.abs(U[int(N / 2),:] - mport.mean(U[int(N / 2),:])))
-        # Diskrete Cosinus Transformation
-        # DCT II ist die uebliche DCT
+        self.PS[0] = np.sum(np.sum(np.abs(U - mport.mean(mport.mean(U))*np.ones((N,N)))))
+        self.Ra[0] = mport.mean(np.abs(U[int(N / 2)+1,:] - mport.mean(U[int(N / 2)+1,:])))
+
+        # 2dim dct (ortho, DCT Type 2)
         #% https://ch.mathworks.com/help/images/ref/dct2.html?s_tid=doc_ta
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.fftpack.dct.html
         self.hat_U = mport.dct2(U)
@@ -129,7 +130,7 @@ class Model:
         # initialization of t0
         self.tau0 = 0
         self.t0 = 0
-        self.it = -1
+        self.it = 0
         self.t = 0
 
     def advance(self): #, it, type_update, visual_update):
@@ -140,16 +141,16 @@ class Model:
         N = params.N
         it = self.it
 
-        self.restime = (1 / (params.M * params.kappa)) * (it) * params.delt
+        self.restime = (1 / (params.M * params.kappa)) * it * params.delt
         # compute the shifted nonlinear term
         # (no convexity splitting!)
         EnergieEut = utils.EnergieP(self.U, params.temp, params.B, params.R, params.Am)
         # compute the right hand side in tranform space
-        hat_rhs = self.hat_U + (np.multiply(params.Seig, mport.dct2(EnergieEut)))
+        hat_rhs = self.hat_U + params.Seig * mport.dct2(EnergieEut)
         # compute the updated solution in tranform space
         # (see also Ghiass et al (2016),
         #  the following line should be eq. (12) in Ghiass et al (2016))
-        self.hat_U = np.divide(hat_rhs, params.CHeig)
+        self.hat_U = hat_rhs / params.CHeig
         # invert the cosine transform
         self.U = mport.idct2(self.hat_U)
         U = self.U
@@ -159,19 +160,19 @@ class Model:
                                  DUx ** 2 + DUy ** 2,
                                  params.temp, params.B, params.eps2, params.Am, params.R)
         # FIXME: 512? N?
-        self.PS[it] = sum(sum(np.abs(U - np.multiply(mport.mean(mport.mean(U)),
-                                                     np.ones((N,N)))))) / (N ** 2)
+        self.PS[it] = np.sum(np.sum(np.abs(
+            U - mport.mean(mport.mean(U))*np.ones((N,N))))) / (N ** 2)
         #
         self.E2[it] = utils.E2_fun(U, DUx ** 2 + DUy ** 2, params.eps2)
         # FIXME: L2[it-1] to L2[it]?
-        self.L2[it] = 1 / (N ** 2) * sum(sum((U - mport.mean(mport.mean(U))) ** 2))
-        self.Ra[it] = mport.mean(np.abs(U[int(N / 2),:] - mport.mean(U[int(N / 2),:])))
+        self.L2[it] = 1 / (N ** 2) * np.sum(np.sum((U - mport.mean(mport.mean(U))) ** 2))
+        self.Ra[it] = mport.mean(np.abs(U[int(N / 2)+1,:] - mport.mean(U[int(N / 2)+1,:])))
         # L = 2 Mikrometer / N = 512 Pixel
 
         # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
-        self.SA[it] = sum(sum(self.U < params.threshold)) / (N ** 2)
+        self.SA[it] = np.sum(np.sum(self.U < params.threshold)) / (N ** 2)
         # Silikat-reichen Phase
-        self.SA2[it] = sum(sum(self.U > params.threshold)) / (N ** 2)
+        self.SA2[it] = np.sum(np.sum(self.U > params.threshold)) / (N ** 2)
         self.SA3[it] = self.SA[it] + self.SA2[it]
         self.domtime[it] = self.restime ** (1 / 3)
 
