@@ -7,7 +7,7 @@ class Parameters:
     def __init__(self):
         "docstring"
         self.seed = 2023
-        self.N = 8
+        self.N = 512
         self.L = 2
         self.XXX = 0.875
         self.temp = 650 + 273.15
@@ -19,7 +19,7 @@ class Parameters:
         self.R = 0.0083144626181532  # Universelle Gaskonstante
         self.N_A = 6.02214076e+23 # and with the Avocadro constant
 
-        self.threshold = 0.875 # 0.9
+        self.threshold = 0.9
 
         # shortcuts
         N = self.N

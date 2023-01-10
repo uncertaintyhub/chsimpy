@@ -103,7 +103,9 @@ class Model:
         # https://builtin.com/data-science/numpy-random-seed
         rng = np.random.default_rng(params.seed)
         # Declare Vectors
-        self.U    = params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
+        self.U    = params.XXX * np.ones((N,N))
+        #self.U +=   0.01 * np.arange(0,N) # testing
+        self.U += 0.01 * (rng.random((N,N)) - 0.5)
         self.E    = np.zeros((ntmax,1))
         self.E2   = np.zeros((ntmax,1))
         self.Ra   = np.zeros((ntmax,1))
