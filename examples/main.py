@@ -1,8 +1,6 @@
 # invoke: python main.py
-import numpy as np
+import argparse
 import importlib
-from matplotlib import pyplot as plt
-
 import pathlib
 import sys
 
@@ -14,20 +12,20 @@ except ImportError:
     import chsimpy
     #sys.path.remove(str(_parentdir))
 
-import chsimpy
-import chsimpy.view
-import chsimpy.model
+#import chsimpy
+import chsimpy.cli
+# import chsimpy.view
+# import chsimpy.model
 import chsimpy.controller
-import chsimpy.parameters
-import chsimpy.utils
-import chsimpy.mport
-
-def run():
-    controller = chsimpy.controller.Controller()
-    controller.run(800)
-    controller.show()
-    plt.show()
+# import chsimpy.parameters
+# import chsimpy.utils
+# import chsimpy.mport
 
 
 if __name__ == '__main__':
-    run()
+    parser = chsimpy.cli.Parser('chsimpy')
+    params = parser.get_parameters()
+    controller = chsimpy.controller.Controller(params)
+    controller.run(params.ntmax)
+    controller.render()
+    parser.parser.exit('Finished')

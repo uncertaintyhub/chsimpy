@@ -83,8 +83,13 @@ class PlotView:
         self.ax_Uhist.set_title(title)
 
     def show(self):
-        #plt.show()
         plt.tight_layout()
+        plt.ioff()
+        plt.show()
+
+    def render_to(self, fname='diagrams.png'):
+        plt.savefig(fname, bbox_inches='tight')
+        #plt.close(self.fig)
 
 
 class AnimView(PlotView):

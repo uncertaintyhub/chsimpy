@@ -7,6 +7,7 @@ Model class that contains the actual simulation algorithm
 import numpy as np
 from scipy.fftpack import dct
 
+from .solution import Solution
 from . import mport
 from . import utils
 
@@ -99,91 +100,81 @@ class Model:
 
         N = params.N
         ntmax = params.ntmax
-        # U = self.RiniU
+
+        self.solution = Solution(params) # includes simple init of solution variables
+        solution = self.solution # shortcut, reference
+
         # https://builtin.com/data-science/numpy-random-seed
         rng = np.random.default_rng(params.seed)
-        # Declare Vectors
-        self.U    = params.XXX * np.ones((N,N))
-        #self.U +=   0.01 * np.arange(0,N) # testing
-        self.U += 0.01 * (rng.random((N,N)) - 0.5)
-        self.E    = np.zeros((ntmax,1))
-        self.E2   = np.zeros((ntmax,1))
-        self.Ra   = np.zeros((ntmax,1))
-        self.SA   = np.zeros((ntmax,1))
-        self.SA2  = np.zeros((ntmax,1))
-        self.SA3  = np.zeros((ntmax,1))
-        self.L2   = np.zeros((ntmax,1))
-        self.Meen = np.zeros((ntmax,1))
-        self.domtime = np.zeros((ntmax,1)) #! FIXME:? +1
-        self.PS   = self.E.copy()
+        solution.U = params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
 
-        U = self.U
+        U = solution.U # shortcut, reference
         DUx,DUy = mport.gradient(U, params.delx)
-        self.E[0] = utils.E_fun(U, DUx ** 2 + DUy ** 2, params.temp, params.B, params.eps2, params.Am, params.R)
-        self.E2[0] = utils.E2_fun(U, DUx ** 2 + DUy ** 2, params.eps2)
-        self.PS[0] = np.sum(np.sum(np.abs(U - mport.mean(mport.mean(U))*np.ones((N,N)))))
-        self.Ra[0] = mport.mean(np.abs(U[int(N / 2)+1,:] - mport.mean(U[int(N / 2)+1,:])))
+        solution.E[0] = utils.E_fun(U, DUx ** 2 + DUy ** 2, params.temp, params.B, params.eps2, params.Am, params.R)
+        solution.E2[0] = utils.E2_fun(U, DUx ** 2 + DUy ** 2, params.eps2)
+        solution.PS[0] = np.sum(np.sum(np.abs(U - mport.mean(mport.mean(U))*np.ones((N,N)))))
+        solution.Ra[0] = mport.mean(np.abs(U[int(N / 2)+1,:] - mport.mean(U[int(N / 2)+1,:])))
 
         # 2dim dct (ortho, DCT Type 2)
         #% https://ch.mathworks.com/help/images/ref/dct2.html?s_tid=doc_ta
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.fftpack.dct.html
-        self.hat_U = mport.dct2(U)
-        self.restime = 0
-        # initialization of t0
-        self.tau0 = 0
-        self.t0 = 0
-        self.it = 0
-        self.t = 0
+        solution.hat_U = mport.dct2(U)
 
     def advance(self): #, it, type_update, visual_update):
-        self.it += 1
-        self.t += self.params.delt
+        params       = self.params
+        solution     = self.solution # shortcut, reference
+        solution.it += 1
+        solution.t  += params.delt
 
-        params = self.params
-        N = params.N
-        it = self.it
+        N     = params.N
+        it    = solution.it
+        U     = solution.U
+        hat_U = solution.hat_U
 
-        self.restime = (1 / (params.M * params.kappa)) * it * params.delt
+        solution.restime = (1 / (params.M * params.kappa)) * it * params.delt
         # compute the shifted nonlinear term
         # (no convexity splitting!)
-        EnergieEut = utils.EnergieP(self.U, params.temp, params.B, params.R, params.Am)
+        EnergieEut = utils.EnergieP(U, params.temp, params.B, params.R, params.Am)
         # compute the right hand side in tranform space
-        hat_rhs = self.hat_U + params.Seig * mport.dct2(EnergieEut)
+        hat_rhs = hat_U + solution.Seig * mport.dct2(EnergieEut)
         # compute the updated solution in tranform space
         # (see also Ghiass et al (2016),
         #  the following line should be eq. (12) in Ghiass et al (2016))
-        self.hat_U = hat_rhs / params.CHeig
+        solution.hat_U = hat_rhs / solution.CHeig
         # invert the cosine transform
-        self.U = mport.idct2(self.hat_U)
-        U = self.U
+        solution.U = mport.idct2(hat_U)
+
         # Compute energy etc....
         DUx,DUy = mport.gradient(U, params.delx)
-        self.E[it] = utils.E_fun(U,
-                                 DUx ** 2 + DUy ** 2,
-                                 params.temp, params.B, params.eps2, params.Am, params.R)
+        solution.E[it] = utils.E_fun(U,
+                                     DUx ** 2 + DUy ** 2,
+                                     params.temp, params.B, params.eps2, params.Am, params.R)
         # FIXME: 512? N?
-        self.PS[it] = np.sum(np.sum(np.abs(
+        solution.PS[it] = np.sum(np.sum(np.abs(
             U - mport.mean(mport.mean(U))*np.ones((N,N))))) / (N ** 2)
         #
-        self.E2[it] = utils.E2_fun(U, DUx ** 2 + DUy ** 2, params.eps2)
+        solution.E2[it] = utils.E2_fun(U, DUx ** 2 + DUy ** 2, params.eps2)
         # FIXME: L2[it-1] to L2[it]?
-        self.L2[it] = 1 / (N ** 2) * np.sum(np.sum((U - mport.mean(mport.mean(U))) ** 2))
-        self.Ra[it] = mport.mean(np.abs(U[int(N / 2)+1,:] - mport.mean(U[int(N / 2)+1,:])))
+        solution.L2[it] = 1 / (N ** 2) * np.sum(np.sum((U - mport.mean(mport.mean(U))) ** 2))
+        solution.Ra[it] = mport.mean(np.abs(U[int(N / 2)+1,:] - mport.mean(U[int(N / 2)+1,:])))
         # L = 2 Mikrometer / N = 512 Pixel
 
         # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
-        self.SA[it] = np.sum(np.sum(self.U < params.threshold)) / (N ** 2)
+        solution.SA[it] = np.sum(np.sum(U < params.threshold)) / (N ** 2)
         # Silikat-reichen Phase
-        self.SA2[it] = np.sum(np.sum(self.U > params.threshold)) / (N ** 2)
-        self.SA3[it] = self.SA[it] + self.SA2[it]
-        self.domtime[it] = self.restime ** (1 / 3)
+        solution.SA2[it] = np.sum(np.sum(U > params.threshold)) / (N ** 2)
+        solution.SA3[it] = solution.SA[it] + solution.SA2[it]
+        solution.domtime[it] = solution.restime ** (1 / 3)
 
-        if it>0 and self.E2[it] < self.E2[it-1] and self.E2[it] > self.E2[0] and self.tau0 == 0:
-            self.tau0 = it
-            self.t0 = (1 / params.M * params.kappa) * (self.tau0) * params.delt
-            #!it = it + 1
+        if (it > 0
+            and solution.E2[it] < solution.E2[it-1]
+            and solution.E2[it] > solution.E2[0]
+            and solution.tau0 == 0
+            ):
+            solution.tau0 = it
+            solution.t0 = (1 / params.M * params.kappa) * (solution.tau0) * params.delt
 
-        if self.it + 1 < params.ntmax:
+        if it + 1 < params.ntmax:
             return True
         else:
             return False
