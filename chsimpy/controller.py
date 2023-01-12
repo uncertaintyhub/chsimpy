@@ -3,6 +3,7 @@ from datetime import datetime
 from . import parameters
 from . import view
 from . import model
+from . import utils
 
 class Controller:
     def __init__(self, params = None):
@@ -58,20 +59,23 @@ class Controller:
         #
         return
 
-    def _dump(self, dump_id=None):
+    def dump(self, dump_id=None):
         if dump_id == None or dump_id == '' or dump_id.lower() == 'none':
             return
-        self.params.dump(fname='parameters-'+dump_id+'.yaml')
-        self.solution.dump(fname='solution-'+dump_id+'.yaml')
+        fname_params = 'parameters-'+dump_id+'.yaml'
+        fname_sol = 'solution-'+dump_id+'.yaml'
+        utils.yaml_dump(self.params, fname=fname_params)
+        utils.yaml_dump(self.solution, fname=fname_sol)
+        return [fname_sol, fname_params]
 
-    def _get_current_id_for_dump(self):
+    def get_current_id_for_dump(self):
         if self.params.dump_id == 'auto':
             return datetime.now().strftime('%d-%m-%Y-%H%M%S')
         else:
             return self.params.dump_id
 
     def render(self):
-        current_dump_id = self._get_current_id_for_dump()
+        current_dump_id = self.get_current_id_for_dump()
         render_target = self.params.render_target
         # invalid dump id ?
         if (current_dump_id != None
@@ -79,7 +83,7 @@ class Controller:
             and current_dump_id.lower() != 'none'
             ): # valid dump id
             if 'yaml' in render_target:
-                self._dump(current_dump_id)
+                self.dump(current_dump_id)
             if 'gui' in render_target or 'png' in render_target:
                 self._render()
             if 'png' in render_target:

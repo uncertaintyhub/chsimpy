@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
-import yaml
 
 from . import utils
 
 class Solution:
+
     def __init__(self, params=None):
         "Simulation solution"
         self.params = params
@@ -42,14 +42,9 @@ class Solution:
         self.it = 0
         self.t = 0
 
-
-
     # exclude
     def __getstate__(self):
         state = self.__dict__.copy()
-        #state['U'] = state['U'].tolist()
-        state['U_str'] = np.array2string( state['U'], separator=',', threshold=self.params.N**2 )
-        del state['U']
         del state['E']
         del state['E2']
         del state['Ra']
@@ -66,6 +61,12 @@ class Solution:
         del state['hat_U']
         return state
 
-    def dump(self, fname="solution.yaml"):
-        with open(fname, 'w') as f:
-            yaml.dump(self, f, sort_keys=True, default_style='|', width=2147483647) # FIXME: width is ignored
+    def __eq__(self, other):
+        if isinstance(other, Solution):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    # def dump(self, fname="solution.yaml"):
+    #     with open(fname, 'w') as f:
+    #         yaml.dump(self, f, sort_keys=True, default_style='|', width=2147483647) # FIXME: width is ignored

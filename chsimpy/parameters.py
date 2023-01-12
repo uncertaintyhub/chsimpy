@@ -1,9 +1,9 @@
 import numpy as np
-import yaml
 
 from . import utils
 
 class Parameters:
+
     def __init__(self):
         "Simulation parameters"
         self.seed = 2023
@@ -69,10 +69,12 @@ class Parameters:
     # exclude
     def __getstate__(self):
         state = self.__dict__.copy()
-        state['D'] = state['D'].tolist()
-        state['M'] = state['M'].tolist()
+        state['D'] = float(state['D'])
+        state['M'] = float(state['M'])
         return state
 
-    def dump(self, fname='parameters.yaml'):
-        with open(fname, 'w') as f:
-            yaml.dump(self, f, sort_keys=True)
+    def __eq__(self, other):
+        if isinstance(other, Parameters):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
