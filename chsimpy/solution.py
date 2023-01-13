@@ -1,8 +1,15 @@
 import pandas as pd
 import numpy as np
 
+import ruamel.yaml
+
 from . import utils
 
+yaml = ruamel.yaml.YAML(typ='safe')
+yaml.width = 1000
+yaml.explicit_start = True
+yaml.default_flow_style=False
+@yaml.register_class
 class Solution:
 
     def __init__(self, params=None):
@@ -42,9 +49,31 @@ class Solution:
         self.it = 0
         self.t = 0
 
+    @classmethod
+    def to_yaml(cls, representer, node):
+        tag = getattr(cls, 'yaml_tag', '!' + cls.__name__)
+        attribs = {}
+        for x in dir(node):
+            if x.startswith('_'):
+                continue
+            v = getattr(node, x)
+            if callable(v):
+                continue
+            if type(v)==np.float64:
+                v = float(v)
+            if type(v)==np.ndarray:
+                continue
+            attribs[x] = v
+        return representer.represent_mapping(tag, attribs)
+
+    def yaml_dump(self, fname=None):
+        with open(fname, 'w') as f:
+            yaml.dump(self, f)
+
     # exclude
     def __getstate__(self):
         state = self.__dict__.copy()
+        del state['U']
         del state['E']
         del state['E2']
         del state['Ra']

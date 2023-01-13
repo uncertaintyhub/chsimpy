@@ -62,10 +62,13 @@ class Controller:
     def dump(self, dump_id=None):
         if dump_id == None or dump_id == '' or dump_id.lower() == 'none':
             return
-        fname_params = 'parameters-'+dump_id+'.yaml'
-        fname_sol = 'solution-'+dump_id+'.yaml'
-        utils.yaml_dump(self.params, fname=fname_params)
-        utils.yaml_dump(self.solution, fname=fname_sol)
+        fname_params = 'parameters-'+dump_id
+        fname_sol = 'solution-'+dump_id
+        self.params.yaml_dump(fname=fname_params+'.yaml')
+        self.solution.yaml_dump(fname=fname_sol+'.yaml')
+        #utils.yaml_dump(self.params, fname=fname_params+'.yaml')
+        #utils.yaml_dump(self.solution, fname=fname_sol+'.yaml')
+        utils.csv_dump(self.solution.U, fname=fname_sol+'.U.csv')
         return [fname_sol, fname_params]
 
     def get_current_id_for_dump(self):

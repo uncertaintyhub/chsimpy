@@ -1,7 +1,14 @@
 import numpy as np
 
+import ruamel.yaml
+
 from . import utils
 
+yaml = ruamel.yaml.YAML(typ='safe')
+yaml.width = 1000
+yaml.explicit_start = True
+yaml.default_flow_style=False
+@yaml.register_class
 class Parameters:
 
     def __init__(self):
@@ -65,13 +72,24 @@ class Parameters:
         # matrix of eigenvalues of the DCT
         # lambda_{k_1,k_2} = 2*(cos(k_1 * pi / N) - 1) + 2*(cos(k_2 * pi / N) - 1)
 
+    @classmethod
+    def to_yaml(cls, representer, node):
+        tag = getattr(cls, 'yaml_tag', '!' + cls.__name__)
+        attribs = {}
+        for x in dir(node):
+            if x.startswith('_'):
+                continue
+            v = getattr(node, x)
+            if callable(v):
+                continue
+            if type(v)==np.float64:
+                v = float(v)
+            attribs[x] = v
+        return representer.represent_mapping(tag, attribs)
 
-    # exclude
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        state['D'] = float(state['D'])
-        state['M'] = float(state['M'])
-        return state
+    def yaml_dump(self, fname=None):
+        with open(fname, 'w') as f:
+            yaml.dump(self, f)
 
     def __eq__(self, other):
         if isinstance(other, Parameters):
