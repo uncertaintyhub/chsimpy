@@ -34,6 +34,7 @@ class Parser:
                                      'png',
                                      'yaml',
                                      'gui+yaml',
+                                     'png+yaml',
                                      'gui+png',
                                      'gui+png+yaml',
                                      'none'],
@@ -45,8 +46,8 @@ class Parser:
         #parser.add_argument('dest', help='Destination location')
         try:
             self.args = parser.parse_args()
-        except SystemExit:
-            print("CLI Parsing failed")
+        except SystemExit as se:
+            print("CLI Parsing failed: "+print(se))
             exit(-1)
         # config = vars(args)
         # print(config)
