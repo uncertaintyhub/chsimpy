@@ -23,3 +23,24 @@ def idct2(block):
 
 def rem(a,b):
     return np.remainder(a,b)
+
+#
+def _lcg(x, a, c, m):
+    while True:
+        x = (a * x + c) % m
+        yield x
+
+def matlab_lcg_sample(n1, n2, seed):
+    a = np.float64(1103515245)
+    c = np.float64(12345)
+    m = np.float64(2 ** 31)
+    bsdrand = _lcg(seed, a, c, m)
+
+    sample = np.zeros((n1,n2))
+    # column-major looping like matlab
+    for i in range(n1*n2):
+        observation = next(bsdrand)
+        sample[int(i % n1), int(i / n1)] = observation
+
+    sample /= (m - 1)
+    return sample

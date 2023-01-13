@@ -105,8 +105,9 @@ class Model:
         solution = self.solution # shortcut, reference
 
         # https://builtin.com/data-science/numpy-random-seed
-        rng = np.random.default_rng(params.seed)
-        solution.U = params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
+        #rng = np.random.default_rng(params.seed)
+        #solution.U = params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
+        solution.U = params.XXX * np.ones((N,N)) + 0.01 * mport.matlab_lcg_sample(N, N, params.seed)
 
         U = solution.U # shortcut, reference
         DUx,DUy = mport.gradient(U, params.delx)
