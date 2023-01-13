@@ -5,6 +5,7 @@ Helper functions
 import numpy as np
 import difflib
 import ruamel.yaml
+import csv
 
 from . import mport
 
@@ -65,17 +66,14 @@ def yaml_constr_ndarray(constructor, node):
 yaml = ruamel.yaml.YAML(typ='safe')
 
 def yaml_dump(instance=None, fname=None):
-    yaml.register_class(instance.__class__)
     yaml.representer.add_representer(np.ndarray, yaml_repr_ndarray)
     yaml.representer.add_representer(np.float64, yaml_repr_npfloat64)
     yaml.width = 1000
     yaml.explicit_start = True
     yaml.default_flow_style=False
-    try:
-        with open(fname, 'w') as f:
-            yaml.dump(instance, f)
-    except ruamel.yaml.YAMLError as e:
-        print("Failed to yaml_dump: " + str(e))
+    yaml.register_class(instance.__class__)
+    with open(fname, 'w') as f:
+        yaml.dump(instance, f)
 
 
 def yaml_load(fname=None):
@@ -89,6 +87,8 @@ def yaml_load(fname=None):
         print("Failed to yaml_load: " + str(e))
     return instance
 
+def csv_dump(v=None, fname=None):
+    np.savetxt(fname, v, delimiter=",", fmt='%s')
 
 # validate solution1 with solution2
 def validate_solution_files(file_new = None, file_truth = None):
