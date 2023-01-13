@@ -64,7 +64,7 @@ class PlotView:
     def set_E2line(self, E2=None, title="", it=None, tau0=None, ntmax=None):
         self.E2line.set_data((np.arange(0,it+1), E2[0:it+1]))
         self.ax_E2line.set_xlim(0, ntmax)
-        self.ax_E2line.set_ylim(np.min(E2[0:it+1]), np.max(E2[0:it+1]))
+        self.ax_E2line.set_ylim(np.min(E2[0:it+1]), 1.25*np.max(E2[0:it+1]))
 
         # self.ax_E2line.relim()
         # self.ax_E2line.autoscale()
