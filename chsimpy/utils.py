@@ -28,16 +28,16 @@ def EnergiePP(x = None, T = None):
 
 # Hence, the unit *mole* vanishes in the Energy expression.
 # x = U, T = temp
-def Energie(u = None, T = None, B = None, R = None, Am = None):
-    x = u.astype(np.cdouble)
+def Energie(x = None, T = None, B = None, R = None, Am = None):
+    #x = u.astype(np.cdouble)
     return 1.0 / Am * np.real(
         R * T * (x*np.log(x) - B*x + (1-x)*np.log(1-x)) + (A0(T)+A1(T)*(1-2*x))*x*(1-x))
 
 
 # chemical potential
 # x = U, T = temp
-def EnergieP(u = None, T = None, B = None, R = None, Am = None):
-    x = u.astype(np.cdouble)
+def EnergieP(x = None, T = None, B = None, R = None, Am = None):
+    #x = u.astype(np.cdouble)
     return 1.0 / Am * np.real(
         R * T * np.log(x/(1-x)) - B*R*T + A0(T)*(1-2*x)+A1(T)*(1-2*x)**2 - 2*A1(T)*x*(1-x))
 
