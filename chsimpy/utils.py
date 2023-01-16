@@ -44,7 +44,7 @@ def EnergieP(x = None, T = None, B = None, R = None, Am = None):
 # Energy Functions
 # u = U, Du2 = DUx^2 + DUy^2
 def E_fun(u = None, Du2 = None, temp=None, B=None, eps2=None, Am=None, R=None):
-    return mport.mean(Energie(u, temp, B, Am, R),'all') + 0.5 * eps2 * mport.mean(Du2,'all')
+    return mport.mean(Energie(u, T=temp, B=B, R=R, Am=Am),'all') + 0.5 * eps2 * mport.mean(Du2,'all')
 
 def E2_fun(u = None, Du2 = None, eps2=None):
     return 0.5 * eps2 * mport.mean(Du2,'all')
