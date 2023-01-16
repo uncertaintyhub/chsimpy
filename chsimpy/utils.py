@@ -87,8 +87,11 @@ def yaml_load(fname=None):
         print("Failed to yaml_load: " + str(e))
     return instance
 
-def csv_dump(v=None, fname=None):
-    np.savetxt(fname, v, delimiter=",", fmt='%s')
+def csv_dump_matrix(V=None, fname=None):
+    np.savetxt(fname, V, delimiter=",", fmt='%s')
+
+def csv_load_matrix(fname=None):
+    return np.loadtxt(fname, delimiter=",")
 
 # validate solution1 with solution2
 def validate_solution_files(file_new = None, file_truth = None):
