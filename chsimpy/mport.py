@@ -10,8 +10,14 @@ from scipy.fftpack import dctn, idctn
 def mean(x,s='all'):
     return np.mean(x)
 
+# np.gradient defaults to axis=None
+# matlab computes axis=[0,1] and returns due to column-major
+# format Dy, Dx compared with row-major format in python/numpy
+# Dy,Dx = np.gradient(f,d,axis=[0,1]) should equals matlabs
+# [Dx,Dy] = gradient(f,d) # matlab
+# see also: https://github.com/numpy/numpy/issues/5628
 def gradient(f,d):
-    return np.gradient(f,d)
+    return np.gradient(f,d, axis=[0,1], edge_order=1)
 
 def dct2(block):
     #return dct(dct(block.T, norm='ortho').T, norm='ortho')
