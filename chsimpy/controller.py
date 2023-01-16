@@ -13,7 +13,7 @@ class Controller:
         else:
             self.params = params
         self.model = model.Model(self.params)
-        self.view = view.PlotView(self.params.N)
+        self.view = view.PlotView(self.params.N) # TODO: if no gui wanted, dont use view
         self.solution = self.model.solution # reference to models solution
 
     def run(self, nsteps = -1):
@@ -59,6 +59,9 @@ class Controller:
         #
         return
 
+    # TODO: too much logic hidden w.r.t. dump_id, should be more like dump_with_auto_id and dump_with_custom_id
+    # TODO: dump and render_target parsing? (yaml, csv, ..)
+    # TODO: provide own functions for filename generating code
     def dump(self, dump_id=None):
         if dump_id == None or dump_id == '' or dump_id.lower() == 'none':
             return

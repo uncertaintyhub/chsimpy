@@ -142,14 +142,21 @@ class Model:
         # (see also Ghiass et al (2016),
         #  the following line should be eq. (12) in Ghiass et al (2016))
         solution.hat_U = hat_rhs / solution.CHeig
+        hat_U = solution.hat_U
+
         # invert the cosine transform
         solution.U = mport.idct2(hat_U)
+        U = solution.U # shortcut, reference
 
         # Compute energy etc....
         DUx,DUy = mport.gradient(U, params.delx)
         solution.E[it] = utils.E_fun(U,
-                                     DUx ** 2 + DUy ** 2,
-                                     params.temp, params.B, params.eps2, params.Am, params.R)
+                                     Du2 = DUx ** 2 + DUy ** 2,
+                                     temp = params.temp,
+                                     B = params.B,
+                                     eps2 = params.eps2,
+                                     Am = params.Am,
+                                     R = params.R)
         # FIXME: 512? N?
         solution.PS[it] = np.sum(np.sum(np.abs(
             U - mport.mean(mport.mean(U))*np.ones((N,N))))) / (N ** 2)
