@@ -32,6 +32,7 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         params.ntmax = 100
         params.seed = 2023
         params.render_target = 'none'
+        params.use_lcg = True # to be comparable with matlab
         params.update()
         controller = chsimpy.controller.Controller(params)
 
@@ -41,7 +42,7 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         #U_python = utils.csv_load_matrix(fname_sol+'.U.csv')
         U_python = controller.model.solution.U
         #chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')
-        U_matlab = chsimpy.utils.csv_load_matrix('../validation/U-matlab-N512n100.csv')
+        U_matlab = chsimpy.utils.csv_load_matrix('../validation/U-matlab-lcg-N512n100.csv')
         valid = np.allclose(U_matlab, U_python)
         mse = (np.square(U_matlab-U_python)).mean(axis=None)
         print('MSE is: ', mse)

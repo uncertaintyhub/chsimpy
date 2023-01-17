@@ -21,6 +21,9 @@ class Parser:
                             default=2000,
                             type=int,
                             help='Number of simulation steps')
+        parser.add_argument('--lcg',
+                            action='store_true',
+                            help='Use linear congruential generator for initial random numbers.')
         parser.add_argument('-p',
                             '--parameter-file',
                             help='Input yaml file with parameter values [TODO]') # TODO:
@@ -44,11 +47,9 @@ class Parser:
                             version='%(prog)s 0.0') # TODO:
         #parser.add_argument('src', help='Source location')
         #parser.add_argument('dest', help='Destination location')
-        try:
-            self.args = parser.parse_args()
-        except SystemExit as se:
-            print("CLI Parsing failed: "+print(se))
-            exit(-1)
+
+        self.args = parser.parse_args()
+
         # config = vars(args)
         # print(config)
 
@@ -62,6 +63,7 @@ class Parser:
         params.ntmax = self.args.ntmax
         params.N = self.args.N
         params.dump_id = self.args.dump_id
+        params.use_lcg = self.args.lcg
         params.update()
         return params
 

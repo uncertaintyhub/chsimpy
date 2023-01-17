@@ -32,10 +32,12 @@ class Parameters:
         self.threshold = 0.9
         self.ntmax = 1000
 
+        self.use_lcg = False # LCG random numbers
         self.render_target = 'gui' # e.g. image file diagrams are rendered to
         self.dump_id = 'auto' # id for filenames (solution, parameters)
         self.update() # calculate remaining (scalar) parameters
 
+    # TODO: be self-aware of changes and update by itself then
     def update(self):
         # shortcuts
         N = self.N

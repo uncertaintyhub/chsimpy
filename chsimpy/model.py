@@ -104,10 +104,12 @@ class Model:
         self.solution = Solution(params) # includes simple init of solution variables
         solution = self.solution # shortcut, reference
 
-        # https://builtin.com/data-science/numpy-random-seed
-        #rng = np.random.default_rng(params.seed)
-        #solution.U = params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
-        solution.U = params.XXX * np.ones((N,N)) + 0.01 * mport.matlab_lcg_sample(N, N, params.seed)
+        if params.use_lcg:
+            solution.U = params.XXX * np.ones((N,N)) + 0.01 * mport.matlab_lcg_sample(N, N, params.seed)
+        else:
+            # https://builtin.com/data-science/numpy-random-seed
+            rng = np.random.default_rng(params.seed)
+            solution.U = params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
 
         U = solution.U # shortcut, reference
         DUx,DUy = mport.gradient(U, params.delx)
