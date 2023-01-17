@@ -183,6 +183,7 @@ class Model:
             ):
             solution.tau0 = it
             solution.t0 = (1 / params.M * params.kappa) * (solution.tau0) * params.delt
+            return False
 
         if it + 1 < params.ntmax:
             return True
