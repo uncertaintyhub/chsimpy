@@ -6,6 +6,7 @@ import numpy as np
 import difflib
 import ruamel.yaml
 import csv
+import time
 
 from . import mport
 
@@ -79,3 +80,6 @@ def validate_solution_files(file_new = None, file_truth = None):
     solnew = yaml_load(file_new)
     soltruth = yaml_load(file_truth)
     return np.allclose(solnew.U, soltruth.U)
+
+def get_current_localtime():
+    return time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime())
