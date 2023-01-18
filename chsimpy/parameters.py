@@ -61,7 +61,7 @@ class Parameters:
         self.D = -3.474 * 1e-4 * np.exp(-272.4 / (self.R * self.temp)) * 1e12
 
         # M = (D * Nmix) / (EnergiePP(XXX,temp)) # TODO: used?
-        self.M = self.D / utils.EnergiePP(self.XXX, self.temp)
+        self.M = self.D / (self.XXX + self.XXX/((1-self.XXX)**2) - 2.0*utils.A0(self.temp) - 6.0*utils.A1(self.temp) * (1-2.0*self.XXX))
 
         # discretizations
         self.delx = self.L / (N - 1)

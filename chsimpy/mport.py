@@ -6,10 +6,6 @@ import numpy as np
 #from scipy.fftpack import dct, idct
 from scipy.fftpack import dctn, idctn
 
-
-def mean(x,s='all'):
-    return np.mean(x)
-
 # np.gradient defaults to axis=None
 # matlab computes axis=[0,1] and returns due to column-major
 # format Dy, Dx compared with row-major format in python/numpy

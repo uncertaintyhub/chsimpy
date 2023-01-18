@@ -111,24 +111,13 @@ class Model:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.default_rng(self.params.seed)
             self.solution.U = self.params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
+        self.RT = self.params.R * self.params.temp
+        self.BRT = self.params.B * self.params.R * self.params.temp
+        self.Amr = 1 / self.params.Am
+        self.A0t = utils.A0(self.params.temp)
+        self.A1t = utils.A1(self.params.temp)
 
-        DUx,DUy = mport.gradient(self.solution.U, self.params.delx)
-        self.solution.E[0]  = utils.E_fun(self.solution.U,
-                                          DUx ** 2 + DUy ** 2,
-                                          self.params.temp,
-                                          self.params.B,
-                                          self.params.eps2,
-                                          self.params.Am,
-                                          self.params.R)
-        self.solution.E2[0] = utils.E2_fun(self.solution.U,
-                                           DUx ** 2 + DUy ** 2,
-                                           self.params.eps2)
-        self.solution.PS[0] = np.sum(np.sum(np.abs(
-            self.solution.U - mport.mean(mport.mean(self.solution.U))*np.ones((N,N))
-        )))
-        self.solution.Ra[0] = mport.mean(np.abs(
-            self.solution.U[int(N / 2)+1,:] - mport.mean(self.solution.U[int(N / 2)+1,:])
-        ))
+        self.compute(it=0)
 
         # 2dim dct (ortho, DCT Type 2)
         #% https://ch.mathworks.com/help/images/ref/dct2.html?s_tid=doc_ta
@@ -141,11 +130,32 @@ class Model:
         self.solution.it = 0
         self.solution.t = 0
 
-        self.RT = self.params.R * self.params.temp
-        self.BRT = self.params.B * self.params.R * self.params.temp
-        self.Amr = 1 / self.params.Am
-        self.A0t = utils.A0(self.params.temp)
-        self.A1t = utils.A1(self.params.temp)
+    def compute(self, it=None):
+        psol     = self.solution # points to self.solution, self.solution must not change
+        pparams  = self.params # ...
+        N        = self.params.N
+
+        Uinv = 1-psol.U
+        U1Uinv = psol.U/Uinv
+        U2inv = Uinv - psol.U
+        # Compute energy etc....
+        DUx,DUy = mport.gradient(psol.U, pparams.delx)
+        Du2 = DUx ** 2 + DUy ** 2
+        # E_fun + Energie
+        psol.E[it] = np.mean(
+            # Energie
+            self.Amr * self.RT * (
+                psol.U*np.log(psol.U) - pparams.B*psol.U + Uinv*np.log(Uinv)
+            ) + (self.A0t + self.A1t*U2inv) * psol.U * Uinv) + 0.5 * pparams.eps2 * np.mean(Du2)
+
+        psol.PS[it] = np.sum(np.sum(np.abs(
+            psol.U - np.mean(psol.U) * np.ones((N,N))))) / (N ** 2)
+        # E2_fun
+        psol.E2[it] = 0.5 * pparams.eps2 * np.mean(Du2)
+        # FIXME: L2[it-1] to L2[it]?
+        psol.L2[it] = 1 / (N ** 2) * np.sum(np.sum((psol.U - np.mean(psol.U)) ** 2))
+        psol.Ra[it] = np.mean(np.abs(
+            psol.U[int(N / 2)+1,:] - np.mean(psol.U[int(N / 2)+1,:])))
 
     def advance(self): #, it, type_update, visual_update):
         psol     = self.solution # points to self.solution, self.solution must not change
@@ -174,7 +184,7 @@ class Model:
         # invert the cosine transform
         psol.U = mport.idct2(psol.hat_U)
 
-
+        # compute()
         Uinv = 1-psol.U
         U1Uinv = psol.U/Uinv
         U2inv = Uinv - psol.U
@@ -182,21 +192,20 @@ class Model:
         DUx,DUy = mport.gradient(psol.U, pparams.delx)
         Du2 = DUx ** 2 + DUy ** 2
         # E_fun + Energie
-        psol.E[psol.it] = mport.mean(
+        psol.E[psol.it] = np.mean(
             # Energie
-            self.Amr * np.real(
-                self.RT * (psol.U*np.log(psol.U) - pparams.B*psol.U + Uinv*np.log(Uinv)) + (
-                    self.A0t + self.A1t*U2inv) * psol.U * Uinv)
-        ) + 0.5 * pparams.eps2 * mport.mean(Du2,'all')
+            self.Amr * self.RT * (
+                psol.U*np.log(psol.U) - pparams.B*psol.U + Uinv*np.log(Uinv)
+            ) + (self.A0t + self.A1t*U2inv) * psol.U * Uinv) + 0.5 * pparams.eps2 * np.mean(Du2)
 
         psol.PS[psol.it] = np.sum(np.sum(np.abs(
-            psol.U - mport.mean(mport.mean(psol.U)) * np.ones((N,N))))) / (N ** 2)
+            psol.U - np.mean(psol.U) * np.ones((N,N))))) / (N ** 2)
         # E2_fun
-        psol.E2[psol.it] = 0.5 * pparams.eps2 * mport.mean(Du2,'all')
+        psol.E2[psol.it] = 0.5 * pparams.eps2 * np.mean(Du2)
         # FIXME: L2[it-1] to L2[it]?
-        psol.L2[psol.it] = 1 / (N ** 2) * np.sum(np.sum((psol.U - mport.mean(mport.mean(psol.U))) ** 2))
-        psol.Ra[psol.it] = mport.mean(np.abs(
-            psol.U[int(N / 2)+1,:] - mport.mean(psol.U[int(N / 2)+1,:])))
+        psol.L2[psol.it] = 1 / (N ** 2) * np.sum(np.sum((psol.U - np.mean(psol.U)) ** 2))
+        psol.Ra[psol.it] = np.mean(np.abs(
+            psol.U[int(N / 2)+1,:] - np.mean(psol.U[int(N / 2)+1,:])))
         # L = 2 psol.Mikrometer / N = 512 Pixel
 
         # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
@@ -219,67 +228,3 @@ class Model:
             return True
         else:
             return False
-
-
-    # main loop
-        #while it < (ntmax-1): # TODO: back to ntmax after it-fix
-
-            # intermediate output
-            # if mport.rem(it,type_update) == 0:
-            #     np.array([it,t,np.amax(np.amax(np.abs(U)))])
-                # plotting and movie
-#<            if mport.rem(it,visual_update) == 0:
-                #<
-                # subplot(2,3,1)
-                # image(np.real(U),'CDataMapping','scaled')
-                # caxis(np.array([0,1]))
-                ##restime = (1 / (M * kappa)) * (it + 1) * delt
-                # plt.title('rescaled time ' + string(restime / 60) + ' min; it = ' + string(it))
-                ##cview.set_Umap(U, 'rescaled time ' + str(restime / 60) + ' min; it = ' + str(it))
-                # subplot(2,3,4)
-                # plt.plot(np.arange(1,N+1),U[N / 2,:],'LineWidth',1)
-                # plt.xlim(np.array([1,N]))
-                # plt.ylim(np.array([0.5,1]))
-                # plt.title('U[N/2,:], it = ',string(it))
-                ##cview.set_Uline(U, 'U[N/2,:], it = ' + str(it))
-                # subplot(2,3,2)
-                # plt.plot(E(np.arange(1,(it + 1)+1)),'LineWidth',2)
-                # #ylim([-0.3 0.15]);
-                # plt.xlim(np.array([0,ntmax]))
-                # if self.tau0 > 0:
-                #     xline(self.tau0)
-                #     # title('Separation time t0 = '+string(t0)+' sec')
-                #     #ylim([-55 -53.5]);
-                # plt.title('Total Energy')
-                # subplot(2,3,3)
-                # plt.plot(self.domtime(np.arange(1,(it)+1)),SA(np.arange(1,(it)+1)),'LineWidth',2)
-                # hold('on')
-                # plt.plot(self.domtime(np.arange(1,(it)+1)),self.SA2(np.arange(1,(it)+1)),'LineWidth',2)
-                # hold('on')
-                # plt.plot(self.domtime(np.arange(1,(it)+1)),self.SA3(np.arange(1,(it)+1)),'LineWidth',2)
-                # #ylim([-0.4 0]);
-                # plt.xlim(np.array([0, ((1 / (M * kappa)) * (ntmax) * delt) ** (1 / 3)]))
-                # #ylim([0 0.07]);
-                # plt.title('Area of high silica')
-                # if self.tau0 > 0:
-                #     xline((t0) ** (1 / 3))
-                #     # title('Separation time t0 = '+string(t0)+' sec')
-                # subplot(2,3,5)
-                # plt.plot(E2(np.arange(1,(it + 1)+1)),'LineWidth',2)
-                # #ylim([0 0.01]);
-                # plt.xlim(np.array([0,ntmax]))
-                # if self.tau0 == 0:
-                #     plt.title('Surface Energy')
-                # if self.tau0 > 0:
-                #     xline(self.tau0)
-                #     plt.title('Separation time t0 = ' + string(t0 / 60) + ' min')
-                #     subplot(2,3,6)
-                #     histogram(np.real(U),15,'Normalization','probability')
-                #     plt.ylim(np.array([0,0.7]))
-                #     plt.xlim(np.array([0.5,1]))
-                #     plt.title('Histogram of the Solution')
-                #     # frame = getframe(1)
-                # # if Video == 1: #TODO:
-                # #     writeVideo(writer,frame)
-                #     # Update the solution
-                #>
