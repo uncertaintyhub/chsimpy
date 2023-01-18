@@ -94,98 +94,128 @@ class Model:
         # if Video == 1: #TODO:
         #     writeVideo(writer,frame)
 
-        self.params = params
         # TODO: required? if so, check port from matlab (0:delx:L)'
         # x = np.transpose(np.arange(0, params.L+params.delx, params.delx))
 
-        N = params.N
-        ntmax = params.ntmax
-
+        self.params = params
         self.solution = Solution(params) # includes simple init of solution variables
-        solution = self.solution # shortcut, reference
+        self.reset()
 
-        if params.use_lcg:
-            solution.U = params.XXX * np.ones((N,N)) + 0.01 * mport.matlab_lcg_sample(N, N, params.seed)
+
+    def reset(self):
+        N = self.params.N
+
+        if self.params.use_lcg:
+            self.solution.U = self.params.XXX * np.ones((N,N)) + 0.01 * mport.matlab_lcg_sample(N, N, self.params.seed)
         else:
             # https://builtin.com/data-science/numpy-random-seed
-            rng = np.random.default_rng(params.seed)
-            solution.U = params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
+            rng = np.random.default_rng(self.params.seed)
+            self.solution.U = self.params.XXX * np.ones((N,N)) + 0.01 * (rng.random((N,N)) - 0.5)
 
-        U = solution.U # shortcut, reference
-        DUx,DUy = mport.gradient(U, params.delx)
-        solution.E[0] = utils.E_fun(U, DUx ** 2 + DUy ** 2, params.temp, params.B, params.eps2, params.Am, params.R)
-        solution.E2[0] = utils.E2_fun(U, DUx ** 2 + DUy ** 2, params.eps2)
-        solution.PS[0] = np.sum(np.sum(np.abs(U - mport.mean(mport.mean(U))*np.ones((N,N)))))
-        solution.Ra[0] = mport.mean(np.abs(U[int(N / 2)+1,:] - mport.mean(U[int(N / 2)+1,:])))
+        DUx,DUy = mport.gradient(self.solution.U, self.params.delx)
+        self.solution.E[0]  = utils.E_fun(self.solution.U,
+                                          DUx ** 2 + DUy ** 2,
+                                          self.params.temp,
+                                          self.params.B,
+                                          self.params.eps2,
+                                          self.params.Am,
+                                          self.params.R)
+        self.solution.E2[0] = utils.E2_fun(self.solution.U,
+                                           DUx ** 2 + DUy ** 2,
+                                           self.params.eps2)
+        self.solution.PS[0] = np.sum(np.sum(np.abs(
+            self.solution.U - mport.mean(mport.mean(self.solution.U))*np.ones((N,N))
+        )))
+        self.solution.Ra[0] = mport.mean(np.abs(
+            self.solution.U[int(N / 2)+1,:] - mport.mean(self.solution.U[int(N / 2)+1,:])
+        ))
 
         # 2dim dct (ortho, DCT Type 2)
         #% https://ch.mathworks.com/help/images/ref/dct2.html?s_tid=doc_ta
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.fftpack.dct.html
-        solution.hat_U = mport.dct2(U)
+        self.solution.hat_U = mport.dct2(self.solution.U)
+
+        self.solution.restime = 0
+        self.solution.tau0 = 0
+        self.solution.t0 = 0
+        self.solution.it = 0
+        self.solution.t = 0
+
+        self.RT = self.params.R * self.params.temp
+        self.BRT = self.params.B * self.params.R * self.params.temp
+        self.Amr = 1 / self.params.Am
+        self.A0t = utils.A0(self.params.temp)
+        self.A1t = utils.A1(self.params.temp)
 
     def advance(self): #, it, type_update, visual_update):
-        params       = self.params
-        solution     = self.solution # shortcut, reference
-        solution.it += 1
-        solution.t  += params.delt
+        psol     = self.solution # points to self.solution, self.solution must not change
+        pparams  = self.params # ...
+        psol.it += 1
+        psol.t  += self.params.delt
+        N        = self.params.N
 
-        N     = params.N
-        it    = solution.it
-        U     = solution.U
-        hat_U = solution.hat_U
 
-        solution.restime = (1 / (params.M * params.kappa)) * it * params.delt
+        psol.restime = (1 / (pparams.M * pparams.kappa)) * psol.it * pparams.delt
+        Uinv = 1-psol.U
+        U1Uinv = psol.U/Uinv
+        U2inv = Uinv - psol.U
         # compute the shifted nonlinear term
         # (no convexity splitting!)
-        EnergieEut = utils.EnergieP(U, params.temp, params.B, params.R, params.Am)
+        # EnergieP
+        EnergieEut = self.Amr * np.real(
+            self.RT * np.log(U1Uinv) - self.BRT + self.A0t*U2inv+self.A1t*U2inv**2 - 2*self.A1t*psol.U*Uinv)
         # compute the right hand side in tranform space
-        hat_rhs = hat_U + solution.Seig * mport.dct2(EnergieEut)
-        # compute the updated solution in tranform space
+        hat_rhs = psol.hat_U + psol.Seig * mport.dct2(EnergieEut)
+
+        # compute the updated psol in tranform space
         # (see also Ghiass et al (2016),
         #  the following line should be eq. (12) in Ghiass et al (2016))
-        solution.hat_U = hat_rhs / solution.CHeig
-        hat_U = solution.hat_U
-
+        psol.hat_U = hat_rhs / psol.CHeig
         # invert the cosine transform
-        solution.U = mport.idct2(hat_U)
-        U = solution.U # shortcut, reference
+        psol.U = mport.idct2(psol.hat_U)
 
+
+        Uinv = 1-psol.U
+        U1Uinv = psol.U/Uinv
+        U2inv = Uinv - psol.U
         # Compute energy etc....
-        DUx,DUy = mport.gradient(U, params.delx)
-        solution.E[it] = utils.E_fun(U,
-                                     Du2 = DUx ** 2 + DUy ** 2,
-                                     temp = params.temp,
-                                     B = params.B,
-                                     eps2 = params.eps2,
-                                     Am = params.Am,
-                                     R = params.R)
-        # FIXME: 512? N?
-        solution.PS[it] = np.sum(np.sum(np.abs(
-            U - mport.mean(mport.mean(U))*np.ones((N,N))))) / (N ** 2)
-        #
-        solution.E2[it] = utils.E2_fun(U, DUx ** 2 + DUy ** 2, params.eps2)
+        DUx,DUy = mport.gradient(psol.U, pparams.delx)
+        Du2 = DUx ** 2 + DUy ** 2
+        # E_fun + Energie
+        psol.E[psol.it] = mport.mean(
+            # Energie
+            self.Amr * np.real(
+                self.RT * (psol.U*np.log(psol.U) - pparams.B*psol.U + Uinv*np.log(Uinv)) + (
+                    self.A0t + self.A1t*U2inv) * psol.U * Uinv)
+        ) + 0.5 * pparams.eps2 * mport.mean(Du2,'all')
+
+        psol.PS[psol.it] = np.sum(np.sum(np.abs(
+            psol.U - mport.mean(mport.mean(psol.U)) * np.ones((N,N))))) / (N ** 2)
+        # E2_fun
+        psol.E2[psol.it] = 0.5 * pparams.eps2 * mport.mean(Du2,'all')
         # FIXME: L2[it-1] to L2[it]?
-        solution.L2[it] = 1 / (N ** 2) * np.sum(np.sum((U - mport.mean(mport.mean(U))) ** 2))
-        solution.Ra[it] = mport.mean(np.abs(U[int(N / 2)+1,:] - mport.mean(U[int(N / 2)+1,:])))
-        # L = 2 Mikrometer / N = 512 Pixel
+        psol.L2[psol.it] = 1 / (N ** 2) * np.sum(np.sum((psol.U - mport.mean(mport.mean(psol.U))) ** 2))
+        psol.Ra[psol.it] = mport.mean(np.abs(
+            psol.U[int(N / 2)+1,:] - mport.mean(psol.U[int(N / 2)+1,:])))
+        # L = 2 psol.Mikrometer / N = 512 Pixel
 
         # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
-        solution.SA[it] = np.sum(np.sum(U < params.threshold)) / (N ** 2)
+        psol.SA[psol.it] = np.sum(np.sum(psol.U < pparams.threshold)) / (N ** 2)
         # Silikat-reichen Phase
-        solution.SA2[it] = np.sum(np.sum(U > params.threshold)) / (N ** 2)
-        solution.SA3[it] = solution.SA[it] + solution.SA2[it]
-        solution.domtime[it] = solution.restime ** (1 / 3)
+        psol.SA2[psol.it] = np.sum(np.sum(psol.U > pparams.threshold)) / (N ** 2)
+        psol.SA3[psol.it] = psol.SA[psol.it] + psol.SA2[psol.it]
+        psol.domtime[psol.it] = psol.restime ** (1 / 3)
 
-        if (it > 0
-            and solution.E2[it] < solution.E2[it-1]
-            and solution.E2[it] > solution.E2[0]
-            and solution.tau0 == 0
+        if (psol.it > 0
+            and psol.E2[psol.it] < psol.E2[psol.it-1]
+            and psol.E2[psol.it] > psol.E2[0]
+            and psol.tau0 == 0
             ):
-            solution.tau0 = it
-            solution.t0 = (1 / params.M * params.kappa) * (solution.tau0) * params.delt
+            psol.tau0 = psol.it
+            psol.t0 = (1 / pparams.M * pparams.kappa) * (psol.tau0) * pparams.delt
             return False
 
-        if it + 1 < params.ntmax:
+        if psol.it + 1 < pparams.ntmax:
             return True
         else:
             return False

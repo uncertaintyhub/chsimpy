@@ -4,6 +4,8 @@ import importlib
 import pathlib
 import sys
 
+import time
+
 # https://docs.python.org/3/library/argparse.html
 import argparse
 
@@ -24,12 +26,15 @@ import chsimpy.parameters
 import chsimpy.utils
 # import chsimpy.mport
 
+
 class BenchmarkParams:
     def __init__(self):
         self.skip_test = False
         self.runs = 3
         self.warmups = 1
         self.warmup_ntmax = 100
+
+
 
 
 def cli_parse(progname='benchmark'):
@@ -45,7 +50,7 @@ def cli_parse(progname='benchmark'):
                             type=int,
                             help='Number of pixels in one domain (NxN)')
         parser.add_argument('-n', '--ntmax',
-                            default=500,
+                            default=100,
                             type=int,
                             help='Number of simulation steps')
         parser.add_argument('-r', '--runs',
@@ -116,15 +121,40 @@ def validation_test():
         return False
 
 
+def time_repetitions(controller=None, ntmax=None, repetitions=None):
+    tvalues=np.zeros(repetitions)
+    for i in range(repetitions):
+        controller.model.reset()
+        t1 = time.time()
+        controller.run(ntmax)
+        tvalues[i] = time.time() - t1
+    return tvalues
+
+
 if __name__ == '__main__':
+
     params, bmark_params = cli_parse()
+
+    print(str(vars(params)).replace(',','\n'))
+    print(str(vars(bmark_params)).replace(',','\n'))
+    print()
+
     if not bmark_params.skip_test:
         validation_test()
 
-    for w in range(bmark_params.warmups):
-        controller = chsimpy.controller.Controller(params)
-        controller.run(bmark_params.warmup_ntmax)
+    controller = chsimpy.controller.Controller(params)
+    if bmark_params.warmups>0:
+        ts = time_repetitions(controller = controller,
+                              ntmax = bmark_params.warmup_ntmax,
+                              repetitions = bmark_params.warmups)
+        print(f"Warmup ({bmark_params.warmups} repetitions, ntmax={bmark_params.warmup_ntmax}):")
+        print(f" single: {ts} sec")
+        print(f" total:  {sum(ts)} sec")
 
-    for r in range(bmark_params.runs):
-        controller = chsimpy.controller.Controller(params)
-        controller.run()
+    if bmark_params.runs>0:
+        ts = time_repetitions(controller = controller,
+                              ntmax = params.ntmax,
+                              repetitions = bmark_params.runs)
+        print(f"Benchmark ({bmark_params.runs} repetitions, ntmax={params.ntmax}):")
+        print(f" single: {ts} sec")
+        print(f" total:  {sum(ts)} sec")
