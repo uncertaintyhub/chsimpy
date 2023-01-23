@@ -122,13 +122,16 @@ def validation_test():
 
 
 def time_repetitions(controller=None, ntmax=None, repetitions=None):
-    tvalues=np.zeros(repetitions)
+    tv_reset = np.zeros(repetitions)
+    tv_run = np.zeros(repetitions)
     for i in range(repetitions):
+        t1 = time.time()
         controller.model.reset()
+        tv_reset[i] = time.time() - t1
         t1 = time.time()
         controller.run(ntmax)
-        tvalues[i] = time.time() - t1
-    return tvalues
+        tv_run[i] = time.time() - t1
+    return [tv_reset, tv_run]
 
 
 if __name__ == '__main__':
@@ -143,19 +146,28 @@ if __name__ == '__main__':
     if not bmark_params.skip_test:
         validation_test()
 
+    t1 = time.time()
+
     controller = chsimpy.controller.Controller(params)
     if bmark_params.warmups>0:
         ts = time_repetitions(controller = controller,
                               ntmax = bmark_params.warmup_ntmax,
                               repetitions = bmark_params.warmups)
         print(f"Warmup ({bmark_params.warmups} repetitions, ntmax={bmark_params.warmup_ntmax}):")
-        print(f" single: {ts} sec")
-        print(f" total:  {sum(ts)} sec")
+        print(f" reset/single: {ts[0]} sec")
+        print(f" reset/sum:  {sum(ts[0])} sec")
+        print(f" run/single: {ts[1]} sec")
+        print(f" run/sum:  {sum(ts[1])} sec")
 
     if bmark_params.runs>0:
         ts = time_repetitions(controller = controller,
                               ntmax = params.ntmax,
                               repetitions = bmark_params.runs)
         print(f"Benchmark ({bmark_params.runs} repetitions, ntmax={params.ntmax}):")
-        print(f" single: {ts} sec")
-        print(f" total:  {sum(ts)} sec")
+        print(f" reset/single: {ts[0]} sec")
+        print(f" reset/sum:  {sum(ts[0])} sec")
+        print(f" run/single: {ts[1]} sec")
+        print(f" run/sum:  {sum(ts[1])} sec")
+
+    t2 = time.time()
+    print(f"Benchmark Total: {t2-t1} sec")
