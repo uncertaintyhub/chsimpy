@@ -17,6 +17,9 @@ class Controller:
         self.solution = self.model.solution # reference to models solution
 
     def run(self, nsteps = -1):
+        self.model.run(nsteps)
+
+    def advance(self, nsteps = -1):
         i = 0
         if nsteps==-1:
             nsteps = self.params.ntmax

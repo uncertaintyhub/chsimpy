@@ -5,9 +5,8 @@ Model class that contains the actual simulation algorithm
 """
 
 import numpy as np
-from scipy.fftpack import dct
+import scipy.fftpack as scifft
 import numba as nb
-
 
 from .solution import Solution
 from . import mport
@@ -18,8 +17,8 @@ from . import utils
 # sim-model-parameters regimes, automatize computations into batches for HPC
 # real simtime no more relevant, since correct material parameters are not completely known
 
-@nb.njit
-def compute_nb(U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, eps2=None, RT=None, Du2=None):
+
+def compute_init(U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, eps2=None, RT=None, Du2=None):
     Uinv = 1-U
     E2 = 0.5 * eps2 * np.mean(Du2)
     # Compute energy etc....
@@ -38,6 +37,101 @@ def compute_nb(U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, 
     Ra = np.mean(np.abs(
         U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
     return [E, PS, E2, L2, Ra]
+
+
+#@nb.njit
+def compute_run(nsteps=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, eps2=None, RT=None, BRT=None, Seig=None, CHeig=None, time_fac=None, threshold=None):
+
+    # TODO: AoS?
+    E       = np.zeros(nsteps)
+    E2      = np.zeros(nsteps)
+    Ra      = np.zeros(nsteps)
+    SA      = np.zeros(nsteps)
+    SA2     = np.zeros(nsteps)
+    SA3     = np.zeros(nsteps)
+    L2      = np.zeros(nsteps)
+    Meen    = np.zeros(nsteps)
+    domtime = np.zeros(nsteps)
+    PS      = np.zeros(nsteps)
+
+    # init
+    with nb.objmode(DUx='float64[:,:]',DUy='float64[:,:]'):
+        DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
+    Du2 = DUx ** 2 + DUy ** 2
+
+    Uinv = 1-U
+    E2[0] = 0.5 * eps2 * np.mean(Du2)
+    # Compute energy etc....
+    # E_fun + Energie
+    E[0] = np.mean(
+        # Energie
+        Amr * RT * (
+            U*(np.log(U) - B) + Uinv*np.log(Uinv)
+        ) + (A0t + A1t*(Uinv - U)) * U * Uinv) + E2[0]
+
+    Um = U - np.mean(U)
+    PS[0] = np.sum(np.abs(Um)) / (N ** 2)
+    # E2_fun
+    # FIXME: L2[it-1] to L2[it]?
+    L2[0] = 1 / (N ** 2) * np.sum(Um ** 2)
+    Ra[0] = np.mean(np.abs(
+        U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
+
+    with nb.objmode(hat_U='float64[:,:]'):
+        hat_U = scifft.dctn(U)
+
+    # sim loop
+    for it in range(1,nsteps):
+        Uinv = 1-U
+        U1Uinv = U/Uinv
+        U2inv = Uinv - U
+        # compute the shifted nonlinear term
+        # (no convexity splitting!)
+        # EnergieP
+        EnergieEut = Amr * (
+            RT * np.log(U1Uinv)
+            - BRT + (A0t + A1t*U2inv)*U2inv
+            - 2 * A1t * U * Uinv)
+        # compute the right hand side in tranform space
+        with nb.objmode(hat_rhs='float64[:,:]'):
+            hat_rhs = hat_U + Seig * scifft.dctn(EnergieEut, norm="ortho")
+
+        # compute the updated psol in tranform space
+        # (see also Ghiass et al (2016),
+        #  the following line should be eq. (12) in Ghiass et al (2016))
+        hat_U = hat_rhs / CHeig
+        # invert the cosine transform
+        with nb.objmode(U='float64[:,:]'):
+            U = scifft.idctn(hat_U, norm="ortho")
+
+        with nb.objmode(DUx='float64[:,:]',DUy='float64[:,:]'):
+            DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
+
+        Du2 = DUx ** 2 + DUy ** 2
+        Uinv = 1-U
+        E2[it] = 0.5 * eps2 * np.mean(Du2)
+        E[it] = np.mean(
+            # Energie
+            Amr * RT * (
+                U*(np.log(U) - B) + Uinv*np.log(Uinv)
+            ) + (A0t + A1t*(Uinv - U)) * U * Uinv) + E2[it]
+
+        Um = U - np.mean(U)
+        PS[it] = np.sum(np.abs(Um)) / (N ** 2)
+        # FIXME: L2[it-1] to L2[it]?
+        L2[it] = 1 / (N ** 2) * np.sum(Um ** 2)
+        Ra[it] = np.mean(np.abs(
+            U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
+
+        # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
+        SA[it] = np.sum(U < threshold) / (N ** 2)
+        # Silikat-reichen Phase
+        SA2[it] = np.sum(U > threshold) / (N ** 2) #TODO: 1-SA, floats
+        SA3[it] = SA[it] + SA2[it] #TODO: 0?
+        domtime[it] = time_fac * it ** (1 / 3)
+
+
+    return [U, E, PS, E2, L2, Ra, SA, SA2, SA3, domtime]
 
 
 class Model:
@@ -142,7 +236,7 @@ class Model:
 
         DUx,DUy = mport.gradient(self.solution.U, self.params.delx)
         psol = self.solution
-        [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_nb(
+        [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_init(
             U=self.solution.U,
             delx=self.params.delx,
             N=N,
@@ -164,6 +258,39 @@ class Model:
         self.solution.t0 = 0
         self.solution.it = 0
         self.solution.t = 0
+
+    def run(self, nsteps=None):
+        if nsteps < 1:
+            nsteps = self.params.ntmax
+        if nsteps > self.params.ntmax:
+            nsteps = self.params.ntmax
+
+        time_fac = (1 / (self.params.M * self.params.kappa)) * self.params.delt
+        [self.solution.U ,
+         self.solution.E ,
+         self.solution.PS,
+         self.solution.E2,
+         self.solution.L2,
+         self.solution.Ra,
+         self.solution.SA,
+         self.solution.SA2,
+         self.solution.SA3,
+         self.solution.domtime
+         ] = compute_run(nsteps,
+                         U=self.solution.U,
+                         delx=self.params.delx,
+                         N=self.params.N,
+                         A0t=self.A0t,
+                         A1t=self.A1t,
+                         Amr=self.Amr,
+                         B=self.params.B,
+                         eps2=self.params.eps2,
+                         RT=self.RT,
+                         BRT=self.BRT,
+                         Seig=self.solution.Seig,
+                         CHeig=self.solution.CHeig,
+                         time_fac=time_fac,
+                         threshold=self.params.threshold)
 
     def advance(self): #, it, type_update, visual_update):
         psol     = self.solution # points to self.solution, self.solution must not change
@@ -195,7 +322,7 @@ class Model:
         psol.U = mport.idct2(psol.hat_U)
 
         DUx,DUy = mport.gradient(psol.U, pparams.delx)
-        [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_nb(
+        [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_init(
             U=self.solution.U,
             delx=self.params.delx,
             N=N,

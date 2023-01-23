@@ -26,6 +26,7 @@ class Solution:
 
         self.U    = None
         self.hat_U= None
+        #TODO: remove
         self.E    = np.zeros((ntmax,1))
         self.E2   = np.zeros((ntmax,1))
         self.Ra   = np.zeros((ntmax,1))
