@@ -6,6 +6,8 @@ Model class that contains the actual simulation algorithm
 
 import numpy as np
 from scipy.fftpack import dct
+import numba as nb
+
 
 from .solution import Solution
 from . import mport
@@ -15,6 +17,27 @@ from . import utils
 # find t where gradient decreases significantly, only compute until this
 # sim-model-parameters regimes, automatize computations into batches for HPC
 # real simtime no more relevant, since correct material parameters are not completely known
+
+#@nb.njit
+def compute_nb(it=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, eps2=None, RT=None, Du2=None):
+    Uinv = 1-U
+    E2 = 0.5 * eps2 * np.mean(Du2)
+    # Compute energy etc....
+    # E_fun + Energie
+    E = np.mean(
+        # Energie
+        Amr * RT * (
+            U*(np.log(U) - B) + Uinv*np.log(Uinv)
+        ) + (A0t + A1t*(Uinv - U)) * U * Uinv) + E2
+
+    Um = U - np.mean(U)
+    PS = np.sum(np.abs(Um)) / (N ** 2)
+    # E2_fun
+    # FIXME: L2[it-1] to L2[it]?
+    L2 = 1 / (N ** 2) * np.sum(Um ** 2)
+    Ra = np.mean(np.abs(
+        U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
+    return [E, PS, E2, L2, Ra]
 
 
 class Model:
@@ -117,7 +140,20 @@ class Model:
         self.A0t = utils.A0(self.params.temp)
         self.A1t = utils.A1(self.params.temp)
 
-        self.compute(it=0)
+        DUx,DUy = mport.gradient(self.solution.U, self.params.delx)
+        psol = self.solution
+        [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_nb(
+            it=0,
+            U=self.solution.U,
+            delx=self.params.delx,
+            N=N,
+            A0t=self.A0t,
+            A1t=self.A1t,
+            Amr=self.Amr,
+            B=self.params.B,
+            eps2=self.params.eps2,
+            RT=self.RT,
+            Du2=DUx ** 2 + DUy ** 2)
 
         # 2dim dct (ortho, DCT Type 2)
         #% https://ch.mathworks.com/help/images/ref/dct2.html?s_tid=doc_ta
@@ -129,33 +165,6 @@ class Model:
         self.solution.t0 = 0
         self.solution.it = 0
         self.solution.t = 0
-
-    def compute(self, it=None):
-        psol     = self.solution # points to self.solution, self.solution must not change
-        pparams  = self.params # ...
-        N        = self.params.N
-
-        Uinv = 1-psol.U
-        U1Uinv = psol.U/Uinv
-        U2inv = Uinv - psol.U
-        # Compute energy etc....
-        DUx,DUy = mport.gradient(psol.U, pparams.delx)
-        Du2 = DUx ** 2 + DUy ** 2
-        # E_fun + Energie
-        psol.E[it] = np.mean(
-            # Energie
-            self.Amr * self.RT * (
-                psol.U*np.log(psol.U) - pparams.B*psol.U + Uinv*np.log(Uinv)
-            ) + (self.A0t + self.A1t*U2inv) * psol.U * Uinv) + 0.5 * pparams.eps2 * np.mean(Du2)
-
-        psol.PS[it] = np.sum(np.sum(np.abs(
-            psol.U - np.mean(psol.U) * np.ones((N,N))))) / (N ** 2)
-        # E2_fun
-        psol.E2[it] = 0.5 * pparams.eps2 * np.mean(Du2)
-        # FIXME: L2[it-1] to L2[it]?
-        psol.L2[it] = 1 / (N ** 2) * np.sum(np.sum((psol.U - np.mean(psol.U)) ** 2))
-        psol.Ra[it] = np.mean(np.abs(
-            psol.U[int(N / 2)+1,:] - np.mean(psol.U[int(N / 2)+1,:])))
 
     def advance(self): #, it, type_update, visual_update):
         psol     = self.solution # points to self.solution, self.solution must not change
@@ -172,8 +181,10 @@ class Model:
         # compute the shifted nonlinear term
         # (no convexity splitting!)
         # EnergieP
-        EnergieEut = self.Amr * np.real(
-            self.RT * np.log(U1Uinv) - self.BRT + self.A0t*U2inv+self.A1t*U2inv**2 - 2*self.A1t*psol.U*Uinv)
+        EnergieEut = self.Amr * (
+            self.RT * np.log(U1Uinv)
+            - self.BRT + (self.A0t+self.A1t*U2inv)*U2inv
+            - 2*self.A1t*psol.U*Uinv)
         # compute the right hand side in tranform space
         hat_rhs = psol.hat_U + psol.Seig * mport.dct2(EnergieEut)
 
@@ -184,35 +195,25 @@ class Model:
         # invert the cosine transform
         psol.U = mport.idct2(psol.hat_U)
 
-        # compute()
-        Uinv = 1-psol.U
-        U1Uinv = psol.U/Uinv
-        U2inv = Uinv - psol.U
-        # Compute energy etc....
         DUx,DUy = mport.gradient(psol.U, pparams.delx)
-        Du2 = DUx ** 2 + DUy ** 2
-        # E_fun + Energie
-        psol.E[psol.it] = np.mean(
-            # Energie
-            self.Amr * self.RT * (
-                psol.U*np.log(psol.U) - pparams.B*psol.U + Uinv*np.log(Uinv)
-            ) + (self.A0t + self.A1t*U2inv) * psol.U * Uinv) + 0.5 * pparams.eps2 * np.mean(Du2)
-
-        psol.PS[psol.it] = np.sum(np.sum(np.abs(
-            psol.U - np.mean(psol.U) * np.ones((N,N))))) / (N ** 2)
-        # E2_fun
-        psol.E2[psol.it] = 0.5 * pparams.eps2 * np.mean(Du2)
-        # FIXME: L2[it-1] to L2[it]?
-        psol.L2[psol.it] = 1 / (N ** 2) * np.sum(np.sum((psol.U - np.mean(psol.U)) ** 2))
-        psol.Ra[psol.it] = np.mean(np.abs(
-            psol.U[int(N / 2)+1,:] - np.mean(psol.U[int(N / 2)+1,:])))
-        # L = 2 psol.Mikrometer / N = 512 Pixel
+        [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_nb(
+            it=0,
+            U=self.solution.U,
+            delx=self.params.delx,
+            N=N,
+            A0t=self.A0t,
+            A1t=self.A1t,
+            Amr=self.Amr,
+            B=self.params.B,
+            eps2=self.params.eps2,
+            RT=self.RT,
+            Du2=DUx ** 2 + DUy ** 2)
 
         # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
-        psol.SA[psol.it] = np.sum(np.sum(psol.U < pparams.threshold)) / (N ** 2)
+        psol.SA[psol.it] = np.sum(psol.U < pparams.threshold) / (N ** 2)
         # Silikat-reichen Phase
-        psol.SA2[psol.it] = np.sum(np.sum(psol.U > pparams.threshold)) / (N ** 2)
-        psol.SA3[psol.it] = psol.SA[psol.it] + psol.SA2[psol.it]
+        psol.SA2[psol.it] = np.sum(psol.U > pparams.threshold) / (N ** 2) #TODO: 1-SA, floats
+        psol.SA3[psol.it] = psol.SA[psol.it] + psol.SA2[psol.it] #TODO: 0?
         psol.domtime[psol.it] = psol.restime ** (1 / 3)
 
         if (psol.it > 0
