@@ -18,8 +18,8 @@ from . import utils
 # sim-model-parameters regimes, automatize computations into batches for HPC
 # real simtime no more relevant, since correct material parameters are not completely known
 
-#@nb.njit
-def compute_nb(it=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, eps2=None, RT=None, Du2=None):
+@nb.njit
+def compute_nb(U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, eps2=None, RT=None, Du2=None):
     Uinv = 1-U
     E2 = 0.5 * eps2 * np.mean(Du2)
     # Compute energy etc....
@@ -143,7 +143,6 @@ class Model:
         DUx,DUy = mport.gradient(self.solution.U, self.params.delx)
         psol = self.solution
         [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_nb(
-            it=0,
             U=self.solution.U,
             delx=self.params.delx,
             N=N,
@@ -197,7 +196,6 @@ class Model:
 
         DUx,DUy = mport.gradient(psol.U, pparams.delx)
         [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_nb(
-            it=0,
             U=self.solution.U,
             delx=self.params.delx,
             N=N,
