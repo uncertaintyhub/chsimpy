@@ -76,7 +76,7 @@ class Controller:
         self.solution.yaml_dump(fname=fname_sol+'.yaml')
         #utils.yaml_dump(self.params, fname=fname_params+'.yaml')
         #utils.yaml_dump(self.solution, fname=fname_sol+'.yaml')
-        utils.csv_dump(self.solution.U, fname=fname_sol+'.U.csv')
+        utils.csv_dump_matrix(self.solution.U, fname=fname_sol+'.U.csv')
         return [fname_sol, fname_params]
 
     def get_current_id_for_dump(self):
