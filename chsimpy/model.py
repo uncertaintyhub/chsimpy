@@ -94,6 +94,7 @@ def compute_run(nsteps    = None,
     with nb.objmode(hat_U='float64[:,:]'):
         hat_U = scifft.dctn(U, norm='ortho')
 
+    # will be re-written if for-loop breaks early
     tau0 = 0
     t0 = 0
 
@@ -145,7 +146,7 @@ def compute_run(nsteps    = None,
         # Silikat-reichen Phase
         SA2[it] = np.sum(U > threshold) / (N ** 2) #TODO: 1-SA, floats
         SA3[it] = SA[it] + SA2[it] #TODO: 0?
-        domtime[it] = time_fac * it ** (1 / 3)
+        domtime[it] = (time_fac * it) ** (1 / 3)
 
         if (E2[it] < E2[it-1]
             and E2[it] > E2[0]
@@ -153,10 +154,9 @@ def compute_run(nsteps    = None,
             ):
             tau0 = it
             t0 = time_fac * it
-            return False
+            break
 
-
-    return [U, E, PS, E2, L2, Ra, SA, SA2, SA3, domtime, tau0, t0]
+    return (U, E, PS, E2, L2, Ra, SA, SA2, SA3, domtime, tau0, t0)
 
 
 class Model:
@@ -342,6 +342,11 @@ class Model:
                          time_fac  = time_fac,
                          threshold = self.params.threshold
                          )
+        # return actual number of iterations computed
+        computed_steps = nsteps
+        if self.solution.tau0>0:
+            computed_steps = self.solution.tau0+1 # tau0 is variable it in for-loop
+        return computed_steps
 
     # advance single simulation step
     def advance(self): #, it, type_update, visual_update):

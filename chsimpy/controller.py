@@ -15,9 +15,10 @@ class Controller:
         self.model = model.Model(self.params)
         self.view = view.PlotView(self.params.N) # TODO: if no gui wanted, dont use view
         self.solution = self.model.solution # reference to models solution
+        self.computed_steps = 0
 
     def run(self, nsteps = -1):
-        self.model.run(nsteps)
+        self.computed_steps = self.model.run(nsteps)
 
     def advance(self, nsteps = -1):
         i = 0
@@ -32,31 +33,27 @@ class Controller:
         model = self.model
         params = self.params
         solution = self.solution
-        it = params.ntmax-1
 
         view.set_Umap(U = solution.U,
-                      title = 'rescaled time ' + str(round(solution.restime / 60,4)) + ' min; it = ' + str(it))
+                      title = 'rescaled time ' + str(round(solution.restime / 60,4)) + ' min; steps = ' + str(self.computed_steps))
 
         view.set_Uline(U = solution.U,
-                       title = 'U(N/2,:), it = ' + str(it))
+                       title = 'U(N/2,:), it = ' + str(self.computed_steps))
 
         view.set_Eline(E = solution.E,
-                       title = 'Total Energy',
-                       it = it,
-                       tau0 = solution.tau0)
+                       title = f"Total Energy (steps={self.computed_steps})",
+                       computed_steps = self.computed_steps)
 
         view.set_SAlines(domtime = solution.domtime,
                          SAlist = [solution.SA, solution.SA2, solution.SA3],
                          title = 'Area of high silica',
-                         it = it,
-                         tau0 = solution.tau0,
+                         computed_steps = self.computed_steps,
                          x2 = (1/(params.M * params.kappa) * params.ntmax * params.delt)**(1/3), # = x2 of x axis
                          t0 = solution.t0)
 
         view.set_E2line(E2 = solution.E2,
                         title = "Surf.Energy | Separation t0 = " + str(round(solution.t0,4)) + "s",
-                        it = it,
-                        tau0 = solution.tau0,
+                        computed_steps = self.computed_steps,
                         ntmax = params.ntmax)
 
         view.set_Uhist(solution.U, "Solution Histogram")

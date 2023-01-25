@@ -37,39 +37,34 @@ class PlotView:
 
     def set_Uline(self, U=None, title=""):
         self.Uline.set_ydata(U[int(self.N / 2)+1,:])
-        self.ax_Uline.set_ylim(0.7, 0.9)
+        self.ax_Uline.set_ylim(0.75, 1.0)
         self.ax_Uline.set_title(title)
 
-    def set_Eline(self, E=None, title="", it=None, tau0=None):
-        self.Eline.set_data((np.arange(0,it+1), E[0:it+1]))
-        self.ax_Eline.set_xlim(0, it)
-        self.ax_Eline.set_ylim(np.min(E[0:it+1]), np.max(E[0:it+1]))
-        if tau0>0:
-            self.ax_Eline.axvline(tau0, color='black')
+    def set_Eline(self, E=None, title="", computed_steps=None):
+        self.Eline.set_data((np.arange(0, computed_steps), E[0:computed_steps]))
+        self.ax_Eline.set_xlim(0, computed_steps)
+        self.ax_Eline.set_ylim(np.min(E[0:computed_steps]), np.max(E[0:computed_steps]))
         self.ax_Eline.set_title(title)
 
-    def set_SAlines(self, domtime=None, SAlist=None, title="", it=None, tau0=None, x2=None, t0=None):
-        self.SAlines[0].set_data((domtime[1:it+1], SAlist[0][1:it+1]))
-        self.SAlines[1].set_data((domtime[1:it+1], SAlist[1][1:it+1]))
-        self.SAlines[2].set_data((domtime[1:it+1], SAlist[2][1:it+1]))
+    def set_SAlines(self, domtime=None, SAlist=None, title="", computed_steps=None, x2=None, t0=None):
+        self.SAlines[0].set_data((domtime[1:computed_steps], SAlist[0][1:computed_steps]))
+        self.SAlines[1].set_data((domtime[1:computed_steps], SAlist[1][1:computed_steps]))
+        self.SAlines[2].set_data((domtime[1:computed_steps], SAlist[2][1:computed_steps]))
         self.ax_SAlines.set_xlim(0, x2)
-        self.ax_SAlines.set_ylim(np.min(np.min(SAlist)), np.max(np.max(SAlist)))
-        if tau0>0:
+        self.ax_SAlines.set_ylim(0, 1)
+        if t0>0:
             self.ax_SAlines.axvline(t0**(1/3), color='black')
 
         #self.ax_SAlines.relim()
         #self.ax_SAlines.autoscale()
         self.ax_SAlines.set_title(title)
 
-    def set_E2line(self, E2=None, title="", it=None, tau0=None, ntmax=None):
-        self.E2line.set_data((np.arange(0,it+1), E2[0:it+1]))
+    def set_E2line(self, E2=None, title="", computed_steps=None, ntmax=None):
+        self.E2line.set_data((np.arange(0,computed_steps), E2[0:computed_steps]))
         self.ax_E2line.set_xlim(0, ntmax)
-        self.ax_E2line.set_ylim(np.min(E2[0:it+1]), 1.25*np.max(E2[0:it+1]))
-
+        self.ax_E2line.set_ylim(np.min(E2[0:computed_steps]), 1.25*np.max(E2[0:computed_steps]))
         # self.ax_E2line.relim()
         # self.ax_E2line.autoscale()
-        if tau0>0:
-            self.ax_E2line.axvline(tau0, color='black')
         self.ax_E2line.set_title(title)
 
     def set_Uhist(self, U=None, title=""):
@@ -78,6 +73,7 @@ class PlotView:
         counts, _ = np.histogram(Ureal, self.bins)
         for count, rect in zip(counts, self.Uhist.patches):
             rect.set_height(count / (self.N**2))
+        # TODO: xscale to xmin,xmax of U
         #self.ax_Uhist.set_xlim(0.5, 1)
         self.ax_Uhist.set_ylim(0, np.max(counts)/(self.N**2))
         self.ax_Uhist.set_title(title)
