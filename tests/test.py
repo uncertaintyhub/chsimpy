@@ -75,11 +75,9 @@ class TestDumpParameters(unittest.TestCase):
             os.remove(fname)
         p1 = chsimpy.parameters.Parameters()
         p1.N = 512
-        p1.update()
         chsimpy.utils.yaml_dump(p1, fname)
         p2 = chsimpy.utils.yaml_load(fname)
         p1.N = 256
-        p1.update()
         self.assertTrue(p1 != p2 and p2.N==512 and p1.N==256)
 
 

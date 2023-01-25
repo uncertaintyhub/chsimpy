@@ -35,44 +35,6 @@ class Parameters:
         self.use_lcg = False # LCG random numbers
         self.render_target = 'gui' # e.g. image file diagrams are rendered to
         self.dump_id = 'auto' # id for filenames (solution, parameters)
-        self.update() # calculate remaining (scalar) parameters
-
-    # TODO: be self-aware of changes and update by itself then
-    def update(self):
-        # shortcuts
-        N = self.N
-        Vm = self.Vm
-        Vmm = self.Vmm
-        N_A = self.N_A
-        # self.Amolecule = (Vmm / N_A) ** (2 / 3) # TODO: required?
-        # FIXME: validate by sources
-        # self.Am = (Vmm / N_A) ** (2 / 3) * N_A # ** (1/3) ? #1 see #2 below
-        # vs.
-        # # we compute the molar area (cf. molar volume above (line 72))
-        self.Am = (25.13 * 1e6 / N_A) ** (2 / 3) * N_A ** (1 / 3)
-
-        # TODO: required?
-        # self.Nmix3d = 1 / Vmm * N_A
-        # TODO: required? only used for M, see below commented M = ...
-        # self.Nmix = 1 / ( (Vmm/self.N_A)**(2/3) ) # #2 differs from original, as Am in Preprint...m is different from ch_DCT...m
-
-        self.eps2 = self.kappa ** 2
-
-        self.D = -3.474 * 1e-4 * np.exp(-272.4 / (self.R * self.temp)) * 1e12
-
-        # M = (D * Nmix) / (EnergiePP(XXX,temp)) # TODO: used?
-        self.M = self.D / (self.XXX + self.XXX/((1-self.XXX)**2) - 2.0*utils.A0(self.temp) - 6.0*utils.A1(self.temp) * (1-2.0*self.XXX))
-
-        # discretizations
-        self.delx = self.L / (N - 1)
-        self.delx2 = self.delx ** 2
-
-
-        # time marching update parameters
-        self.lam1 = self.delt / self.delx2
-        self.lam2 = self.lam1 / self.delx2
-        # matrix of eigenvalues of the DCT
-        # lambda_{k_1,k_2} = 2*(cos(k_1 * pi / N) - 1) + 2*(cos(k_2 * pi / N) - 1)
 
     @classmethod
     def to_yaml(cls, representer, node):

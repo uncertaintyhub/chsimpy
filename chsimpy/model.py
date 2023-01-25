@@ -240,7 +240,7 @@ class Model:
         # x = np.transpose(np.arange(0, params.L+params.delx, params.delx))
 
         self.params = params
-        self.solution = Solution(params) # includes simple init of solution variables
+        self.solution = None
 
 
     # full run
@@ -250,6 +250,7 @@ class Model:
         if nsteps > self.params.ntmax:
             nsteps = self.params.ntmax
 
+        self.solution = Solution(self.params) # initializes solution object
         N = self.params.N
 
         if self.params.use_lcg:
@@ -263,11 +264,11 @@ class Model:
 
         RT  = self.params.R * self.params.temp
         BRT = self.params.B * self.params.R * self.params.temp
-        Amr = 1 / self.params.Am
+        Amr = 1 / self.solution.Am
         A0t = utils.A0(self.params.temp)
         A1t = utils.A1(self.params.temp)
 
-        time_fac = (1 / (self.params.M * self.params.kappa)) * self.params.delt
+        time_fac = (1 / (self.solution.M * self.params.kappa)) * self.params.delt
         # compute_run
         [self.solution.U ,
          self.solution.E ,
@@ -283,13 +284,13 @@ class Model:
          self.solution.t0
          ] = compute_run(nsteps    = nsteps,
                          U         = self.solution.U,
-                         delx      = self.params.delx,
+                         delx      = self.solution.delx,
                          N         = self.params.N,
                          A0t       = A0t,
                          A1t       = A1t,
                          Amr       = Amr,
                          B         = self.params.B,
-                         eps2      = self.params.eps2,
+                         eps2      = self.solution.eps2,
                          RT        = RT,
                          BRT       = BRT,
                          Seig      = self.solution.Seig,

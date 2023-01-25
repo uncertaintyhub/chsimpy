@@ -1,3 +1,4 @@
+# TODO: provide a __main__.py for chsimpy (https://docs.python.org/3/library/__main__.html)
 # invoke: python main.py
 import argparse
 import importlib
@@ -26,6 +27,6 @@ if __name__ == '__main__':
     parser = chsimpy.cli.Parser('chsimpy')
     params = parser.get_parameters()
     controller = chsimpy.controller.Controller(params)
-    controller.run(params.ntmax)
+    controller.run()
     controller.render()
     parser.parser.exit('Finished')

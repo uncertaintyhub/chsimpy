@@ -64,7 +64,6 @@ class Parser:
         params.N = self.args.N
         params.dump_id = self.args.dump_id
         params.use_lcg = self.args.lcg
-        params.update()
         return params
 
 #parser.exit(1, message='The target directory doesn't exist')

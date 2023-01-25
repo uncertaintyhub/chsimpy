@@ -33,7 +33,6 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         params.seed = 2023
         params.render_target = 'none'
         params.use_lcg = True # to be comparable with matlab
-        params.update()
         controller = chsimpy.controller.Controller(params)
 
         controller.run()

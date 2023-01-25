@@ -83,7 +83,6 @@ def cli_parse(progname='benchmark'):
             params.ntmax = 2
         params.N = args.N
         params.use_lcg = args.lcg
-        params.update()
 
         bmark_params = BenchmarkParams()
         bmark_params.skip_test = args.skip_test
