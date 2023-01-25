@@ -27,9 +27,8 @@ class Solution:
         self.SA   = None
         self.SA2  = None
         self.L2   = None
-        self.Meen = None
-        self.domtime = None
         self.PS   = None
+        self.domtime = None
 
         # self.Amolecule = (Vmm / N_A) ** (2 / 3) # TODO: required?
         # FIXME: validate by sources
@@ -98,9 +97,7 @@ class Solution:
         del state['Ra']
         del state['SA']
         del state['SA2']
-        del state['SA3']
         del state['L2']
-        del state['Meen']
         del state['domtime']
         del state['PS']
         del state['Leig']
