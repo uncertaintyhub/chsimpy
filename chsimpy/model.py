@@ -25,9 +25,9 @@ def compute_init(U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None
     # E_fun + Energie
     E = np.mean(
         # Energie
-        Amr * RT * (
+        Amr * np.real( RT * (
             U*(np.log(U) - B) + Uinv*np.log(Uinv)
-        ) + (A0t + A1t*(Uinv - U)) * U * Uinv) + E2
+        ) + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2
 
     Um = U - np.mean(U)
     PS = np.sum(np.abs(Um)) / (N ** 2)
@@ -40,7 +40,21 @@ def compute_init(U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None
 
 
 #@nb.njit
-def compute_run(nsteps=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, eps2=None, RT=None, BRT=None, Seig=None, CHeig=None, time_fac=None, threshold=None):
+def compute_run(nsteps    = None,
+                U         = None,
+                delx      = None,
+                N         = None,
+                A0t       = None,
+                A1t       = None,
+                Amr       = None,
+                B         = None,
+                eps2      = None,
+                RT        = None,
+                BRT       = None,
+                Seig      = None,
+                CHeig     = None,
+                time_fac  = None,
+                threshold = None):
 
     # TODO: AoS?
     E       = np.zeros(nsteps)
@@ -65,9 +79,9 @@ def compute_run(nsteps=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=
     # E_fun + Energie
     E[0] = np.mean(
         # Energie
-        Amr * RT * (
-            U*(np.log(U) - B) + Uinv*np.log(Uinv)
-        ) + (A0t + A1t*(Uinv - U)) * U * Uinv) + E2[0]
+        Amr * np.real(
+            RT * (U*(np.log(U) - B) + Uinv*np.log(Uinv))
+            + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2[0]
 
     Um = U - np.mean(U)
     PS[0] = np.sum(np.abs(Um)) / (N ** 2)
@@ -78,7 +92,10 @@ def compute_run(nsteps=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=
         U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
 
     with nb.objmode(hat_U='float64[:,:]'):
-        hat_U = scifft.dctn(U)
+        hat_U = scifft.dctn(U, norm='ortho')
+
+    tau0 = 0
+    t0 = 0
 
     # sim loop
     for it in range(1,nsteps):
@@ -88,7 +105,7 @@ def compute_run(nsteps=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=
         # compute the shifted nonlinear term
         # (no convexity splitting!)
         # EnergieP
-        EnergieEut = Amr * (
+        EnergieEut = Amr * np.real(
             RT * np.log(U1Uinv)
             - BRT + (A0t + A1t*U2inv)*U2inv
             - 2 * A1t * U * Uinv)
@@ -107,16 +124,16 @@ def compute_run(nsteps=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=
         with nb.objmode(DUx='float64[:,:]',DUy='float64[:,:]'):
             DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
 
-        Du2 = DUx ** 2 + DUy ** 2
-        Uinv = 1-U
+        Du2    = DUx ** 2 + DUy ** 2
+        Uinv   = 1-U
         E2[it] = 0.5 * eps2 * np.mean(Du2)
-        E[it] = np.mean(
+        E[it]  = np.mean(
             # Energie
-            Amr * RT * (
-                U*(np.log(U) - B) + Uinv*np.log(Uinv)
-            ) + (A0t + A1t*(Uinv - U)) * U * Uinv) + E2[it]
+            Amr * np.real(
+                RT * (U*(np.log(U) - B) + Uinv*np.log(Uinv))
+                + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2[it]
 
-        Um = U - np.mean(U)
+        Um     = U - np.mean(U)
         PS[it] = np.sum(np.abs(Um)) / (N ** 2)
         # FIXME: L2[it-1] to L2[it]?
         L2[it] = 1 / (N ** 2) * np.sum(Um ** 2)
@@ -124,14 +141,22 @@ def compute_run(nsteps=None, U=None, delx=None, N=None, A0t=None, A1t=None, Amr=
             U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
 
         # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
-        SA[it] = np.sum(U < threshold) / (N ** 2)
+        SA[it]  = np.sum(U < threshold) / (N ** 2)
         # Silikat-reichen Phase
         SA2[it] = np.sum(U > threshold) / (N ** 2) #TODO: 1-SA, floats
         SA3[it] = SA[it] + SA2[it] #TODO: 0?
         domtime[it] = time_fac * it ** (1 / 3)
 
+        if (E2[it] < E2[it-1]
+            and E2[it] > E2[0]
+            and tau0 == 0
+            ):
+            tau0 = it
+            t0 = time_fac * it
+            return False
 
-    return [U, E, PS, E2, L2, Ra, SA, SA2, SA3, domtime]
+
+    return [U, E, PS, E2, L2, Ra, SA, SA2, SA3, domtime, tau0, t0]
 
 
 class Model:
@@ -216,7 +241,6 @@ class Model:
 
         self.params = params
         self.solution = Solution(params) # includes simple init of solution variables
-        self.reset()
 
 
     def reset(self):
@@ -236,7 +260,12 @@ class Model:
 
         DUx,DUy = mport.gradient(self.solution.U, self.params.delx)
         psol = self.solution
-        [psol.E[psol.it], psol.PS[psol.it], psol.E2[psol.it], psol.L2[psol.it], psol.Ra[psol.it]] = compute_init(
+        [psol.E [0],
+         psol.PS[0],
+         psol.E2[0],
+         psol.L2[0],
+         psol.Ra[0]
+         ] = compute_init(
             U=self.solution.U,
             delx=self.params.delx,
             N=N,
@@ -259,13 +288,32 @@ class Model:
         self.solution.it = 0
         self.solution.t = 0
 
+    # full run
     def run(self, nsteps=None):
         if nsteps < 1:
             nsteps = self.params.ntmax
         if nsteps > self.params.ntmax:
             nsteps = self.params.ntmax
 
+        N = self.params.N
+
+        if self.params.use_lcg:
+            self.solution.U = self.params.XXX * np.ones((N,N)) + (
+                0.01 * mport.matlab_lcg_sample(N, N, self.params.seed))
+        else:
+            # https://builtin.com/data-science/numpy-random-seed
+            rng = np.random.default_rng(self.params.seed)
+            self.solution.U = self.params.XXX * np.ones((N,N)) + (
+                0.01 * (rng.random((N,N)) - 0.5))
+
+        RT  = self.params.R * self.params.temp
+        BRT = self.params.B * self.params.R * self.params.temp
+        Amr = 1 / self.params.Am
+        A0t = utils.A0(self.params.temp)
+        A1t = utils.A1(self.params.temp)
+
         time_fac = (1 / (self.params.M * self.params.kappa)) * self.params.delt
+        # compute_run
         [self.solution.U ,
          self.solution.E ,
          self.solution.PS,
@@ -275,23 +323,27 @@ class Model:
          self.solution.SA,
          self.solution.SA2,
          self.solution.SA3,
-         self.solution.domtime
-         ] = compute_run(nsteps,
-                         U=self.solution.U,
-                         delx=self.params.delx,
-                         N=self.params.N,
-                         A0t=self.A0t,
-                         A1t=self.A1t,
-                         Amr=self.Amr,
-                         B=self.params.B,
-                         eps2=self.params.eps2,
-                         RT=self.RT,
-                         BRT=self.BRT,
-                         Seig=self.solution.Seig,
-                         CHeig=self.solution.CHeig,
-                         time_fac=time_fac,
-                         threshold=self.params.threshold)
+         self.solution.domtime,
+         self.solution.tau0,
+         self.solution.t0
+         ] = compute_run(nsteps    = nsteps,
+                         U         = self.solution.U,
+                         delx      = self.params.delx,
+                         N         = self.params.N,
+                         A0t       = A0t,
+                         A1t       = A1t,
+                         Amr       = Amr,
+                         B         = self.params.B,
+                         eps2      = self.params.eps2,
+                         RT        = RT,
+                         BRT       = BRT,
+                         Seig      = self.solution.Seig,
+                         CHeig     = self.solution.CHeig,
+                         time_fac  = time_fac,
+                         threshold = self.params.threshold
+                         )
 
+    # advance single simulation step
     def advance(self): #, it, type_update, visual_update):
         psol     = self.solution # points to self.solution, self.solution must not change
         pparams  = self.params # ...

@@ -32,29 +32,30 @@ class Controller:
         model = self.model
         params = self.params
         solution = self.solution
+        it = params.ntmax-1
 
         view.set_Umap(U = solution.U,
-                      title = 'rescaled time ' + str(round(solution.restime / 60,4)) + ' min; it = ' + str(solution.it))
+                      title = 'rescaled time ' + str(round(solution.restime / 60,4)) + ' min; it = ' + str(it))
 
         view.set_Uline(U = solution.U,
-                       title = 'U(N/2,:), it = ' + str(solution.it))
+                       title = 'U(N/2,:), it = ' + str(it))
 
         view.set_Eline(E = solution.E,
                        title = 'Total Energy',
-                       it = solution.it,
+                       it = it,
                        tau0 = solution.tau0)
 
         view.set_SAlines(domtime = solution.domtime,
                          SAlist = [solution.SA, solution.SA2, solution.SA3],
                          title = 'Area of high silica',
-                         it = solution.it,
+                         it = it,
                          tau0 = solution.tau0,
                          x2 = (1/(params.M * params.kappa) * params.ntmax * params.delt)**(1/3), # = x2 of x axis
                          t0 = solution.t0)
 
         view.set_E2line(E2 = solution.E2,
                         title = "Surf.Energy | Separation t0 = " + str(round(solution.t0,4)) + "s",
-                        it = solution.it,
+                        it = it,
                         tau0 = solution.tau0,
                         ntmax = params.ntmax)
 
