@@ -109,8 +109,8 @@ def validation_test():
     params.use_lcg = True # to be comparable with matlab
     controller = chsimpy.controller.Controller(params)
     dump_id = controller.get_current_id_for_dump()
-    controller.run()
-    U_python = controller.model.solution.U
+    solution = controller.run()
+    U_python = solution.U
     #chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')
     U_matlab = chsimpy.utils.csv_load_matrix('../validation/U-matlab-lcg-N512n100.csv')
     valid = np.allclose(U_matlab, U_python)

@@ -41,7 +41,6 @@ def compute_run(nsteps    = None,
     Ra      = np.zeros(nsteps)
     SA      = np.zeros(nsteps)
     SA2     = np.zeros(nsteps)
-    SA3     = np.zeros(nsteps)
     L2      = np.zeros(nsteps)
     Meen    = np.zeros(nsteps)
     domtime = np.zeros(nsteps)
@@ -123,8 +122,7 @@ def compute_run(nsteps    = None,
         # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
         SA[it]  = np.sum(U < threshold) / (N ** 2)
         # Silikat-reichen Phase
-        SA2[it] = np.sum(U > threshold) / (N ** 2) #TODO: 1-SA, floats
-        SA3[it] = SA[it] + SA2[it] #TODO: 0?
+        SA2[it] = 1-SA[it]
         domtime[it] = (time_fac * it) ** (1 / 3)
 
         if (E2[it] < E2[it-1]
@@ -135,7 +133,7 @@ def compute_run(nsteps    = None,
             t0 = time_fac * it
             break
 
-    return (U, E, PS, E2, L2, Ra, SA, SA2, SA3, domtime, tau0, t0)
+    return (U, E, PS, E2, L2, Ra, SA, SA2, domtime, tau0, t0)
 
 
 class Model:
@@ -191,35 +189,7 @@ class Model:
         # B       -> chemical tuning parameter for the Gibbs free energy
         #            (see also Charles (1967)).
 
-        # Video   -> = 0,1 (video recording 0 = no, 1 = yes)
-# U,E,E2,t0
-        # set defaults
-        #! format('long')
-
-        # For the Gibbs free energy we use a Flory-Huggins form with Redlich-Kister
-        # interactin model. The implementation uses ...
-
-        #Set up for VideoWriter # TODO:
-        # if Video == 1:
-        #     writer = VideoWriter('cahn-hilliard_fhrk2L256_2.avi')
-        #     open_(writer)
-
-        # TODO:
-        # h1 = plt.figure(1)
-        # subplot(2,3,1)
-        # image(U,'CDataMapping','scaled')
-        # caxis(np.array([0,1]))
-        # set(h1,'Position',np.array([1,1,1224,768]))
-
-        # frame = getframe(1)
-        # if Video == 1: #TODO:
-        #     writeVideo(writer,frame)
-
-        # TODO: required? if so, check port from matlab (0:delx:L)'
-        # x = np.transpose(np.arange(0, params.L+params.delx, params.delx))
-
         self.params = params
-        self.solution = None
 
 
     # full run
@@ -229,56 +199,55 @@ class Model:
         if nsteps > self.params.ntmax:
             nsteps = self.params.ntmax
 
-        self.solution = Solution(self.params) # initializes solution object
+        solution = Solution(self.params) # initializes solution object
         N = self.params.N
 
         if self.params.use_lcg:
-            self.solution.U = self.params.XXX * np.ones((N,N)) + (
+            solution.U = self.params.XXX * np.ones((N,N)) + (
                 0.01 * mport.matlab_lcg_sample(N, N, self.params.seed))
         else:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.default_rng(self.params.seed)
-            self.solution.U = self.params.XXX * np.ones((N,N)) + (
+            solution.U = self.params.XXX * np.ones((N,N)) + (
                 0.01 * (rng.random((N,N)) - 0.5))
 
         RT  = self.params.R * self.params.temp
         BRT = self.params.B * self.params.R * self.params.temp
-        Amr = 1 / self.solution.Am
+        Amr = 1 / solution.Am
         A0t = utils.A0(self.params.temp)
         A1t = utils.A1(self.params.temp)
 
-        time_fac = (1 / (self.solution.M * self.params.kappa)) * self.params.delt
+        time_fac = (1 / (solution.M * self.params.kappa)) * self.params.delt
         # compute_run
-        [self.solution.U ,
-         self.solution.E ,
-         self.solution.PS,
-         self.solution.E2,
-         self.solution.L2,
-         self.solution.Ra,
-         self.solution.SA,
-         self.solution.SA2,
-         self.solution.SA3,
-         self.solution.domtime,
-         self.solution.tau0,
-         self.solution.t0
+        [solution.U ,
+         solution.E ,
+         solution.PS,
+         solution.E2,
+         solution.L2,
+         solution.Ra,
+         solution.SA,
+         solution.SA2,
+         solution.domtime,
+         solution.tau0,
+         solution.t0
          ] = compute_run(nsteps    = nsteps,
-                         U         = self.solution.U,
-                         delx      = self.solution.delx,
+                         U         = solution.U,
+                         delx      = solution.delx,
                          N         = self.params.N,
                          A0t       = A0t,
                          A1t       = A1t,
                          Amr       = Amr,
                          B         = self.params.B,
-                         eps2      = self.solution.eps2,
+                         eps2      = solution.eps2,
                          RT        = RT,
                          BRT       = BRT,
-                         Seig      = self.solution.Seig,
-                         CHeig     = self.solution.CHeig,
+                         Seig      = solution.Seig,
+                         CHeig     = solution.CHeig,
                          time_fac  = time_fac,
                          threshold = self.params.threshold
                          )
         # return actual number of iterations computed
-        computed_steps = nsteps
-        if self.solution.tau0>0:
-            computed_steps = self.solution.tau0+1 # tau0 is variable it in for-loop
-        return computed_steps
+        solution.computed_steps = nsteps
+        if solution.tau0>0:
+            solution.computed_steps = solution.tau0+1 # tau0 is variable it in for-loop
+        return solution

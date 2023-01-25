@@ -26,7 +26,6 @@ class Solution:
         self.Ra   = None
         self.SA   = None
         self.SA2  = None
-        self.SA3  = None
         self.L2   = None
         self.Meen = None
         self.domtime = None
@@ -67,6 +66,7 @@ class Solution:
         self.t0 = 0
         self.it = 0
         self.t = 0
+        self.computed_steps = 0
 
     @classmethod
     def to_yaml(cls, representer, node):

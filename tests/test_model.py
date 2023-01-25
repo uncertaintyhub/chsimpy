@@ -35,11 +35,11 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         params.use_lcg = True # to be comparable with matlab
         controller = chsimpy.controller.Controller(params)
 
-        controller.run()
+        solution = controller.run()
         #dump_id = controller.get_current_id_for_dump()
         #fname_sol,_ = controller.dump(dump_id)
         #U_python = utils.csv_load_matrix(fname_sol+'.U.csv')
-        U_python = controller.model.solution.U
+        U_python = solution.U
         #chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')
         U_matlab = chsimpy.utils.csv_load_matrix('../validation/U-matlab-lcg-N512n100.csv')
         valid = np.allclose(U_matlab, U_python)
