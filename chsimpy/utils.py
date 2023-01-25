@@ -73,13 +73,9 @@ def validate_solution_files(file_new = None, file_truth = None):
     delta = ''.join(x[2:] for x in diff if x.startswith('- '))
 
     if not delta:
-        return true # files are the same
-
-    # otherwise we must check float values
-    # load solution objects
-    solnew = yaml_load(file_new)
-    soltruth = yaml_load(file_truth)
-    return np.allclose(solnew.U, soltruth.U)
+        return True # files are the same
+    else:
+        return False
 
 def get_current_localtime():
     return time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime())
