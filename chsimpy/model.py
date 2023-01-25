@@ -243,4 +243,8 @@ class Model:
         solution.computed_steps = nsteps
         if solution.tau0>0:
             solution.computed_steps = solution.tau0+1 # tau0 is variable it in for-loop
+        else:
+            solution.tau0 = nsteps-1
+            solution.t0 = time_fac * (nsteps-1)
+
         return solution
