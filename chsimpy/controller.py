@@ -49,7 +49,7 @@ class Controller:
                        computed_steps = solution.computed_steps)
 
         view.set_SAlines(domtime = solution.domtime,
-                         SAlist = [solution.SA, solution.SA2, solution.SA3],
+                         SA = solution.SA,
                          title = 'Area of high silica',
                          computed_steps = solution.computed_steps,
                          x2 = (1/(solution.M * params.kappa) * params.ntmax * params.delt)**(1/3), # = x2 of x axis

@@ -23,7 +23,6 @@ class PlotView:
         self.Eline, = self.ax_Eline.plot([], [])
         self.SAlines = [
             self.ax_SAlines.plot([], [])[0],
-            self.ax_SAlines.plot([], [])[0],
             self.ax_SAlines.plot([], [])[0]
         ]
         self.E2line, = self.ax_E2line.plot([], [])
@@ -46,10 +45,9 @@ class PlotView:
         self.ax_Eline.set_ylim(np.min(E[0:computed_steps]), np.max(E[0:computed_steps]))
         self.ax_Eline.set_title(title)
 
-    def set_SAlines(self, domtime=None, SAlist=None, title="", computed_steps=None, x2=None, t0=None):
-        self.SAlines[0].set_data((domtime[1:computed_steps], SAlist[0][1:computed_steps]))
-        self.SAlines[1].set_data((domtime[1:computed_steps], SAlist[1][1:computed_steps]))
-        self.SAlines[2].set_data((domtime[1:computed_steps], SAlist[2][1:computed_steps]))
+    def set_SAlines(self, domtime=None, SA=None, title="", computed_steps=None, x2=None, t0=None):
+        self.SAlines[0].set_data((domtime[1:computed_steps], SA[1:computed_steps]))
+        self.SAlines[1].set_data((domtime[1:computed_steps], 1-SA[1:computed_steps]))
         self.ax_SAlines.set_xlim(0, x2)
         self.ax_SAlines.set_ylim(0, 1)
         if t0>0:
