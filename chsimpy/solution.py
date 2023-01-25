@@ -9,6 +9,45 @@ yaml = ruamel.yaml.YAML(typ='safe')
 yaml.width = 1000
 yaml.explicit_start = True
 yaml.default_flow_style=False
+
+class TimeData:
+    def __init__(self, nsteps = None):
+        self._data = np.zeros((nsteps, 7))
+
+    def insert(self, it = None,
+               E       = None,
+               E2      = None,
+               SA      = None,
+               domtime = None,
+               Ra      = None,
+               L2      = None,
+               PS      = None):
+        self._data[it,] = (E, E2, SA, domtime, Ra, L2, PS)
+
+    def data(self):
+        return self._data
+
+    @property
+    def E(self):
+        return self._data[:,0]
+
+    @property
+    def E2(self):
+        return self._data[:,1]
+
+    @property
+    def SA(self):
+        return self._data[:,2]
+
+    @property
+    def domtime(self):
+        return self._data[:,3]
+
+    def energy_falls(self, it = None):
+        return (self.E2[it] < self.E2[it-1]
+                and self.E2[it] > self.E2[0])
+
+
 @yaml.register_class
 class Solution:
 
@@ -18,17 +57,9 @@ class Solution:
         ntmax = self.params.ntmax
         N = self.params.N
 
-        self.U    = None
-        self.hat_U= None
-        #TODO: remove
-        self.E    = None
-        self.E2   = None
-        self.Ra   = None
-        self.SA   = None
-        self.SA2  = None
-        self.L2   = None
-        self.PS   = None
-        self.domtime = None
+        self.U     = None
+        self.hat_U = None
+        self.data  = None
 
         # self.Amolecule = (Vmm / N_A) ** (2 / 3) # TODO: required?
         # FIXME: validate by sources
@@ -67,6 +98,22 @@ class Solution:
         self.t = 0
         self.computed_steps = 0
 
+    @property
+    def E(self):
+        return self.data.E
+
+    @property
+    def E2(self):
+        return self.data.E2
+
+    @property
+    def SA(self):
+        return self.data.SA
+
+    @property
+    def domtime(self):
+        return self.data.domtime
+
     @classmethod
     def to_yaml(cls, representer, node):
         tag = getattr(cls, 'yaml_tag', '!' + cls.__name__)
@@ -81,6 +128,8 @@ class Solution:
                 v = float(v)
             if type(v)==np.ndarray:
                 continue
+            if type(v)==TimeData:
+                continue
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 
@@ -92,18 +141,10 @@ class Solution:
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['U']
-        del state['E']
-        del state['E2']
-        del state['Ra']
-        del state['SA']
-        del state['SA2']
-        del state['L2']
-        del state['domtime']
-        del state['PS']
+        del state['data']
         del state['Leig']
         del state['CHeig']
         del state['Seig']
-        del state['hat_U']
         return state
 
     def __eq__(self, other):

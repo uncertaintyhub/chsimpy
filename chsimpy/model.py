@@ -8,7 +8,7 @@ import numpy as np
 import scipy.fftpack as scifft
 import numba as nb
 
-from .solution import Solution
+from .solution import Solution, TimeData
 from . import mport
 from . import utils
 
@@ -16,7 +16,6 @@ from . import utils
 # find t where gradient decreases significantly, only compute until this
 # sim-model-parameters regimes, automatize computations into batches for HPC
 # real simtime no more relevant, since correct material parameters are not completely known
-
 
 #@nb.njit
 def compute_run(nsteps    = None,
@@ -35,38 +34,27 @@ def compute_run(nsteps    = None,
                 time_fac  = None,
                 threshold = None):
 
-    # TODO: AoS?
-    E       = np.zeros(nsteps)
-    E2      = np.zeros(nsteps)
-    Ra      = np.zeros(nsteps)
-    SA      = np.zeros(nsteps)
-    SA2     = np.zeros(nsteps)
-    L2      = np.zeros(nsteps)
-    Meen    = np.zeros(nsteps)
-    domtime = np.zeros(nsteps)
-    PS      = np.zeros(nsteps)
-
     # init
     with nb.objmode(DUx='float64[:,:]',DUy='float64[:,:]'):
         DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
     Du2 = DUx ** 2 + DUy ** 2
 
     Uinv = 1-U
-    E2[0] = 0.5 * eps2 * np.mean(Du2)
+    E2 = 0.5 * eps2 * np.mean(Du2)
     # Compute energy etc....
     # E_fun + Energie
-    E[0] = np.mean(
+    E = np.mean(
         # Energie
         Amr * np.real(
             RT * (U*(np.log(U) - B) + Uinv*np.log(Uinv))
-            + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2[0]
+            + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2
 
     Um = U - np.mean(U)
-    PS[0] = np.sum(np.abs(Um)) / (N ** 2)
+    PS = np.sum(np.abs(Um)) / (N ** 2)
     # E2_fun
     # FIXME: L2[it-1] to L2[it]?
-    L2[0] = 1 / (N ** 2) * np.sum(Um ** 2)
-    Ra[0] = np.mean(np.abs(
+    L2 = 1 / (N ** 2) * np.sum(Um ** 2)
+    Ra = np.mean(np.abs(
         U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
 
     with nb.objmode(hat_U='float64[:,:]'):
@@ -75,6 +63,16 @@ def compute_run(nsteps    = None,
     # will be re-written if for-loop breaks early
     tau0 = 0
     t0 = 0
+
+    data = TimeData(nsteps)
+    data.insert(it = 0,
+                E = E,
+                E2 = E2,
+                SA = 0,
+                domtime = 0,
+                Ra = Ra,
+                L2 = L2,
+                PS = PS)
 
     # sim loop
     for it in range(1,nsteps):
@@ -105,35 +103,39 @@ def compute_run(nsteps    = None,
 
         Du2    = DUx ** 2 + DUy ** 2
         Uinv   = 1-U
-        E2[it] = 0.5 * eps2 * np.mean(Du2)
-        E[it]  = np.mean(
+        E2 = 0.5 * eps2 * np.mean(Du2)
+        E  = np.mean(
             # Energie
             Amr * np.real(
                 RT * (U*(np.log(U) - B) + Uinv*np.log(Uinv))
-                + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2[it]
+                + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2
 
         Um     = U - np.mean(U)
-        PS[it] = np.sum(np.abs(Um)) / (N ** 2)
+        PS = np.sum(np.abs(Um)) / (N ** 2)
         # FIXME: L2[it-1] to L2[it]?
-        L2[it] = 1 / (N ** 2) * np.sum(Um ** 2)
-        Ra[it] = np.mean(np.abs(
+        L2 = 1 / (N ** 2) * np.sum(Um ** 2)
+        Ra = np.mean(np.abs(
             U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
 
         # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
-        SA[it]  = np.sum(U < threshold) / (N ** 2)
-        # Silikat-reichen Phase
-        SA2[it] = 1-SA[it]
-        domtime[it] = (time_fac * it) ** (1 / 3)
+        SA  = np.sum(U < threshold) / (N ** 2)
+        domtime = (time_fac * it) ** (1 / 3)
+        data.insert(it = it,
+                    E = E,
+                    E2 = E2,
+                    SA = SA,
+                    domtime = domtime,
+                    Ra = Ra,
+                    L2 = L2,
+                    PS = PS)
 
-        if (E2[it] < E2[it-1]
-            and E2[it] > E2[0]
-            and tau0 == 0
-            ):
+
+        if data.energy_falls(it):
             tau0 = it
             t0 = time_fac * it
             break
 
-    return (U, E, PS, E2, L2, Ra, SA, SA2, domtime, tau0, t0)
+    return (U, data, tau0, t0)
 
 
 class Model:
@@ -219,33 +221,24 @@ class Model:
 
         time_fac = (1 / (solution.M * self.params.kappa)) * self.params.delt
         # compute_run
-        [solution.U ,
-         solution.E ,
-         solution.PS,
-         solution.E2,
-         solution.L2,
-         solution.Ra,
-         solution.SA,
-         solution.SA2,
-         solution.domtime,
-         solution.tau0,
-         solution.t0
-         ] = compute_run(nsteps    = nsteps,
-                         U         = solution.U,
-                         delx      = solution.delx,
-                         N         = self.params.N,
-                         A0t       = A0t,
-                         A1t       = A1t,
-                         Amr       = Amr,
-                         B         = self.params.B,
-                         eps2      = solution.eps2,
-                         RT        = RT,
-                         BRT       = BRT,
-                         Seig      = solution.Seig,
-                         CHeig     = solution.CHeig,
-                         time_fac  = time_fac,
-                         threshold = self.params.threshold
-                         )
+        [solution.U, solution.data, solution.tau0, solution.t0] = compute_run(
+            nsteps    = nsteps,
+            U         = solution.U,
+            delx      = solution.delx,
+            N         = self.params.N,
+            A0t       = A0t,
+            A1t       = A1t,
+            Amr       = Amr,
+            B         = self.params.B,
+            eps2      = solution.eps2,
+            RT        = RT,
+            BRT       = BRT,
+            Seig      = solution.Seig,
+            CHeig     = solution.CHeig,
+            time_fac  = time_fac,
+            threshold = self.params.threshold
+        )
+
         # return actual number of iterations computed
         solution.computed_steps = nsteps
         if solution.tau0>0:
