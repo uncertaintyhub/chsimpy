@@ -1,3 +1,5 @@
-ruamel.yaml
-difflib
-numpy
+ruamel.yaml>=0.17.21
+numpy>=1.18.56.0
+llvmlite==0.39.1
+numba==0.56.4
+scipy==1.9.3
