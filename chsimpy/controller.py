@@ -80,7 +80,7 @@ class Controller:
         return [fname_sol, fname_params]
 
     def get_current_id_for_dump(self):
-        if self.params.dump_id == 'auto':
+        if self.params.dump_id == 'auto' or self.params.dump_id == None:
             return datetime.now().strftime('%d-%m-%Y-%H%M%S')
         else:
             return self.params.dump_id
