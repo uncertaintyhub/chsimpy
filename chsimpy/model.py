@@ -18,27 +18,6 @@ from . import utils
 # real simtime no more relevant, since correct material parameters are not completely known
 
 
-def compute_init(U=None, delx=None, N=None, A0t=None, A1t=None, Amr=None, B=None, eps2=None, RT=None, Du2=None):
-    Uinv = 1-U
-    E2 = 0.5 * eps2 * np.mean(Du2)
-    # Compute energy etc....
-    # E_fun + Energie
-    E = np.mean(
-        # Energie
-        Amr * np.real( RT * (
-            U*(np.log(U) - B) + Uinv*np.log(Uinv)
-        ) + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2
-
-    Um = U - np.mean(U)
-    PS = np.sum(np.abs(Um)) / (N ** 2)
-    # E2_fun
-    # FIXME: L2[it-1] to L2[it]?
-    L2 = 1 / (N ** 2) * np.sum(Um ** 2)
-    Ra = np.mean(np.abs(
-        U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
-    return [E, PS, E2, L2, Ra]
-
-
 #@nb.njit
 def compute_run(nsteps    = None,
                 U         = None,
