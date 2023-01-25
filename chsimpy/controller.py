@@ -14,7 +14,10 @@ class Controller:
             self.params = params
         self.model = model.Model(self.params)
         self.solution = None
-        self.view = viewer.PlotView(self.params.N) # TODO: if no gui wanted, dont use view
+        if 'gui' in self.params.render_target:
+            self.view = viewer.PlotView(self.params.N)
+        else:
+            self.view = None
         self.computed_steps = 0
 
     def run(self, nsteps = -1):
