@@ -86,10 +86,3 @@ class PlotView:
     def render_to(self, fname='diagrams.png'):
         plt.savefig(fname, bbox_inches='tight')
         #plt.close(self.fig)
-
-
-class AnimView(PlotView):
-
-    def anim(self, animate_callback=None, init_callback=None, frames_count=None, interval_count=0):
-        return animation.FuncAnimation(self.fig, animate_callback, init_func=init_callback, frames=frames_count,
-                                       interval=interval_count, repeat=False, blit=False, cache_frame_data=False)
