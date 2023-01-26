@@ -6,7 +6,6 @@ Model class that contains the actual simulation algorithm
 
 import numpy as np
 import scipy.fftpack as scifft
-import numba as nb
 
 from .solution import Solution, TimeData
 from . import mport
@@ -17,7 +16,7 @@ from . import utils
 # sim-model-parameters regimes, automatize computations into batches for HPC
 # real simtime no more relevant, since correct material parameters are not completely known
 
-#@nb.njit
+#@profile
 def compute_run(nsteps    = None,
                 U         = None,
                 delx      = None,
@@ -35,8 +34,7 @@ def compute_run(nsteps    = None,
                 threshold = None):
 
     # init
-    with nb.objmode(DUx='float64[:,:]',DUy='float64[:,:]'):
-        DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
+    DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
     Du2 = DUx ** 2 + DUy ** 2
 
     Uinv = 1-U
@@ -57,8 +55,7 @@ def compute_run(nsteps    = None,
     Ra = np.mean(np.abs(
         U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
 
-    with nb.objmode(hat_U='float64[:,:]'):
-        hat_U = scifft.dctn(U, norm='ortho')
+    hat_U = scifft.dctn(U, norm='ortho')
 
     # will be re-written if for-loop breaks early
     tau0 = 0
@@ -87,19 +84,16 @@ def compute_run(nsteps    = None,
             - BRT + (A0t + A1t*U2inv)*U2inv
             - 2 * A1t * U * Uinv)
         # compute the right hand side in tranform space
-        with nb.objmode(hat_rhs='float64[:,:]'):
-            hat_rhs = hat_U + Seig * scifft.dctn(EnergieEut, norm="ortho")
+        hat_rhs = hat_U + Seig * scifft.dctn(EnergieEut, norm="ortho")
 
         # compute the updated psol in tranform space
         # (see also Ghiass et al (2016),
         #  the following line should be eq. (12) in Ghiass et al (2016))
         hat_U = hat_rhs / CHeig
         # invert the cosine transform
-        with nb.objmode(U='float64[:,:]'):
-            U = scifft.idctn(hat_U, norm="ortho")
+        U = scifft.idctn(hat_U, norm="ortho")
 
-        with nb.objmode(DUx='float64[:,:]',DUy='float64[:,:]'):
-            DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
+        DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
 
         Du2    = DUx ** 2 + DUy ** 2
         Uinv   = 1-U
