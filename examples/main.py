@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 # TODO: provide a __main__.py for chsimpy (https://docs.python.org/3/library/__main__.html)
-# invoke: python main.py
 import argparse
 import importlib
 import pathlib

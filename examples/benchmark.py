@@ -1,4 +1,4 @@
-# invoke: python main.py
+#!/usr/bin/env python
 import numpy as np
 import importlib
 import pathlib
