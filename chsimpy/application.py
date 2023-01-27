@@ -1,5 +1,5 @@
 from . import controller
-from . import view
+from . import plotview
 
 class Application:
     def __init__(self):

@@ -19,7 +19,7 @@ except ImportError:
 
 #import chsimpy
 #import chsimpy.cli
-# import chsimpy.view
+# import chsimpy.plotview
 # import chsimpy.model
 import chsimpy.controller
 import chsimpy.parameters

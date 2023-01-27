@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from . import parameters
-from . import view as viewer
+from . import plotview
 from . import model
 from . import utils
 
@@ -15,7 +15,7 @@ class Controller:
         self.model = model.Model(self.params)
         self.solution = None
         if 'gui' in self.params.render_target:
-            self.view = viewer.PlotView(self.params.N)
+            self.view = plotview.PlotView(self.params.N)
         else:
             self.view = None
         self.computed_steps = 0
