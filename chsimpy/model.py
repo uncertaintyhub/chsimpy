@@ -21,8 +21,8 @@ def compute_run(nsteps    = None,
                 U         = None,
                 delx      = None,
                 N         = None,
-                A0t       = None,
-                A1t       = None,
+                A0        = None,
+                A1        = None,
                 Amr       = None,
                 B         = None,
                 eps2      = None,
@@ -45,7 +45,7 @@ def compute_run(nsteps    = None,
         # Energie
         Amr * np.real(
             RT * (U*(np.log(U) - B) + Uinv*np.log(Uinv))
-            + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2
+            + (A0 + A1*(Uinv - U)) * U * Uinv)) + E2
 
     Um = U - np.mean(U)
     PS = np.sum(np.abs(Um)) / (N ** 2)
@@ -81,8 +81,8 @@ def compute_run(nsteps    = None,
         # EnergieP
         EnergieEut = Amr * np.real(
             RT * np.log(U1Uinv)
-            - BRT + (A0t + A1t*U2inv)*U2inv
-            - 2 * A1t * U * Uinv)
+            - BRT + (A0 + A1*U2inv)*U2inv
+            - 2 * A1 * U * Uinv)
         # compute the right hand side in tranform space
         hat_rhs = hat_U + Seig * scifft.dctn(EnergieEut, norm="ortho")
 
@@ -102,7 +102,7 @@ def compute_run(nsteps    = None,
             # Energie
             Amr * np.real(
                 RT * (U*(np.log(U) - B) + Uinv*np.log(Uinv))
-                + (A0t + A1t*(Uinv - U)) * U * Uinv)) + E2
+                + (A0 + A1*(Uinv - U)) * U * Uinv)) + E2
 
         Um     = U - np.mean(U)
         PS = np.sum(np.abs(Um)) / (N ** 2)
@@ -210,8 +210,8 @@ class Model:
         RT  = self.params.R * self.params.temp
         BRT = self.params.B * self.params.R * self.params.temp
         Amr = 1 / solution.Am
-        A0t = utils.A0(self.params.temp)
-        A1t = utils.A1(self.params.temp)
+        A0 = self.params.func_A0(self.params.temp)
+        A1 = self.params.func_A1(self.params.temp)
 
         time_fac = (1 / (solution.M * self.params.kappa)) * self.params.delt
         # compute_run
@@ -220,8 +220,8 @@ class Model:
             U         = solution.U,
             delx      = solution.delx,
             N         = self.params.N,
-            A0t       = A0t,
-            A1t       = A1t,
+            A0        = A0,
+            A1        = A1,
             Amr       = Amr,
             B         = self.params.B,
             eps2      = solution.eps2,
@@ -241,4 +241,6 @@ class Model:
             solution.tau0 = nsteps-1
             solution.t0 = time_fac * (nsteps-1)
 
+        solution.A0 = A0
+        solution.A1 = A1
         return solution

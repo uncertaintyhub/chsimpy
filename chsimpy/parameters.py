@@ -35,6 +35,8 @@ class Parameters:
         self.use_lcg = False # LCG random numbers
         self.render_target = 'gui' # e.g. image file diagrams are rendered to
         self.dump_id = 'auto' # id for filenames (solution, parameters)
+        self.func_A0 = lambda T: utils.A0(T)
+        self.func_A1 = lambda T: utils.A1(T)
 
     @classmethod
     def to_yaml(cls, representer, node):
