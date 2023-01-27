@@ -29,5 +29,5 @@ if __name__ == '__main__':
     controller = chsimpy.controller.Controller(params)
     solution = controller.run()
     controller.render()
-    print(f"computed_steps = {solution.computed_steps}, t0 = {solution.t0} sec, early_break = {solution.tau0<params.ntmax}")
+    print(f"computed_steps = {solution.computed_steps}, t0 = {solution.t0} sec, early_break = {solution.tau0 < (params.ntmax-1)}")
     parser.parser.exit()
