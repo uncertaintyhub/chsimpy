@@ -1,7 +1,7 @@
 import numpy as np
 
 from matplotlib import pyplot as plt
-from matplotlib import animation
+import seaborn as sns
 
 class PlotView:
     def __init__(self, N):
@@ -26,7 +26,6 @@ class PlotView:
             self.ax_SAlines.plot([], [])[0]
         ]
         self.E2line, = self.ax_E2line.plot([], [])
-        _,_,self.Uhist = self.ax_Uhist.hist(((0, 1)), self.bins)#, density=True)
 
     def set_Umap(self, U=None, title=""):
         Ureal = np.real(U)
@@ -67,13 +66,10 @@ class PlotView:
 
     def set_Uhist(self, U=None, title=""):
         Ureal = np.real(U)
-
-        counts, _ = np.histogram(Ureal, self.bins)
-        for count, rect in zip(counts, self.Uhist.patches):
-            rect.set_height(count / (self.N**2))
-        # TODO: xscale to xmin,xmax of U
-        #self.ax_Uhist.set_xlim(0.5, 1)
-        self.ax_Uhist.set_ylim(0, np.max(counts)/(self.N**2))
+        self.ax_Uhist.cla()
+        # ravel gives 1D view on data
+        #self.ax_Uhist.hist(Ureal.ravel(), bins = self.bins, density=True)
+        sns.histplot(data=Ureal.ravel(), stat='probability', ax=self.ax_Uhist, bins=self.bins)
         self.ax_Uhist.set_title(title)
 
     def show(self):
