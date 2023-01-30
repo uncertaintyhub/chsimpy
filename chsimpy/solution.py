@@ -10,53 +10,46 @@ yaml.width = 1000
 yaml.explicit_start = True
 yaml.default_flow_style=False
 
+
 class TimeData:
-    def __init__(self, nsteps = None):
+    def __init__(self, nsteps):
         self._data = np.zeros((nsteps, 7))
 
-    def insert(self, it = None,
-               E       = None,
-               E2      = None,
-               SA      = None,
-               domtime = None,
-               Ra      = None,
-               L2      = None,
-               PS      = None):
-        self._data[it,] = (E, E2, SA, domtime, Ra, L2, PS)
+    def insert(self, it, E, E2, SA, domtime, Ra, L2, PS):
+        self._data[it, ] = (E, E2, SA, domtime, Ra, L2, PS)
 
     def data(self):
         return self._data
 
     @property
     def E(self):
-        return self._data[:,0]
+        return self._data[:, 0]
 
     @property
     def E2(self):
-        return self._data[:,1]
+        return self._data[:, 1]
 
     @property
     def SA(self):
-        return self._data[:,2]
+        return self._data[:, 2]
 
     @property
     def domtime(self):
-        return self._data[:,3]
+        return self._data[:, 3]
 
-    def energy_falls(self, it = None):
-        '''Checks if E2 curve really falls and returns True then.
+    def energy_falls(self, it=None):
+        """Checks if E2 curve really falls and returns True then.
 
         Always False if 'it<100 or sum(E2[-50:-25]) < sum(E2[-25:])'.
         Else if 'E2[it] < E2[it-1] && E2[it] > E2[0]' then it returns True.
-        '''
-        if it<100: # dont check energy during first iterations (arbitrary chosen)
+        """
+        if it < 100:  # don't check energy during first iterations (arbitrary chosen)
             return False
         s1 = np.sum(self.E2[-50:-25])
         s2 = np.sum(self.E2[-25:])
         if s1 < s2:
             return False
-        return (self.E2[it] < self.E2[it-1]
-                and self.E2[it] > self.E2[0])
+        return self.E2[it-1] > self.E2[it] > self.E2[0]
 
 
 @yaml.register_class
@@ -68,9 +61,9 @@ class Solution:
         ntmax = self.params.ntmax
         N = self.params.N
 
-        self.U     = None
+        self.U = None
         self.hat_U = None
-        self.data  = None
+        self.data = None
 
         # self.Amolecule = (Vmm / N_A) ** (2 / 3) # TODO: required?
         # FIXME: validate by sources
@@ -144,7 +137,7 @@ class Solution:
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 
-    def yaml_dump(self, fname=None):
+    def yaml_dump(self, fname):
         with open(fname, 'w') as f:
             yaml.dump(self, f)
 
@@ -163,7 +156,3 @@ class Solution:
             return self.__dict__ == other.__dict__
         else:
             return False
-
-    # def dump(self, fname="solution.yaml"):
-    #     with open(fname, 'w') as f:
-    #         yaml.dump(self, f, sort_keys=True, default_style='|', width=2147483647) # FIXME: width is ignored

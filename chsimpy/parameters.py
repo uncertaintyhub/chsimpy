@@ -7,24 +7,26 @@ from . import utils
 yaml = ruamel.yaml.YAML(typ='safe')
 yaml.width = 1000
 yaml.explicit_start = True
-yaml.default_flow_style=False
+yaml.default_flow_style = False
+
+
 @yaml.register_class
 class Parameters:
 
     def __init__(self):
-        "Simulation parameters"
+        """Initial Simulation parameters"""
         self.seed = 2023
         self.N = 512
         self.L = 2
         self.XXX = 0.875
         self.temp = 650 + 273.15
         self.N_A = 6.02214076e+23
-        self.Vm = 25.13 * 1e-06 # (micrometer^3/mol) # FIXME: validate incl Vmm
+        self.Vm = 25.13 * 1e-06  # (micrometer^3/mol) # FIXME: validate incl Vmm
         self.Vmm = 25.13 * 1e6
         self.B = 12.86
 
-        self.R = 0.0083144626181532  # Universelle Gaskonstante
-        self.N_A = 6.02214076e+23 # and with the Avocadro constant
+        self.R = 0.0083144626181532   # universal gas constant
+        self.N_A = 6.02214076e+23  # and with the Avogadro constant
 
         self.kappa = 30 / 105.1939
         self.delt = 1e-11
@@ -32,11 +34,12 @@ class Parameters:
         self.threshold = 0.9
         self.ntmax = 1000
 
-        self.use_lcg = False # LCG random numbers
-        self.render_target = 'gui' # e.g. image file diagrams are rendered to
-        self.dump_id = 'auto' # id for filenames (solution, parameters)
-        self.func_A0 = lambda T: utils.A0(T)
-        self.func_A1 = lambda T: utils.A1(T)
+        # lcg: linear-congruential generator (for portable reproducible random numbers)
+        self.use_lcg = False
+        self.render_target = 'gui'  # e.g. image file diagrams are rendered to
+        self.dump_id = 'auto'  # id for filenames (solution, parameters)
+        self.func_A0 = lambda temp: utils.A0(temp)
+        self.func_A1 = lambda temp: utils.A1(temp)
 
     @classmethod
     def to_yaml(cls, representer, node):
@@ -53,7 +56,7 @@ class Parameters:
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 
-    def yaml_dump(self, fname=None):
+    def yaml_dump(self, fname):
         with open(fname, 'w') as f:
             yaml.dump(self, f)
 

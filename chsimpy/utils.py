@@ -5,50 +5,56 @@ Helper functions
 import numpy as np
 import difflib
 import ruamel.yaml
-import csv
 import time
 
-from . import mport
 
 # Experimentelle Bestimmung der Koeffizenten einer
 # (linearen) Redlich-Kister Approximation der Interaktion
 # fuer Na2O-SiO2 (12.5 mol# Na), see Kim & Sander (1991)
-def A0(T = None):
+def A0(T):
     return 186.0575 - 0.3654 * T
 
 
-def A1(T = None):
+def A1(T):
     return 43.7207 - 0.1401 * T
 
-def eigenvalues(N = None):
-    return (2*np.cos( np.pi * (np.arange(0, N-1+1)) / (N-1) ) - 2).reshape(N,1) @ np.ones((1,N)) + np.ones((N,1)) @ ((2 * np.cos(np.pi * (np.arange(0, N-1+1)) / (N-1))) - 2).reshape(1,N)
+
+def eigenvalues(N):
+    return (2 * np.cos(np.pi * (np.arange(0, N - 1 + 1)) / (N - 1)) - 2).reshape(N, 1) @ np.ones((1, N)) \
+        + np.ones((N, 1)) @ ((2 * np.cos(np.pi * (np.arange(0, N - 1 + 1)) / (N - 1))) - 2).reshape(1, N)
+
 
 def yaml_repr_ndarray(representer, data):
-    return representer.represent_scalar(u'!ndarray', np.array2string( data, separator=',', threshold=2147483647 ), style='|')
+    return representer.represent_scalar(u'!ndarray', np.array2string(data, separator=',', threshold=2147483647),
+                                        style='|')
+
 
 def yaml_repr_npfloat64(representer, data):
     return representer.represent_scalar(u'!numpy.float64', float(data))
 
+
 def yaml_constr_ndarray(constructor, node):
     m = constructor.construct_scalar(node).replace('\n', '')
-    array = np.array( eval(m) ) # TODO: safe?
+    array = np.array(eval(m))  # TODO: safe?
     return array
+
 
 yaml = ruamel.yaml.YAML(typ='safe')
 
-def yaml_dump(instance=None, fname=None):
+
+def yaml_dump(instance, fname):
     yaml.representer.add_representer(np.ndarray, yaml_repr_ndarray)
     yaml.representer.add_representer(np.float64, yaml_repr_npfloat64)
     yaml.width = 1000
     yaml.explicit_start = True
-    yaml.default_flow_style=False
+    yaml.default_flow_style = False
     yaml.register_class(instance.__class__)
     with open(fname, 'w') as f:
         yaml.dump(instance, f)
 
 
-def yaml_load(fname=None):
-#    yaml = ruamel.yaml.YAML(typ='safe')
+def yaml_load(fname):
+    # yaml = ruamel.yaml.YAML(typ='safe')
     yaml.constructor.add_constructor(u'!ndarray', yaml_constr_ndarray)
     instance = None
     try:
@@ -58,14 +64,17 @@ def yaml_load(fname=None):
         print("Failed to yaml_load: " + str(e))
     return instance
 
-def csv_dump_matrix(V=None, fname=None):
+
+def csv_dump_matrix(V, fname):
     np.savetxt(fname, V, delimiter=",", fmt='%s')
 
-def csv_load_matrix(fname=None):
+
+def csv_load_matrix(fname):
     return np.loadtxt(fname, delimiter=",")
 
+
 # validate solution1 with solution2
-def validate_solution_files(file_new = None, file_truth = None):
+def validate_solution_files(file_new, file_truth):
     fnew = open(file_new, 'r')
     ftruth = open(file_truth, 'r')
 
@@ -73,9 +82,10 @@ def validate_solution_files(file_new = None, file_truth = None):
     delta = ''.join(x[2:] for x in diff if x.startswith('- '))
 
     if not delta:
-        return True # files are the same
+        return True  # files are the same
     else:
         return False
+
 
 def get_current_localtime():
     return time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime())

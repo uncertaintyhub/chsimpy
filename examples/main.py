@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # TODO: provide a __main__.py for chsimpy (https://docs.python.org/3/library/__main__.html)
-import argparse
-import importlib
+
 import pathlib
 import sys
 
@@ -11,9 +10,8 @@ except ImportError:
     _parentdir = pathlib.Path("./").resolve().parent
     sys.path.insert(0, str(_parentdir))
     import chsimpy
-    #sys.path.remove(str(_parentdir))
+    # sys.path.remove(str(_parentdir))
 
-#import chsimpy
 import chsimpy.cli
 # import chsimpy.plotview
 # import chsimpy.model
@@ -29,5 +27,7 @@ if __name__ == '__main__':
     controller = chsimpy.controller.Controller(params)
     solution = controller.run()
     controller.render()
-    print(f"computed_steps = {solution.computed_steps}, t0 = {solution.t0} sec, early_break = {solution.tau0 < (params.ntmax-1)}")
+    print(f"computed_steps = {solution.computed_steps}, "
+          f"t0 = {solution.t0} sec, "
+          f"early_break = {solution.tau0 < (params.ntmax-1)}")
     parser.parser.exit()

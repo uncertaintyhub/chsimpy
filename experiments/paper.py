@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
 import pandas as pd
-import importlib
 import pathlib
 import sys
 
@@ -16,7 +15,7 @@ except ImportError:
     _parentdir = pathlib.Path("./").resolve().parent
     sys.path.insert(0, str(_parentdir))
     import chsimpy
-    #sys.path.remove(str(_parentdir))
+    # sys.path.remove(str(_parentdir))
 
 import chsimpy.controller
 import chsimpy.parameters
@@ -27,7 +26,7 @@ class ExperimentParams:
     def __init__(self):
         self.skip_test = False
         self.runs = 2
-        self.jitter_Arellow  = 0.995
+        self.jitter_Arellow = 0.995
         self.jitter_Arelhigh = 1.005
         self.seed = 2023
         # for params
@@ -39,7 +38,8 @@ class ExperimentParams:
 def cli_parse(progname='experiment'):
         parser = argparse.ArgumentParser(
             prog=progname,
-            description='Benchmark of simulation of Phase Separation in Na2O-SiO2 Glasses under Uncertainty (solving the Cahn–Hilliard (CH) equation)',
+        description='Experiments of simulation of phase separation in Na2O-SiO2 glasses under uncertainty '
+                    '(solving the Cahn–Hilliard (CH) equation)',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             add_help=True,
         )
@@ -81,14 +81,13 @@ def cli_parse(progname='experiment'):
         return exp_params
 
 
-
 if __name__ == '__main__':
 
     exp_params = cli_parse()
 
     # get current time
     print(f"localtime: {chsimpy.utils.get_current_localtime()}")
-    print(str(vars(exp_params)).replace(',','\n')) # just dumping exp_params to console
+    print(str(vars(exp_params)).replace(',', '\n'))  # just dumping exp_params to console
     print()
 
     cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'seed']
@@ -104,21 +103,27 @@ if __name__ == '__main__':
         params.N = exp_params.N
         params.ntmax = exp_params.ntmax
 
-
         rng = np.random.default_rng(params.seed)
 
         # U[rel_low, rel_high) * A(temperature)
-        params.func_A0 = lambda T: chsimpy.utils.A0(T) * rng.uniform(
+        params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * rng.uniform(
             exp_params.jitter_Arellow, exp_params.jitter_Arelhigh)
 
-        params.func_A1 = lambda T: chsimpy.utils.A1(T) * rng.uniform(
+        params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * rng.uniform(
             exp_params.jitter_Arellow, exp_params.jitter_Arelhigh)
 
         # sim controller
         controller = chsimpy.controller.Controller(params)
         # solve
         solution = controller.run()
-        results[r] = (solution.A0, solution.A1, solution.tau0, solution.SA[solution.tau0], (1-solution.SA[solution.tau0]), np.argmax(solution.E2), params.seed)
+        results[r] = (solution.A0,
+                      solution.A1,
+                      solution.tau0,
+                      solution.SA[solution.tau0],
+                      (1-solution.SA[solution.tau0]),
+                      np.argmax(solution.E2),
+                      params.seed
+                      )
 
     df_results = pd.DataFrame(results, columns=cols)
     print(df_results)

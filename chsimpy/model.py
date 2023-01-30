@@ -11,30 +11,13 @@ from .solution import Solution, TimeData
 from . import mport
 from . import utils
 
-# just compute and render last frame
-# find t where gradient decreases significantly, only compute until this
-# sim-model-parameters regimes, automatize computations into batches for HPC
-# real simtime no more relevant, since correct material parameters are not completely known
 
 #@profile
-def compute_run(nsteps    = None,
-                U         = None,
-                delx      = None,
-                N         = None,
-                A0        = None,
-                A1        = None,
-                Amr       = None,
-                B         = None,
-                eps2      = None,
-                RT        = None,
-                BRT       = None,
-                Seig      = None,
-                CHeig     = None,
-                time_fac  = None,
-                threshold = None):
+def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, time_fac, threshold):
+    """Performs full simulation on U with nsteps or less if energy eventually falls"""
 
     # init
-    DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
+    DUx, DUy = np.gradient(U, delx, axis=[0, 1], edge_order=1)
     Du2 = DUx ** 2 + DUy ** 2
 
     Uinv = 1-U
@@ -50,29 +33,27 @@ def compute_run(nsteps    = None,
     Um = U - np.mean(U)
     PS = np.sum(np.abs(Um)) / (N ** 2)
     # E2_fun
-    # FIXME: L2[it-1] to L2[it]?
     L2 = 1 / (N ** 2) * np.sum(Um ** 2)
     Ra = np.mean(np.abs(
-        U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
+        U[int(N / 2)+1, :] - np.mean(U[int(N / 2)+1, :])))
 
     hat_U = scifft.dctn(U, norm='ortho')
 
     # will be re-written if for-loop breaks early
     tau0 = 0
     t0 = 0
-
     data = TimeData(nsteps)
-    data.insert(it = 0,
-                E = E,
-                E2 = E2,
-                SA = 0,
-                domtime = 0,
-                Ra = Ra,
-                L2 = L2,
-                PS = PS)
+    data.insert(it=0,
+                E=E,
+                E2=E2,
+                SA=0,
+                domtime=0,
+                Ra=Ra,
+                L2=L2,
+                PS=PS)
 
     # sim loop
-    for it in range(1,nsteps):
+    for it in range(1, nsteps):
         Uinv = 1-U
         U1Uinv = U/Uinv
         U2inv = Uinv - U
@@ -93,36 +74,33 @@ def compute_run(nsteps    = None,
         # invert the cosine transform
         U = scifft.idctn(hat_U, norm="ortho")
 
-        DUx,DUy = np.gradient(U, delx, axis=[0,1], edge_order=1)
+        DUx, DUy = np.gradient(U, delx, axis=[0, 1], edge_order=1)
 
-        Du2    = DUx ** 2 + DUy ** 2
-        Uinv   = 1-U
+        Du2 = DUx ** 2 + DUy ** 2
+        Uinv = 1-U
         E2 = 0.5 * eps2 * np.mean(Du2)
-        E  = np.mean(
+        E = np.mean(
             # Energie
             Amr * np.real(
                 RT * (U*(np.log(U) - B) + Uinv*np.log(Uinv))
                 + (A0 + A1*(Uinv - U)) * U * Uinv)) + E2
 
-        Um     = U - np.mean(U)
+        Um = U - np.mean(U)
         PS = np.sum(np.abs(Um)) / (N ** 2)
-        # FIXME: L2[it-1] to L2[it]?
         L2 = 1 / (N ** 2) * np.sum(Um ** 2)
         Ra = np.mean(np.abs(
-            U[int(N / 2)+1,:] - np.mean(U[int(N / 2)+1,:])))
+            U[int(N / 2)+1, :] - np.mean(U[int(N / 2)+1, :])))
 
-        # Minimum between the two nodes of the histogram (cf. Wheaton and Clare)
-        SA  = np.sum(U < threshold) / (N ** 2)
+        SA = np.sum(U < threshold) / (N ** 2)  # determining relative concentration of A in U by threshold
         domtime = (time_fac * it) ** (1 / 3)
-        data.insert(it = it,
-                    E = E,
-                    E2 = E2,
-                    SA = SA,
-                    domtime = domtime,
-                    Ra = Ra,
-                    L2 = L2,
-                    PS = PS)
-
+        data.insert(it=it,
+                    E=E,
+                    E2=E2,
+                    SA=SA,
+                    domtime=domtime,
+                    Ra=Ra,
+                    L2=L2,
+                    PS=PS)
 
         if data.energy_falls(it):
             tau0 = it
@@ -134,80 +112,75 @@ def compute_run(nsteps    = None,
 
 class Model:
     def __init__(self, params = None):
-        "Simulation model"
-        # *** NAME OF THIS FUNCTION? ******************************************
-        # ch_DCT_FHE71
-        # Cahn-Hilliard; Discrete Cosine Transformation; Flory-Huggins-Energy
-        # Version 71
+        """Simulation model of Cahn-Hilliard equation
 
-        # *** WHAT DOES THIS FUNCTION DO? *************************************
-        # Cahn-Hilliard integrator: Solves the Cahn-Hilliard equation
+        Cahn-Hilliard; Discrete Cosine Transformation; Flory-Huggins-Energy
 
-        #   du/dt = M * lap[ dG(u)/du - kappa * lap(u)]
+        Cahn-Hilliard integrator: Solves the Cahn-Hilliard equation
 
-        # (with natural and no-flux boundary conditions), where
+          du/dt = M * lap[ dG(u)/du - kappa * lap(u)]
 
-        #  G       = Flory-Huggins-Gibbs-Energy with Redlich-Kister interaction
-        #            model for the Na2O-SiO2  glass
+        (with natural and no-flux boundary conditions), where
 
-        #  kappa   = gradien energy parameter, surface parameter
-        #            (Attention: there are several parametrizations
-        #             for this parameter)
+         G       = Flory-Huggins-Gibbs-Energy with Redlich-Kister interaction
+                   model for the Na2O-SiO2  glass
 
-        #  M       = Mobility (given in (micrometer^2 (mol-#)^2) / (kJ * s))
-        #            (mol-#; mol fraction is obviously dimensionless)
+         kappa   = gradien energy parameter, surface parameter
+                   (Attention: there are several parametrizations
+                    for this parameter)
 
-        # To solve the Cahn-Hilliard equation a Discrete Cosine Transformation
-        # is considered which lead to an ODE for the coefficients. This ODE is
-        # solved using a semi-implicit finite difference method.
+         M       = Mobility (given in (micrometer^2 (mol-#)^2) / (kJ * s))
+                   (mol-#; mol fraction is obviously dimensionless)
 
-        # see Ghiass et al (2016). 'Numerical Simulation of Phase Separation
-        # Kinetic of Polymer Solutions Using the Spectral Discrete Cosine
-        # Transform Method', Journal of Macromolecular Science, Part B,
-        # VOL. 55, NO. 4, 411–425. (DOI: 10.1080/00222348.2016.1153403).
+        To solve the Cahn-Hilliard equation a Discrete Cosine Transformation
+        is considered which lead to an ODE for the coefficients. This ODE is
+        solved using a semi-implicit finite difference method.
 
-        # *** PARAMETRIZATION OF THIS FUNCTION? *******************************
+        see Ghiass et al (2016). 'Numerical Simulation of Phase Separation
+        Kinetic of Polymer Solutions Using the Spectral Discrete Cosine
+        Transform Method', Journal of Macromolecular Science, Part B,
+        VOL. 55, NO. 4, 411–425. (DOI: 10.1080/00222348.2016.1153403).
 
-        # Numerical Scheme
-        # N       -> resolution; default = 128
-        # delt    -> timestep: default   = 0.00005
-        # tmax    -> max # of time steps: default = 1000
-        # U       -> initial field
+        Numerical Scheme
+        N       -> domain resolution
+        delt    -> timestep delta
+        tmax    -> max # of time steps
+        U       -> initial field
 
-        # Chemico-Physical Scheme
-        # Lu      -> length of squared image window
-        #            (size of the simulated sample,
-        #            given in micrometer)
-        # temp    -> temperature (in Kelvin)
-        # kappa -> CH parameters: defalut = 0.01
-        #            Gradient-Parameter.
-        # M       -> Mobility
-        # B       -> chemical tuning parameter for the Gibbs free energy
-        #            (see also Charles (1967)).
-
+        Chemico-Physical Scheme
+        Lu      -> length of squared image window
+                   (size of the simulated sample,
+                   given in micrometer)
+        temp    -> temperature (in Kelvin)
+        kappa -> CH parameters
+                   Gradient-Parameter.
+        M       -> Mobility
+        B       -> chemical tuning parameter for the Gibbs free energy
+                   (see also Charles (1967)).
+        (original source from matlab function 'ch_DCT_FHE71')
+        """
         self.params = params
 
-
-    # full run
     def run(self, nsteps=None):
+        """Complete simulation run until Energy eventually falls"""
         if nsteps < 1:
             nsteps = self.params.ntmax
         if nsteps > self.params.ntmax:
             nsteps = self.params.ntmax
 
-        solution = Solution(self.params) # initializes solution object
+        solution = Solution(self.params)
         N = self.params.N
 
-        if self.params.use_lcg:
-            solution.U = self.params.XXX * np.ones((N,N)) + (
+        if self.params.use_lcg:  # using linear-congruential generator for portable reproducible random numbers
+            solution.U = self.params.XXX * np.ones((N, N)) + (
                 0.01 * mport.matlab_lcg_sample(N, N, self.params.seed))
         else:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.default_rng(self.params.seed)
-            solution.U = self.params.XXX * np.ones((N,N)) + (
-                0.01 * (rng.random((N,N)) - 0.5))
+            solution.U = self.params.XXX * np.ones((N, N)) + (
+                0.01 * (rng.random((N, N)) - 0.5))
 
-        RT  = self.params.R * self.params.temp
+        RT = self.params.R * self.params.temp
         BRT = self.params.B * self.params.R * self.params.temp
         Amr = 1 / solution.Am
         A0 = self.params.func_A0(self.params.temp)
@@ -235,12 +208,12 @@ class Model:
 
         # return actual number of iterations computed
         solution.computed_steps = nsteps
-        if solution.tau0>0:
-            solution.computed_steps = solution.tau0+1 # tau0 is variable it in for-loop
+        if solution.tau0 > 0:
+            solution.computed_steps = solution.tau0+1  # tau0 equals 'it' in simulation for-loop
         else:
             solution.tau0 = nsteps-1
             solution.t0 = time_fac * (nsteps-1)
-
+        # assign computed temperature lambdas to solution
         solution.A0 = A0
         solution.A1 = A1
         return solution
