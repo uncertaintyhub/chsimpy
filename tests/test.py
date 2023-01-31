@@ -16,36 +16,25 @@ except ImportError:
 from chsimpy import Parameters, Solution
 
 
-class SimpleClass:
-    def __init__(self):
-        """Simple Class"""
-        self.value = 1234
+class TestLCG(unittest.TestCase):
 
-
-class TestDumpSimple(unittest.TestCase):
-
-    def test_dump_isfile(self):
+    def test_lcg(self):
         """
-        Test if dump creates file
+        Test LCG
         """
-        fname = 'test-dump-simple-class.yaml'
-        if os.path.isfile(fname):
-            os.remove(fname)
-        s = SimpleClass()
-        chsimpy.utils.yaml_dump(s, fname)
-        self.assertTrue(os.path.isfile(fname))
-
-    def test_dump_roundtrip(self):
-        """
-        Test if yaml-roundtrip is successful
-        """
-        fname = 'test-dump-simple-class.yaml'
-        if os.path.isfile(fname):
-            os.remove(fname)
-        s1 = SimpleClass()
-        chsimpy.utils.yaml_dump(s1, fname)
-        s2 = chsimpy.utils.yaml_load(fname)
-        self.assertTrue(s1.value == s2.value)
+        lcg_matrix_raw = [
+            [0.5475444293336684, 0.29257702841077793, 0.3117376865408093,
+             0.9844947126621821],
+            [0.8031704429551821, 0.03775238992541674, 0.37862920778739695,
+             0.5387215616827465],
+            [0.7217314246677474, 0.7984879318617694, 0.8011069301520972,
+             0.8502945903922872],
+            [0.5455620291389348, 0.34767496602035824, 0.8863348965003783,
+             0.8019890788951838],
+            [0.9676096443867356, 0.12967026239711338, 0.008214473728190397,
+             0.4722352030092083]]
+        lcg_matrix = chsimpy.mport.matlab_lcg_sample(5, 4, 2023)
+        self.assertTrue(np.allclose(lcg_matrix, lcg_matrix_raw))
 
 
 class TestDumpParameters(unittest.TestCase):
@@ -93,6 +82,16 @@ class TestDumpSolution(unittest.TestCase):
         s1.yaml_dump_scalars(fname)
         s2 = chsimpy.utils.yaml_load(fname)
         self.assertTrue(s1.is_scalarwise_equal_with(s2))
+
+    def test_dump_csv_roundtrip(self):
+        """
+        Test if csv-roundtrip of matrix is successful
+        """
+        fname = 'test-dump-lcg_matrix.csv'
+        lcg_matrix_out = chsimpy.mport.matlab_lcg_sample(55, 34, 2023)
+        chsimpy.utils.csv_dump_matrix(lcg_matrix_out, fname=fname)
+        lcg_matrix_in = chsimpy.utils.csv_load_matrix(fname)
+        self.assertTrue(np.allclose(lcg_matrix_out, lcg_matrix_in))
 
 
 if __name__ == '__main__':
