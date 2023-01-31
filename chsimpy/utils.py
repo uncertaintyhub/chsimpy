@@ -42,17 +42,6 @@ def yaml_constr_ndarray(constructor, node):
 yaml = ruamel.yaml.YAML(typ='safe')
 
 
-def yaml_dump(instance, fname):
-    yaml.representer.add_representer(np.ndarray, yaml_repr_ndarray)
-    yaml.representer.add_representer(np.float64, yaml_repr_npfloat64)
-    yaml.width = 1000
-    yaml.explicit_start = True
-    yaml.default_flow_style = False
-    yaml.register_class(instance.__class__)
-    with open(fname, 'w') as f:
-        yaml.dump(instance, f)
-
-
 def yaml_load(fname):
     # yaml = ruamel.yaml.YAML(typ='safe')
     yaml.constructor.add_constructor(u'!ndarray', yaml_constr_ndarray)
