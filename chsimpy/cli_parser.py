@@ -4,7 +4,7 @@ import argparse
 from . import parameters
 
 
-class Parser:
+class CLIParser:
     def __init__(self, progname='chsimpy'):
         """Provides a Command-Line-Interface to control the parameters of the simulation and its results"""
         self.parser = argparse.ArgumentParser(

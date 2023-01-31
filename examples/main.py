@@ -12,17 +12,11 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-import chsimpy.cli
-# import chsimpy.plotview
-# import chsimpy.model
-import chsimpy.controller
-# import chsimpy.parameters
-# import chsimpy.utils
-# import chsimpy.mport
+from chsimpy import CLIParser, Controller
 
 
 if __name__ == '__main__':
-    parser = chsimpy.cli.Parser('chsimpy')
+    parser = CLIParser('chsimpy')
     params = parser.get_parameters()
     controller = chsimpy.controller.Controller(params)
     solution = controller.run()

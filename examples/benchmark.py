@@ -16,13 +16,8 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-# import chsimpy.cli
-# import chsimpy.plotview
-# import chsimpy.model
-import chsimpy.controller
-import chsimpy.parameters
-import chsimpy.utils
-# import chsimpy.mport
+
+from chsimpy import Controller, Parameters
 
 
 class BenchmarkParams:
@@ -70,7 +65,7 @@ def cli_parse(progname='benchmark'):
 
     args = parser.parse_args()
 
-    params = chsimpy.parameters.Parameters()
+    params = Parameters()
     params.seed = 2023
     params.render_target = 'none'
     params.dump_id = 'benchmark'
@@ -95,7 +90,7 @@ def cli_parse(progname='benchmark'):
 
 
 def validation_test():
-    params = chsimpy.parameters.Parameters()
+    params = Parameters()
     params.N = 512
     params.ntmax = 100
     params.seed = 2023
@@ -103,7 +98,7 @@ def validation_test():
     params.dump_id = 'benchmark-validation'
     params.use_lcg = True  # to be comparable with matlab
 
-    controller = chsimpy.controller.Controller(params)
+    controller = Controller(params)
     # dump_id = controller.get_current_id_for_dump()
     solution = controller.run()
     U_python = solution.U
@@ -143,7 +138,7 @@ if __name__ == '__main__':
 
     t1 = time.time()
 
-    controller = chsimpy.controller.Controller(params)
+    controller = Controller(params)
     if bmark_params.warmups > 0:
         ts = time_repetitions(controller=controller,
                               ntmax=bmark_params.warmup_ntmax,

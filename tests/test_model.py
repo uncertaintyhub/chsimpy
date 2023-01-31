@@ -12,11 +12,7 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-import chsimpy.utils
-import chsimpy.controller
-import chsimpy.parameters
-import chsimpy.solution
-import chsimpy.utils
+from chsimpy import Parameters, Solution, Controller
 
 
 class TestCompareMatlabSolutionU(unittest.TestCase):
@@ -26,13 +22,13 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         Test if our python code produces same result as matlab (on matrix U)
         """
 
-        params = chsimpy.parameters.Parameters()
+        params = Parameters()
         params.N = 512
         params.ntmax = 100
         params.seed = 2023
         params.render_target = 'none'
         params.use_lcg = True  # to be comparable with matlab
-        controller = chsimpy.controller.Controller(params)
+        controller = Controller(params)
 
         solution = controller.run()
         # dump_id = controller.get_current_id_for_dump()
