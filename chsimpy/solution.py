@@ -1,55 +1,14 @@
-import pandas as pd
 import numpy as np
 
 import ruamel.yaml
 
 from . import utils
+from .timedata import TimeData
 
 yaml = ruamel.yaml.YAML(typ='safe')
 yaml.width = 1000
 yaml.explicit_start = True
 yaml.default_flow_style=False
-
-
-class TimeData:
-    def __init__(self, nsteps):
-        self._data = np.zeros((nsteps, 7))
-
-    def insert(self, it, E, E2, SA, domtime, Ra, L2, PS):
-        self._data[it, ] = (E, E2, SA, domtime, Ra, L2, PS)
-
-    def data(self):
-        return self._data
-
-    @property
-    def E(self):
-        return self._data[:, 0]
-
-    @property
-    def E2(self):
-        return self._data[:, 1]
-
-    @property
-    def SA(self):
-        return self._data[:, 2]
-
-    @property
-    def domtime(self):
-        return self._data[:, 3]
-
-    def energy_falls(self, it=None):
-        """Checks if E2 curve really falls and returns True then.
-
-        Always False if 'it<100 or sum(E2[-50:-25]) < sum(E2[-25:])'.
-        Else if 'E2[it] < E2[it-1] && E2[it] > E2[0]' then it returns True.
-        """
-        if it < 100:  # don't check energy during first iterations (arbitrary chosen)
-            return False
-        s1 = np.sum(self.E2[-50:-25])
-        s2 = np.sum(self.E2[-25:])
-        if s1 < s2:
-            return False
-        return self.E2[it-1] > self.E2[it] > self.E2[0]
 
 
 @yaml.register_class
@@ -63,7 +22,7 @@ class Solution:
 
         self.U = None
         self.hat_U = None
-        self.data = None
+        self.timedata = None
 
         # self.Amolecule = (Vmm / N_A) ** (2 / 3) # TODO: required?
         # FIXME: validate by sources
@@ -104,19 +63,31 @@ class Solution:
 
     @property
     def E(self):
-        return self.data.E
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.E
 
     @property
     def E2(self):
-        return self.data.E2
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.E2
 
     @property
     def SA(self):
-        return self.data.SA
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.SA
 
     @property
     def domtime(self):
-        return self.data.domtime
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.domtime
 
     @classmethod
     def to_yaml(cls, representer, node):
@@ -145,14 +116,19 @@ class Solution:
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['U']
-        del state['data']
-        del state['Leig']
+        del state['hat_U']
+        del state['timedata']
         del state['CHeig']
         del state['Seig']
         return state
 
     def __eq__(self, other):
         if isinstance(other, Solution):
-            return self.__dict__ == other.__dict__
+            # entities_to_remove = ('U', 'hat_U')
+            sd = self.__dict__
+            od = other.__dict__
+            # [sd.pop(k, None) for k in entities_to_remove]
+            # [od.pop(k, None) for k in entities_to_remove]
+            return sd == od
         else:
             return False

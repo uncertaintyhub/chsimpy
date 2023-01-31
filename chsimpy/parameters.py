@@ -62,6 +62,11 @@ class Parameters:
 
     def __eq__(self, other):
         if isinstance(other, Parameters):
-            return self.__dict__ == other.__dict__
+            entities_to_remove = ('func_A0', 'func_A1')
+            sd = self.__dict__
+            od = other.__dict__
+            [sd.pop(k, None) for k in entities_to_remove]
+            [od.pop(k, None) for k in entities_to_remove]
+            return sd == od
         else:
             return False

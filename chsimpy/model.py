@@ -188,7 +188,7 @@ class Model:
 
         time_fac = (1 / (solution.M * self.params.kappa)) * self.params.delt
         # compute_run
-        [solution.U, solution.data, solution.tau0, solution.t0] = compute_run(
+        [solution.U, solution.timedata, solution.tau0, solution.t0] = compute_run(
             nsteps    = nsteps,
             U         = solution.U,
             delx      = solution.delx,
