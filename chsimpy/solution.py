@@ -112,7 +112,7 @@ class Solution:
         with open(fname, 'w') as f:
             yaml.dump(self, f)
 
-    # exclude
+    # exclude non-scalars
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['U']

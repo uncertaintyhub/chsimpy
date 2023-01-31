@@ -129,7 +129,7 @@ if __name__ == '__main__':
     params, bmark_params = cli_parse()
 
     print(f"localtime: {chsimpy.utils.get_current_localtime()}")
-    print(str(vars(params)).replace(',', '\n'))
+    print(str(params).replace(',', '\n'))
     print(str(vars(bmark_params)).replace(',', '\n'))
     print()
 

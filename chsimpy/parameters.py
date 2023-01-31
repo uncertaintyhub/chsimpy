@@ -1,6 +1,7 @@
 import numpy as np
-
+import inspect
 import ruamel.yaml
+import re
 
 from . import utils
 
@@ -50,7 +51,14 @@ class Parameters:
                 continue
             v = getattr(node, x)
             if callable(v):
-                continue
+                if v.__name__ == "<lambda>":
+                    funcString = str(inspect.getsourcelines(v)[0][0])
+                    funcString = re.sub(r'#[^\n]*', '', funcString)  # remove comments
+                    funcString = re.sub(r'\s+', '', funcString)  # remove whitespaces
+                    funcString = funcString.replace('lambda', 'lambda ')  # keep whitespace
+                    v = funcString
+                else:
+                    continue
             if type(v)==np.float64:
                 v = float(v)
             attribs[x] = v
@@ -79,3 +87,9 @@ class Parameters:
             return sd == od
         else:
             return False
+
+    def __str__(self):
+        entities_to_remove = ('func_A0', 'func_A1')
+        sd = self.__dict__.copy()
+        [sd.pop(k, None) for k in entities_to_remove]
+        return str(sd)
