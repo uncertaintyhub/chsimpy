@@ -108,7 +108,7 @@ class Solution:
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 
-    def yaml_dump(self, fname):
+    def yaml_dump_scalars(self, fname):
         with open(fname, 'w') as f:
             yaml.dump(self, f)
 
@@ -122,13 +122,25 @@ class Solution:
         del state['Seig']
         return state
 
+    def is_scalarwise_equal_with(self, other):
+        if isinstance(other, Solution):
+            params_equal = self.params.is_scalarwise_equal_with(other.params)
+            sd = dict(sorted(self.__dict__.items()))
+            od = dict(sorted(other.__dict__.items()))
+            entities_to_remove = ('U', 'hat_U', 'params',
+                                  'timedata', 'CHeig', 'Seig',
+                                  'E', 'E2', 'SA', 'domtime')
+            [sd.pop(k, None) for k in entities_to_remove]
+            [od.pop(k, None) for k in entities_to_remove]
+            return params_equal and sd == od
+        else:
+            return False
+
+
     def __eq__(self, other):
         if isinstance(other, Solution):
-            # entities_to_remove = ('U', 'hat_U')
             sd = self.__dict__
             od = other.__dict__
-            # [sd.pop(k, None) for k in entities_to_remove]
-            # [od.pop(k, None) for k in entities_to_remove]
             return sd == od
         else:
             return False

@@ -50,17 +50,18 @@ class TestDumpSimple(unittest.TestCase):
 
 class TestDumpParameters(unittest.TestCase):
 
-    def test_dump_roundtrip(self):
+    def test_dump_scalars_roundtrip(self):
         """
-        Test if yaml-roundtrip of parameters is successful
+        Test if yaml-roundtrip of scalar parameters is successful
         """
         fname = 'test-dump-parameters.yaml'
         if os.path.isfile(fname):
             os.remove(fname)
         p1 = Parameters()
-        chsimpy.utils.yaml_dump(p1, fname)
+        p1.func_A0 = lambda temp: 1+2*temp  # is ignored as it is non-scalar
+        p1.yaml_dump_scalars(fname)
         p2 = chsimpy.utils.yaml_load(fname)
-        self.assertTrue(p1 == p2)
+        self.assertTrue(p1.is_scalarwise_equal_with(p2))
 
     def test_dump_roundtrip_mismatch(self):
         """
@@ -71,7 +72,7 @@ class TestDumpParameters(unittest.TestCase):
             os.remove(fname)
         p1 = Parameters()
         p1.N = 512
-        chsimpy.utils.yaml_dump(p1, fname)
+        p1.yaml_dump_scalars(fname)
         p2 = chsimpy.utils.yaml_load(fname)
         p1.N = 256
         self.assertTrue(p1 != p2 and p2.N == 512 and p1.N == 256)
@@ -79,9 +80,9 @@ class TestDumpParameters(unittest.TestCase):
 
 class TestDumpSolution(unittest.TestCase):
 
-    def test_dump_roundtrip(self):
+    def test_dump_scalars_roundtrip(self):
         """
-        Test if yaml-roundtrip of parameters is successful
+        Test if yaml-roundtrip of solution scalars is successful
         """
         fname = 'test-dump-solution.yaml'
         if os.path.isfile(fname):
@@ -89,10 +90,9 @@ class TestDumpSolution(unittest.TestCase):
 
         params = Parameters()
         s1 = Solution(params)
-        # s1.U = np.random.randint(low=0, high=100, size=(55, 34))
-        chsimpy.utils.yaml_dump(s1, fname)
+        s1.yaml_dump_scalars(fname)
         s2 = chsimpy.utils.yaml_load(fname)
-        self.assertTrue(s1 == s2)  # TODO: currently fails
+        self.assertTrue(s1.is_scalarwise_equal_with(s2))
 
 
 if __name__ == '__main__':

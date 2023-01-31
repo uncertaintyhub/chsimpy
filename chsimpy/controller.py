@@ -72,8 +72,8 @@ class Controller:
             return
         fname_params = 'parameters-'+dump_id
         fname_sol = 'solution-'+dump_id
-        self.params.yaml_dump(fname=fname_params+'.yaml')
-        self.solution.yaml_dump(fname=fname_sol+'.yaml')
+        self.params.yaml_dump_scalars(fname=fname_params+'.yaml')
+        self.solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
         utils.csv_dump_matrix(self.solution.U, fname=fname_sol+'.U.csv')
         return [fname_sol, fname_params]
 

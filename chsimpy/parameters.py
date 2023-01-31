@@ -56,17 +56,26 @@ class Parameters:
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 
-    def yaml_dump(self, fname):
+    def yaml_dump_scalars(self, fname):
         with open(fname, 'w') as f:
             yaml.dump(self, f)
 
-    def __eq__(self, other):
+    def is_scalarwise_equal_with(self, other):
         if isinstance(other, Parameters):
             entities_to_remove = ('func_A0', 'func_A1')
-            sd = self.__dict__
-            od = other.__dict__
+            sd = self.__dict__.copy()
+            od = other.__dict__.copy()
             [sd.pop(k, None) for k in entities_to_remove]
             [od.pop(k, None) for k in entities_to_remove]
+            compare_wo_lambdas = sd==od
+            return compare_wo_lambdas
+        else:
+            return False
+
+    def __eq__(self, other):
+        if isinstance(other, Parameters):
+            sd = self.__dict__
+            od = other.__dict__
             return sd == od
         else:
             return False
