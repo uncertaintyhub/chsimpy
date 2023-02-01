@@ -21,6 +21,11 @@ if __name__ == '__main__':
     controller = chsimpy.controller.Controller(params)
     solution = controller.run()
     controller.render()
+
+    current_dump_id = chsimpy.utils.get_current_id_for_dump(params.dump_id)
+    if 'yaml' in params.render_target:
+        controller.dump_solution(current_dump_id)
+
     print(f"computed_steps = {solution.computed_steps}, "
           f"t0 = {solution.t0} sec, "
           f"early_break = {solution.tau0 < (params.ntmax-1)}")
