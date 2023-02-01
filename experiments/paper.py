@@ -71,10 +71,10 @@ if __name__ == '__main__':
     for r in range(exp_params.runs):
         # prepare params for actual run
         params = init_params.deepcopy()
-        params.seed = init_params.seed+r
+        params.seed = init_params.seed
         params.dump_id = f"{dump_id}-run{r}"
 
-        rng = np.random.default_rng(params.seed)
+        rng = np.random.default_rng(params.seed+r)
 
         # U[rel_low, rel_high) * A(temperature)
         params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * rng.uniform(
