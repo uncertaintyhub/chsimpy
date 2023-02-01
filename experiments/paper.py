@@ -87,7 +87,8 @@ if __name__ == '__main__':
         controller = Controller(params)
         # solve
         solution = controller.run()
-        controller.dump_solution(params.dump_id, ('E2', 'SA'))
+        # TODO: dump U_0
+        controller.dump_solution(params.dump_id, ('U', 'E', 'E2', 'SA'))
         controller.render()
         results[r] = (solution.A0,
                       solution.A1,
