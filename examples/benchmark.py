@@ -17,7 +17,7 @@ except ImportError:
     # sys.path.remove(str(_parentdir))
 
 
-from chsimpy import Controller, Parameters
+from chsimpy import Controller, Parameters, CLIParser
 
 
 class BenchmarkParams:
@@ -28,65 +28,43 @@ class BenchmarkParams:
         self.warmup_ntmax = 100
 
 
-def cli_parse(progname='benchmark'):
-    parser = argparse.ArgumentParser(
-        prog=progname,
-        description='Benchmark of simulation of phase separation in Na2O-SiO2 glasses under uncertainty '
-                    '(solving the Cahn–Hilliard (CH) equation)',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        add_help=True,
-    )
+# parsing command-line-interface arguments
+class BenchmarkCLIParser:
+    def __init__(self):
+        self.cliparser = CLIParser('benchmark')
+        self.cliparser.parser.add_argument('-R', '--runs',
+                                           default=3,
+                                           type=int,
+                                           help='Number of Monte-Carlo runs')
+        self.cliparser.parser.add_argument('-S', '--skip-test',
+                                           action='store_true',
+                                           help='Skip initial tests and validation [TODO].')
+        self.cliparser.parser.add_argument('-w', '--warmups',
+                                           default=1,
+                                           type=int,
+                                           help='Number of benchmark warmups')
+        self.cliparser.parser.add_argument('-W', '--warmup-ntmax',
+                                           type=int,
+                                           help='Number of simulation steps of a single benchmark warmup')
 
-    parser.add_argument('-N',
-                        default=512,
-                        type=int,
-                        help='Number of pixels in one domain (NxN)')
-    parser.add_argument('-n', '--ntmax',
-                        default=100,
-                        type=int,
-                        help='Number of simulation steps (>1)')
-    parser.add_argument('-r', '--runs',
-                        default=3,
-                        type=int,
-                        help='Number of benchmark runs')
-    parser.add_argument('-w', '--warmups',
-                        default=1,
-                        type=int,
-                        help='Number of benchmark warmups')
-    parser.add_argument('-W', '--warmup-ntmax',
-                        type=int,
-                        help='Number of simulation steps of a single benchmark warmup')
-    parser.add_argument('--lcg',
-                        action='store_true',
-                        help='Use linear congruential generator for initial random numbers.')
-    parser.add_argument('-s', '--skip-test',
-                        action='store_true',
-                        help='Skip initial tests/validation.')
+    def get_parameters(self):
+        params = self.cliparser.get_parameters()
+        bmark_params = BenchmarkParams()
+        bmark_params.skip_test = self.cliparser.args.skip_test
+        bmark_params.runs = self.cliparser.args.runs
+        bmark_params.warmups = self.cliparser.args.warmups
+        if self.cliparser.args.warmup_ntmax is not None:
+            bmark_params.warmup_ntmax = self.cliparser.args.warmup_ntmax
+            if bmark_params.warmup_ntmax > params.ntmax:
+                print('Warmup ntmax must be less or equal than ntmax')
+                exit(1)
+        else:
+            bmark_params.warmup_ntmax = params.ntmax
 
-    args = parser.parse_args()
-
-    params = Parameters()
-    params.seed = 2023
-    params.render_target = 'none'
-    params.dump_id = 'benchmark'
-    params.ntmax = args.ntmax
-    if params.ntmax < 2:
-        params.ntmax = 2
-    params.N = args.N
-    params.use_lcg = args.lcg
-
-    bmark_params = BenchmarkParams()
-    bmark_params.skip_test = args.skip_test
-    bmark_params.runs = args.runs
-    bmark_params.warmups = args.warmups
-    if args.warmup_ntmax is not None:
-        bmark_params.warmup_ntmax = args.warmup_ntmax
-        if bmark_params.warmup_ntmax > params.ntmax:
-            print('Warmup ntmax must be less or equal than ntmax')
+        if bmark_params.runs < 1:
+            print('Runs must be at least 1.')
             exit(1)
-    else:
-        bmark_params.warmup_ntmax = params.ntmax
-    return [params, bmark_params]
+        return bmark_params, params
 
 
 def validation_test():
@@ -126,34 +104,42 @@ def time_repetitions(controller, ntmax, repetitions):
 
 if __name__ == '__main__':
 
-    params, bmark_params = cli_parse()
+    bmark_cliparser = BenchmarkCLIParser()
+    bmark_params, params = bmark_cliparser.get_parameters()
 
-    print(f"localtime: {chsimpy.utils.get_current_localtime()}")
-    print(str(params).replace(',', '\n'))
-    print(str(vars(bmark_params)).replace(',', '\n'))
-    print()
+    # get current time
+    sysinfo = chsimpy.utils.get_system_info()
+    dump_id = chsimpy.utils.get_current_id_for_dump(params.dump_id)
 
     if not bmark_params.skip_test:
         validation_test()
 
+    ts_warmup = None
+    ts_runs = None
     t1 = time.time()
 
     controller = Controller(params)
     if bmark_params.warmups > 0:
-        ts = time_repetitions(controller=controller,
+        ts_warmup = time_repetitions(controller=controller,
                               ntmax=bmark_params.warmup_ntmax,
                               repetitions=bmark_params.warmups)
         print(f"Warmup ({bmark_params.warmups} repetitions, ntmax={bmark_params.warmup_ntmax}):")
-        print(f" run/single: {ts} sec")
-        print(f" run/sum:  {sum(ts)} sec")
+        print(f" run/single: {ts_warmup} sec")
+        print(f" run/sum:  {sum(ts_warmup)} sec")
 
     if bmark_params.runs > 0:
-        ts = time_repetitions(controller=controller,
+        ts_runs = time_repetitions(controller=controller,
                               ntmax=params.ntmax,
                               repetitions=bmark_params.runs)
         print(f"Benchmark ({bmark_params.runs} repetitions, ntmax={params.ntmax}):")
-        print(f" run/single: {ts} sec")
-        print(f" run/sum:  {sum(ts)} sec")
+        print(f" run/single: {ts_runs} sec")
+        print(f" run/sum:  {sum(ts_runs)} sec")
 
-    t2 = time.time()
-    print(f"Benchmark Total: {t2-t1} sec")
+    time_total = time.time()-t1
+    print(f"Benchmark Total: {time_total} sec")
+
+    with open(f"benchmark-{dump_id}.csv", 'w') as f:
+        f.write(sysinfo+"\n")
+        f.write(f"warmup,{ts_warmup}\n")
+        f.write(f"runs,{ts_runs}\n")
+        f.write(f"total,{time_total}\n")
