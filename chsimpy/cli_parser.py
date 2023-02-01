@@ -48,12 +48,17 @@ class CLIParser:
                                      'none'],
                             help='How simulation result is processed. Files use ID from --dump-id. "gui": plots via GUI. '
                                  '"png": plots to PNG files. "yaml": data to YAML files. "none": results are not processed.')
+        parser.add_argument('-s', '--seed',
+                            default=2023,
+                            type=int,
+                            help='Start seed for random number generators')
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s 0.0')  # TODO:
-        self.args = parser.parse_args()
+        self.args = None
 
     def get_parameters(self):
+        self.args = self.parser.parse_args()
         params = parameters.Parameters()
         # TODO: read values from file
 
@@ -62,4 +67,5 @@ class CLIParser:
         params.N = self.args.N
         params.dump_id = self.args.dump_id
         params.use_lcg = self.args.lcg
+        params.seed = self.args.seed
         return params
