@@ -56,9 +56,9 @@ class PlotView:
         #self.ax_SAlines.autoscale()
         self.ax_SAlines.set_title(title)
 
-    def set_E2line(self, E2, title, computed_steps, ntmax):
+    def set_E2line(self, E2, title, computed_steps):
         self.E2line.set_data((np.arange(0, computed_steps), E2[0:computed_steps]))
-        self.ax_E2line.set_xlim(0, ntmax)
+        self.ax_E2line.set_xlim(0, computed_steps)
         self.ax_E2line.set_ylim(np.min(E2[0:computed_steps]), 1.25*np.max(E2[0:computed_steps]))
         # self.ax_E2line.relim()
         # self.ax_E2line.autoscale()

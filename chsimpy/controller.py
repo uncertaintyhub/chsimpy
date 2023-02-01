@@ -23,6 +23,7 @@ class Controller:
 
     def run(self, nsteps=-1):
         self.solution = self.model.run(nsteps)
+        self.computed_steps = self.solution.computed_steps
         return self.solution
 
     def _render(self):
@@ -33,7 +34,7 @@ class Controller:
 
         view.set_Umap(U=solution.U,
                       title='rescaled time ' + str(round(solution.restime / 60, 4)) + ' min; steps = ' + str(
-                          self.computed_steps))
+                          solution.computed_steps))
 
         view.set_Uline(U=solution.U,
                        title='U(N/2,:), it = ' + str(solution.computed_steps))
@@ -46,13 +47,12 @@ class Controller:
                          SA=solution.SA,
                          title='Area of high silica',
                          computed_steps=solution.computed_steps,
-                         x2=(1 / (solution.M * params.kappa) * params.ntmax * params.delt) ** (1 / 3),  # = x2 of x axis
+                         x2=(1 / (solution.M * params.kappa) * solution.computed_steps * params.delt) ** (1 / 3),  # = x2 of x axis
                          t0=solution.t0)
 
         view.set_E2line(E2=solution.E2,
                         title=f"Surf.Energy | Separation t0 = {str(round(solution.t0, 4))} s",
-                        computed_steps=solution.computed_steps,
-                        ntmax=params.ntmax)
+                        computed_steps=solution.computed_steps)
 
         view.set_Uhist(solution.U, "Solution Histogram")
         return
