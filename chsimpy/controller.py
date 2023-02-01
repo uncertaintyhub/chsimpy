@@ -40,6 +40,7 @@ class Controller:
                        title='U(N/2,:), it = ' + str(solution.computed_steps))
 
         view.set_Eline(E=solution.E,
+                       it_range=solution.it_range,
                        title=f"Total Energy (steps={solution.computed_steps})",
                        computed_steps=solution.computed_steps)
 
@@ -51,6 +52,7 @@ class Controller:
                          t0=solution.t0)
 
         view.set_E2line(E2=solution.E2,
+                        it_range=solution.it_range,
                         title=f"Surf.Energy | Separation t0 = {str(round(solution.t0, 4))} s",
                         computed_steps=solution.computed_steps)
 

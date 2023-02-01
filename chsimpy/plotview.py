@@ -39,8 +39,8 @@ class PlotView:
         self.ax_Uline.set_ylim(0.75, 1.0)
         self.ax_Uline.set_title(title)
 
-    def set_Eline(self, E, title, computed_steps):
-        self.Eline.set_data((np.arange(0, computed_steps), E[0:computed_steps]))
+    def set_Eline(self, E, it_range, title, computed_steps):
+        self.Eline.set_data((it_range[0:computed_steps], E[0:computed_steps]))
         self.ax_Eline.set_xlim(0, computed_steps)
         self.ax_Eline.set_ylim(np.min(E[0:computed_steps]), np.max(E[0:computed_steps]))
         self.ax_Eline.set_title(title)
@@ -56,8 +56,8 @@ class PlotView:
         #self.ax_SAlines.autoscale()
         self.ax_SAlines.set_title(title)
 
-    def set_E2line(self, E2, title, computed_steps):
-        self.E2line.set_data((np.arange(0, computed_steps), E2[0:computed_steps]))
+    def set_E2line(self, E2, it_range, title, computed_steps):
+        self.E2line.set_data((it_range[0:computed_steps], E2[0:computed_steps]))
         self.ax_E2line.set_xlim(0, computed_steps)
         self.ax_E2line.set_ylim(np.min(E2[0:computed_steps]), 1.25*np.max(E2[0:computed_steps]))
         # self.ax_E2line.relim()

@@ -21,9 +21,9 @@ class CLIParser:
                             type=int,
                             help='Number of pixels in one domain (NxN)')
         parser.add_argument('-n', '--ntmax',
-                            default=2000,
+                            default=int(1e6),
                             type=int,
-                            help='Number of simulation steps')
+                            help='Maximum number of simulation steps (stops earlier when energy falls)')
         parser.add_argument('--lcg',
                             action='store_true',
                             help='Use linear congruential generator for initial random numbers.')

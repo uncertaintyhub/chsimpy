@@ -4,30 +4,46 @@ from . import utils
 
 
 class TimeData:
-    def __init__(self, nsteps):
-        self._data = np.zeros((nsteps, 7))
+    def __init__(self):
+        self._data = np.empty(shape=(0, 8))
 
     def insert(self, it, E, E2, SA, domtime, Ra, L2, PS):
-        self._data[it, ] = (E, E2, SA, domtime, Ra, L2, PS)
+        self._data = np.append(self._data, [[it, E, E2, SA, domtime, Ra, L2, PS]], axis=0)
 
     def data(self):
         return self._data
 
     @property
-    def E(self):
+    def it_range(self):
         return self._data[:, 0]
 
     @property
-    def E2(self):
+    def E(self):
         return self._data[:, 1]
 
     @property
-    def SA(self):
+    def E2(self):
         return self._data[:, 2]
 
     @property
-    def domtime(self):
+    def SA(self):
         return self._data[:, 3]
+
+    @property
+    def domtime(self):
+        return self._data[:, 4]
+
+    @property
+    def Ra(self):
+        return self._data[:, 5]
+
+    @property
+    def L2(self):
+        return self._data[:, 6]
+
+    @property
+    def PS(self):
+        return self._data[:, 7]
 
     def energy_falls(self, it=None):
         """Checks if E2 curve really falls and returns True then.

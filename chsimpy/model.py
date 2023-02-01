@@ -42,7 +42,7 @@ def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, 
     # will be re-written if for-loop breaks early
     tau0 = 0
     t0 = 0
-    data = TimeData(nsteps)
+    data = TimeData()
     data.insert(it=0,
                 E=E,
                 E2=E2,

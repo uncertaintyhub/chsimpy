@@ -62,6 +62,13 @@ class Solution:
         self.computed_steps = 0
 
     @property
+    def it_range(self):
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.it_range
+
+    @property
     def E(self):
         if self.timedata is None:
             return None
@@ -88,6 +95,27 @@ class Solution:
             return None
         else:
             return self.timedata.domtime
+
+    @property
+    def Ra(self):
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.Ra
+
+    @property
+    def L2(self):
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.L2
+
+    @property
+    def PS(self):
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.PS
 
     @classmethod
     def to_yaml(cls, representer, node):
