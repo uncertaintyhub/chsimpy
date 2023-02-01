@@ -15,7 +15,7 @@ class Controller:
             self.params = params
         self.model = model.Model(self.params)
         self.solution = None
-        if 'gui' in self.params.render_target:
+        if 'gui' in self.params.render_target or 'png' in self.params.render_target:
             self.view = plotview.PlotView(self.params.N)
         else:
             self.view = None
