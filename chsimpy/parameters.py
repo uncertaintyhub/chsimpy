@@ -2,6 +2,7 @@ import numpy as np
 import inspect
 import ruamel.yaml
 import re
+import copy
 
 from . import utils
 
@@ -19,9 +20,8 @@ class Parameters:
         self.seed = 2023
         self.N = 512
         self.L = 2
-        self.XXX = 0.875
-        self.temp = 650 + 273.15
-        self.N_A = 6.02214076e+23
+        self.XXX = 0.875  # mean value in initial composition mix U
+        self.temp = 650 + 273.15  # temperature
         self.Vm = 25.13 * 1e-06  # (micrometer^3/mol) # FIXME: validate incl Vmm
         self.Vmm = 25.13 * 1e6
         self.B = 12.86
@@ -59,7 +59,7 @@ class Parameters:
                     v = funcString
                 else:
                     continue
-            if type(v)==np.float64:
+            if type(v) == np.float64:
                 v = float(v)
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
@@ -79,6 +79,9 @@ class Parameters:
             return compare_wo_lambdas
         else:
             return False
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
 
     def __eq__(self, other):
         if isinstance(other, Parameters):

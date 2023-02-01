@@ -17,9 +17,7 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-import chsimpy.controller
-import chsimpy.parameters
-import chsimpy.utils
+from chsimpy import Controller, Parameters, CLIParser
 
 
 class ExperimentParams:
@@ -28,80 +26,53 @@ class ExperimentParams:
         self.runs = 2
         self.jitter_Arellow = 0.995
         self.jitter_Arelhigh = 1.005
-        self.seed = 2023
-        # for params
-        self.ntmax = 50
-        self.N = 512
 
 
 # parsing command-line-interface arguments
-def cli_parse(progname='experiment'):
-        parser = argparse.ArgumentParser(
-            prog=progname,
-        description='Experiments of simulation of phase separation in Na2O-SiO2 glasses under uncertainty '
-                    '(solving the Cahn–Hilliard (CH) equation)',
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-            add_help=True,
-        )
+class ExperimentCLIParser:
+    def __init__(self):
+        self.cliparser = CLIParser('paper')
+        self.cliparser.parser.add_argument('-R', '--runs',
+                                           default=3,
+                                           type=int,
+                                           help='Number of Monte-Carlo runs')
+        self.cliparser.parser.add_argument('-S', '--skip-test',
+                                           action='store_true',
+                                           help='Skip initial tests and validation [TODO].')
 
-        parser.add_argument('-N',
-                            default=512,
-                            type=int,
-                            help='Number of pixels in one domain (NxN)')
-        parser.add_argument('-n', '--ntmax',
-                            default=100,
-                            type=int,
-                            help='Number of simulation steps (>1)')
-        parser.add_argument('-r', '--runs',
-                            default=3,
-                            type=int,
-                            help='Number of Monte-Carlo runs')
-        parser.add_argument('-s', '--seed',
-                            default=2023,
-                            type=int,
-                            help='Start seed for random number generators')
-        parser.add_argument('-t', '--skip-test',
-                            action='store_true',
-                            help='Skip initial tests and validation [TODO].')
-
-        args = parser.parse_args()
-
+    def get_parameters(self):
+        params = self.cliparser.get_parameters()
         exp_params = ExperimentParams()
-        exp_params.seed = args.seed
-        exp_params.N = args.N
-        exp_params.ntmax = args.ntmax
-        if exp_params.ntmax < 2:
-            exp_params.ntmax = 2
-        exp_params.skip_test = args.skip_test
-        exp_params.runs = args.runs
-        if args.runs < 1:
+        exp_params.skip_test = self.cliparser.args.skip_test
+        exp_params.runs = self.cliparser.args.runs
+        if exp_params.runs < 1:
             print('Runs must be at least 1.')
             exit(1)
-
-        return exp_params
+        return exp_params, params
 
 
 if __name__ == '__main__':
 
-    exp_params = cli_parse()
+    exp_cliparser = ExperimentCLIParser()
+    exp_params, init_params = exp_cliparser.get_parameters()
 
     # get current time
-    print(f"localtime: {chsimpy.utils.get_current_localtime()}")
-    print(str(vars(exp_params)).replace(',', '\n'))  # just dumping exp_params to console
-    print()
+    sysinfo = chsimpy.utils.get_system_info()
+    dump_id = chsimpy.utils.get_current_id_for_dump(init_params.dump_id)
+    with open(f"experiment-{dump_id}.csv", 'w') as f:
+        f.writelines(sysinfo)
 
+    # ca, cb :"A final isothermal solution c is no longer homogeneous
+    #   but consists of a patch of the two new stable compositions cA and cB which lies outside the spinodal
+    #   region and defines the so-called miscibility gap."
     cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'seed']
     results = np.zeros((exp_params.runs, len(cols)))
 
     for r in range(exp_params.runs):
         # prepare params for actual run
-        params = chsimpy.parameters.Parameters()
-        params.render_target = 'none'
-        params.dump_id = 'experiment'
-        params.use_lcg = False
-        params.seed = exp_params.seed+r
-        params.N = exp_params.N
-        params.ntmax = exp_params.ntmax
+        params = init_params.deepcopy()
+        params.seed = init_params.seed+r
+        params.dump_id = f"{dump_id}-run{r}"
 
         rng = np.random.default_rng(params.seed)
 
@@ -113,9 +84,11 @@ if __name__ == '__main__':
             exp_params.jitter_Arellow, exp_params.jitter_Arelhigh)
 
         # sim controller
-        controller = chsimpy.controller.Controller(params)
+        controller = Controller(params)
         # solve
         solution = controller.run()
+        controller.dump_solution(params.dump_id, ('E2', 'SA'))
+        controller.render()
         results[r] = (solution.A0,
                       solution.A1,
                       solution.tau0,

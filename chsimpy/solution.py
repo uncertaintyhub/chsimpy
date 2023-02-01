@@ -50,7 +50,7 @@ class Solution:
 
         leig = utils.eigenvalues(N)
         # scaled eigenvalues of stabilized CH update matrix
-        self.CHeig = np.ones((N,N)) + lam2 * leig * leig
+        self.CHeig = np.ones((N, N)) + lam2 * leig * leig
         # scaled eigenvalues of the laplacian
         self.Seig = (1.0 / self.params.kappa) * lam1 * leig
 
@@ -135,7 +135,6 @@ class Solution:
             return params_equal and sd == od
         else:
             return False
-
 
     def __eq__(self, other):
         if isinstance(other, Solution):
