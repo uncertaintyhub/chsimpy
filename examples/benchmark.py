@@ -143,3 +143,4 @@ if __name__ == '__main__':
         f.write(f"warmup,{ts_warmup}\n")
         f.write(f"runs,{ts_runs}\n")
         f.write(f"total,{time_total}\n")
+    controller.dump_solution(dump_id)
