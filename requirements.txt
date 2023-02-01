@@ -3,5 +3,7 @@ numpy>=1.18.56.0
 llvmlite==0.39.1
 numba==0.56.4
 scipy==1.9.3
-matplotlib
-seaborn
+matplotlib~=3.6.3
+seaborn~=0.12.2
+psutil~=5.9.4
+pandas~=1.5.3

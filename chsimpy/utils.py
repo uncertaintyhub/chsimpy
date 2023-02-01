@@ -1,22 +1,21 @@
-"""
-Helper functions
-"""
-
 import numpy as np
 import difflib
 import ruamel.yaml
 import time
+from datetime import datetime
+import psutil
+import platform
 
 
 # Experimentelle Bestimmung der Koeffizenten einer
 # (linearen) Redlich-Kister Approximation der Interaktion
 # fuer Na2O-SiO2 (12.5 mol# Na), see Kim & Sander (1991)
 def A0(T):
-    return 186.0575 - 0.3654 * T
+    return 186.0575 - 0.3654 * T  # parameters where estimated by Kim and Sanders
 
 
 def A1(T):
-    return 43.7207 - 0.1401 * T
+    return 43.7207 - 0.1401 * T  # parameters where estimated by Kim and Sanders
 
 
 def eigenvalues(N):
@@ -85,3 +84,15 @@ def get_current_id_for_dump(dump_id):
         return datetime.now().strftime('%d%m%Y-%H%M%S')
     else:
         return dump_id
+
+
+def get_system_info():
+    uname = platform.uname()
+    cpufreq = psutil.cpu_freq()
+    sysinfo = f"system='{uname.system}', nodename='{uname.node}', release='{uname.release}', " \
+              f"version='{uname.version}', machine='{uname.machine}', " \
+              f"cores_phys='{psutil.cpu_count(logical=False)}', cores_total='{psutil.cpu_count(logical=True)}', " \
+              f"cpufreq_min='{cpufreq.min:.2f}', cpufreq_max='{cpufreq.max:.2f}', " \
+              f"cpufreq_current='{cpufreq.current:.2f}', " \
+              f"localtime='{get_current_localtime()}'"
+    return sysinfo
