@@ -1,4 +1,4 @@
-from datetime import datetime
+import numpy as np
 
 from . import parameters
 from . import plotview
@@ -60,31 +60,26 @@ class Controller:
     # TODO: too much logic hidden w.r.t. dump_id, should be more like dump_with_auto_id and dump_with_custom_id
     # TODO: dump and render_target parsing? (yaml, csv, ..)
     # TODO: provide own functions for filename generating code
-    def dump(self, dump_id=None):
+    def dump_solution(self, dump_id, what=[]):
         if dump_id is None or dump_id == '' or dump_id.lower() == 'none':
             return
-        fname_params = 'parameters-'+dump_id
         fname_sol = 'solution-'+dump_id
-        self.params.yaml_dump_scalars(fname=fname_params+'.yaml')
         self.solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
-        utils.csv_dump_matrix(self.solution.U, fname=fname_sol+'.U.csv')
-        return [fname_sol, fname_params]
-
-    def get_current_id_for_dump(self):
-        if self.params.dump_id == 'auto' or self.params.dump_id is None:
-            return datetime.now().strftime('%d-%m-%Y-%H%M%S')
-        else:
-            return self.params.dump_id
+        for member in what:
+            varray = None
+            if hasattr(self.solution, member):
+                varray = getattr(self.solution, member)
+            if isinstance(varray, np.ndarray):
+                utils.csv_dump_matrix(varray, fname=f"{fname_sol}.{member}.csv")
+        return fname_sol
 
     def render(self):
-        current_dump_id = self.get_current_id_for_dump()
+        current_dump_id = utils.get_current_id_for_dump(self.params.dump_id)
         render_target = self.params.render_target
         # invalid dump id ?
         if (current_dump_id is not None
                 and current_dump_id != ''
                 and current_dump_id.lower() != 'none'):
-            if 'yaml' in render_target:
-                self.dump(current_dump_id)
             if 'gui' in render_target or 'png' in render_target:
                 self._render()
             if 'png' in render_target:

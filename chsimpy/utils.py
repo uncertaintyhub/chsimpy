@@ -78,3 +78,10 @@ def validate_solution_files(file_new, file_truth):
 
 def get_current_localtime():
     return time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime())
+
+
+def get_current_id_for_dump(dump_id):
+    if dump_id == 'auto' or dump_id is None:
+        return datetime.now().strftime('%d%m%Y-%H%M%S')
+    else:
+        return dump_id
