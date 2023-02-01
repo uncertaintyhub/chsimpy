@@ -25,13 +25,6 @@ class Controller:
         self.solution = self.model.run(nsteps)
         return self.solution
 
-    def advance(self, nsteps=-1):
-        i = 0
-        if nsteps == -1:
-            nsteps = self.params.ntmax
-        while self.model.advance() and i<nsteps:
-            i += 1
-
     def _render(self):
         view = self.view
         model = self.model
