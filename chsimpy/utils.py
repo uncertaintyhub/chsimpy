@@ -86,6 +86,10 @@ def get_current_id_for_dump(dump_id):
         return dump_id
 
 
+def get_number_physical_cores():
+    return psutil.cpu_count(logical=False)
+
+
 def get_system_info():
     uname = platform.uname()
     cpufreq = psutil.cpu_freq()
