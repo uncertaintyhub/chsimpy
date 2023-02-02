@@ -33,6 +33,7 @@ class Controller:
         solution = self.solution
 
         view.set_Umap(U=solution.U,
+                      threshold=params.threshold,
                       title='rescaled time ' + str(round(solution.restime / 60, 4)) + ' min; steps = ' + str(
                           solution.computed_steps))
 

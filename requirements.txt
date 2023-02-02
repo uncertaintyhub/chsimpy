@@ -7,3 +7,5 @@ matplotlib~=3.6.3
 seaborn~=0.12.2
 psutil~=5.9.4
 pandas~=1.5.3
+atpbar
+more_itertools

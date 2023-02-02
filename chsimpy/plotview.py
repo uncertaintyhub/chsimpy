@@ -2,6 +2,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 import seaborn as sns
+from matplotlib import colors
 
 
 class PlotView:
@@ -28,10 +29,16 @@ class PlotView:
         ]
         self.E2line, = self.ax_E2line.plot([], [])
 
-    def set_Umap(self, U, title):
+    def set_Umap(self, U, threshold, title):
+        # colormap for Umap
+        cmap = colors.ListedColormap(['orange', 'yellow'])
+        boundaries = [0.0, threshold, 1]
+        norm = colors.BoundaryNorm(boundaries, cmap.N, clip=True)
+        self.Umap.set_cmap(cmap)
+        self.Umap.set_norm(norm)
         Ureal = np.real(U)
         self.Umap.set_data(Ureal)
-        self.Umap.set_clim(vmin=np.min(Ureal), vmax=np.max(Ureal))
+        #self.Umap.set_clim(vmin=np.min(Ureal), vmax=np.max(Ureal))
         self.ax_Umap.set_title(title)
 
     def set_Uline(self, U, title):
