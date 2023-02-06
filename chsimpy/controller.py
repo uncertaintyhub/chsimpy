@@ -28,7 +28,6 @@ class Controller:
 
     def _render(self):
         view = self.view
-        model = self.model
         params = self.params
         solution = self.solution
 
@@ -63,12 +62,12 @@ class Controller:
     # TODO: too much logic hidden w.r.t. dump_id, should be more like dump_with_auto_id and dump_with_custom_id
     # TODO: dump and render_target parsing? (yaml, csv, ..)
     # TODO: provide own functions for filename generating code
-    def dump_solution(self, dump_id, what=[]):
+    def dump_solution(self, dump_id, members=None):
         if dump_id is None or dump_id == '' or dump_id.lower() == 'none':
             return
         fname_sol = 'solution-'+dump_id
         self.solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
-        for member in what:
+        for member in members:
             varray = None
             if hasattr(self.solution, member):
                 varray = getattr(self.solution, member)
