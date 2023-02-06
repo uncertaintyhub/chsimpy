@@ -38,6 +38,7 @@ class Solution:
         self.M = self.D / (x + x/((1-x)**2)
                            - 2.0*utils.A0(self.params.temp)
                            - 6.0*utils.A1(self.params.temp) * (1-2.0*x))
+        self. M = 9e-12
         # discretizations
         self.delx = self.params.L / (N - 1)
         self.delx2 = self.delx ** 2
