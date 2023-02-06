@@ -6,6 +6,7 @@ Model class that contains the actual simulation algorithm
 
 import numpy as np
 import scipy.fftpack as scifft
+from scipy.stats import qmc
 
 from .solution import Solution, TimeData
 from . import mport
@@ -176,6 +177,12 @@ class Model:
         if self.params.use_lcg:  # using linear-congruential generator for portable reproducible random numbers
             solution.U = self.params.XXX * np.ones((N, N)) + (
                 0.01 * mport.matlab_lcg_sample(N, N, self.params.seed))
+        elif self.params.use_quasi:
+            # https://blog.scientific-python.org/scipy/qmc-basics/
+            # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.Sobol.html
+            qrng = qmc.Sobol(d=N) # 2D
+            solution.U = self.params.XXX * np.ones((N, N)) + (
+                    0.01 * (qrng.random(N) - 0.5))
         else:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.default_rng(self.params.seed)

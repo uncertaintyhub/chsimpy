@@ -62,6 +62,9 @@ class CLIParser:
                             default=30,
                             type=int,
                             help='Value for kappa = K/105.1939')
+        parser.add_argument('-Q', '--use-quasi',
+                            action='store_true',
+                            help='Quasi-random numbers for initial concentration')
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s 0.0')  # TODO:
@@ -81,5 +84,6 @@ class CLIParser:
         params.export_csv = self.args.export_csv
         params.full_sim = self.args.full_sim
         params.kappa_base = self.args.kappa_base
+        params.use_quasi = self.args.use_quasi
         params.kappa = params.kappa_base / 105.1939
         return params
