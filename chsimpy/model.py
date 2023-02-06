@@ -54,7 +54,7 @@ def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, 
                 Ra=Ra,
                 L2=L2,
                 PS=PS)
-
+    skip_check = False
     # sim loop
     for it in range(1, nsteps):
         Uinv = 1-U
@@ -105,12 +105,14 @@ def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, 
                     L2=L2,
                     PS=PS)
 
-        if not full_sim and data.energy_falls(it):
+        if not skip_check and data.energy_falls(it):
             tau0 = it
-            t0 = time_fac * it
-            break
+            if not full_sim:
+                break
+            else:
+                skip_check = True
 
-    return (U, data, tau0, t0)
+    return (U, data, tau0)
 
 
 class Model:
@@ -197,7 +199,7 @@ class Model:
 
         time_fac = (1 / (solution.M * self.params.kappa)) * self.params.delt
         # compute_run
-        [solution.U, solution.timedata, solution.tau0, solution.t0] = compute_run(
+        [solution.U, solution.timedata, solution.tau0] = compute_run(
             nsteps    = nsteps,
             U         = solution.U,
             delx      = solution.delx,
@@ -218,11 +220,12 @@ class Model:
 
         # return actual number of iterations computed
         solution.computed_steps = nsteps
-        if solution.tau0 > 0:
-            solution.computed_steps = solution.tau0+1  # tau0 equals 'it' in simulation for-loop
-        else:
+        if solution.tau0 == 0:
             solution.tau0 = nsteps-1
-            solution.t0 = time_fac * (nsteps-1)
+        elif not self.params.full_sim and solution.tau0 > 0:
+            solution.computed_steps = solution.tau0+1  # tau0 equals 'it' in simulation for-loop
+
+        solution.t0 = time_fac * solution.tau0
         # assign computed temperature lambdas to solution
         solution.A0 = A0
         solution.A1 = A1

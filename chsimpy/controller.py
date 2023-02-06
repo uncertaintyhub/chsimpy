@@ -54,7 +54,9 @@ class Controller:
         view.set_E2line(E2=solution.E2,
                         it_range=solution.it_range,
                         title=f"Surf.Energy | Separation t0 = {str(round(solution.t0, 4))} s",
-                        computed_steps=solution.computed_steps)
+                        computed_steps=solution.computed_steps,
+                        tau0=solution.tau0,
+                        t0=solution.t0)
 
         view.set_Uhist(solution.U, "Solution Histogram")
         return

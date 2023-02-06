@@ -63,10 +63,14 @@ class PlotView:
         #self.ax_SAlines.autoscale()
         self.ax_SAlines.set_title(title)
 
-    def set_E2line(self, E2, it_range, title, computed_steps):
+    def set_E2line(self, E2, it_range, title, computed_steps, tau0, t0):
+        e2min = np.min(E2[0:computed_steps])
+        e2max = np.max(E2[0:computed_steps])
         self.E2line.set_data((it_range[0:computed_steps], E2[0:computed_steps]))
         self.ax_E2line.set_xlim(0, computed_steps)
-        self.ax_E2line.set_ylim(np.min(E2[0:computed_steps]), 1.25*np.max(E2[0:computed_steps]))
+        self.ax_E2line.set_ylim(e2min, 1.25*e2max)
+        self.ax_E2line.axvline(tau0, color='black')
+        self.ax_E2line.text(0.95*tau0, 0.65*e2max, f"{t0:g} s @ {tau0} it", horizontalalignment="right")
         # self.ax_E2line.relim()
         # self.ax_E2line.autoscale()
         self.ax_E2line.set_title(title)
