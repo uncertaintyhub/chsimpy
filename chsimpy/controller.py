@@ -30,7 +30,7 @@ class Controller:
         view = self.view
         params = self.params
         solution = self.solution
-
+        time_total = (1 / (solution.M * params.kappa) * (solution.computed_steps-1) * params.delt)
         view.set_Umap(U=solution.U,
                       threshold=params.threshold,
                       title='rescaled time ' + str(round(solution.restime / 60, 4)) + ' min; steps = ' + str(
@@ -41,14 +41,14 @@ class Controller:
 
         view.set_Eline(E=solution.E,
                        it_range=solution.it_range,
-                       title=f"Total Energy (steps={solution.computed_steps})",
+                       title=f"Total Energy, Total Time={time_total:g} s",
                        computed_steps=solution.computed_steps)
 
         view.set_SAlines(domtime=solution.domtime,
                          SA=solution.SA,
                          title='Area of high silica',
                          computed_steps=solution.computed_steps,
-                         x2=(1 / (solution.M * params.kappa) * solution.computed_steps * params.delt) ** (1 / 3),  # = x2 of x axis
+                         x2=time_total ** (1 / 3),  # = x2 of x axis
                          t0=solution.t0)
 
         view.set_E2line(E2=solution.E2,

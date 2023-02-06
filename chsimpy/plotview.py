@@ -70,7 +70,7 @@ class PlotView:
         self.ax_E2line.set_xlim(0, computed_steps)
         self.ax_E2line.set_ylim(e2min, 1.25*e2max)
         self.ax_E2line.axvline(tau0, color='black')
-        self.ax_E2line.text(0.95*tau0, 0.65*e2max, f"{t0:g} s @ {tau0} it", horizontalalignment="right")
+        self.ax_E2line.text(tau0-0.05*computed_steps, 0.15*e2max, f"{t0:g} s @ {tau0} it", rotation=90)
         # self.ax_E2line.relim()
         # self.ax_E2line.autoscale()
         self.ax_E2line.set_title(title)
