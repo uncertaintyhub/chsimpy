@@ -12,8 +12,10 @@ from . import mport
 from . import utils
 
 
+# TODO: U als Eingabe, jupyter notebook als interface, 100 Läufe
+
 #@profile
-def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, time_fac, threshold):
+def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, time_fac, threshold, full_sim):
     """Performs full simulation on U with nsteps or less if energy eventually falls"""
 
     # init
@@ -102,7 +104,7 @@ def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, 
                     L2=L2,
                     PS=PS)
 
-        if data.energy_falls(it):
+        if not full_sim and data.energy_falls(it):
             tau0 = it
             t0 = time_fac * it
             break
@@ -203,7 +205,8 @@ class Model:
             Seig      = solution.Seig,
             CHeig     = solution.CHeig,
             time_fac  = time_fac,
-            threshold = self.params.threshold
+            threshold = self.params.threshold,
+            full_sim  = self.params.full_sim
         )
 
         # return actual number of iterations computed

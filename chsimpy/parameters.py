@@ -39,6 +39,8 @@ class Parameters:
         self.use_lcg = False
         self.render_target = 'gui'  # e.g. image file diagrams are rendered to
         self.dump_id = 'auto'  # id for filenames (solution, parameters)
+        self.export_csv = ''
+        self.full_sim = False
         self.func_A0 = lambda temp: utils.A0(temp)
         self.func_A1 = lambda temp: utils.A1(temp)
 

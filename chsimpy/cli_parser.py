@@ -52,6 +52,16 @@ class CLIParser:
                             default=2023,
                             type=int,
                             help='Start seed for random number generators')
+        parser.add_argument('-x', '--export-csv',
+                            default='',
+                            help='Dump vector/matrices to csv by their names in Solution (U, E, E2, ...)')
+        parser.add_argument('-z', '--full-sim',
+                            action='store_true',
+                            help='Do not stop simulation early (ignores when energy finally falls)')
+        parser.add_argument('-K', '--kappa-base',
+                            default=30,
+                            type=int,
+                            help='Value for kappa = K/105.1939')
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s 0.0')  # TODO:
@@ -68,4 +78,8 @@ class CLIParser:
         params.dump_id = self.args.dump_id
         params.use_lcg = self.args.lcg
         params.seed = self.args.seed
+        params.export_csv = self.args.export_csv
+        params.full_sim = self.args.full_sim
+        params.kappa_base = self.args.kappa_base
+        params.kappa = params.kappa_base / 105.1939
         return params
