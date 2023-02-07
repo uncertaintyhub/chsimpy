@@ -84,13 +84,15 @@ def run_experiment(workpiece):
         # TODO: dump U_0
         controller.dump_solution(params.dump_id, ('U', 'E', 'E2', 'SA'))
         controller.render()
+        cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
+                                                 solution.A0, solution.A1)
         results[r] = (solution.A0,
                       solution.A1,
                       solution.tau0,
-                      solution.SA[solution.tau0],
-                      (1 - solution.SA[solution.tau0]),
-                      np.argmax(solution.E2),
-                      w
+                      cgap[0],  # c_A
+                      cgap[1],  # c_B
+                      np.argmax(solution.E2),  # tsep
+                      w  # workpiece
                       )
 
     return results

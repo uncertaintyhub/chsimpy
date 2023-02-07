@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 import psutil
 import platform
+import sympy as sym
 
 
 # Experimentelle Bestimmung der Koeffizenten einer
@@ -100,3 +101,25 @@ def get_system_info():
               f"cpufreq_current='{cpufreq.current:.2f}', " \
               f"localtime='{get_current_localtime()}'"
     return sysinfo
+
+
+def get_miscibility_gap(R, T, B, A0, A1, xlower=0.7, xupper=0.9999, prec=7):
+    x1 = sym.Symbol('x1', real=True)
+    x2 = sym.Symbol('x2', real=True)
+    c = x1
+    E = (R * T * (c * (sym.log(c) - B) + (1 - c) * sym.log(1 - c)) + (A0 + A1 * (1 - 2 * c)) * c * (
+                1 - c))
+    y1 = E.copy()
+    c = x2
+    E = (R * T * (c * (sym.log(c) - B) + (1 - c) * sym.log(1 - c)) + (A0 + A1 * (1 - 2 * c)) * c * (
+                1 - c))
+    y2 = E.copy()
+    # derivative of E at x1 and x2
+    dy1 = sym.diff(y1, x1, 1)
+    dy2 = sym.diff(y2, x2, 1)
+    # f'(x1) == f'(x2), x1!=x2
+    # f'(x1) == (y2-y1)/(x2-x1)
+    # ... https://mathematica.stackexchange.com/questions/25892/common-tangent-to-a-curve
+    eq1 = sym.Eq(dy1, dy2)  # dy1 == dy2
+    eq2 = sym.Eq(dy1, (y2 - y1) / (x2 - x1))
+    return sym.nsolve((eq1, eq2), (x1, x2), (xlower, xupper), prec=prec)
