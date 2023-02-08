@@ -15,7 +15,7 @@ yaml.default_flow_style=False
 class Solution:
 
     def __init__(self, params=None):
-        "Simulation solution"
+        """Simulation solution"""
         self.params = params
         ntmax = self.params.ntmax
         N = self.params.N
@@ -24,10 +24,6 @@ class Solution:
         self.hat_U = None
         self.timedata = None
 
-        # self.Amolecule = (Vmm / N_A) ** (2 / 3) # TODO: required?
-        # FIXME: validate by sources
-        # self.Am = (Vmm / N_A) ** (2 / 3) * N_A # ** (1/3) ? #1 see #2 below
-        # vs.
         # # we compute the molar area (cf. molar volume above (line 72))
         self.Am = (25.13 * 1e6) ** (2/3) * self.params.N_A ** (-1/3)
         self.eps2 = self.params.kappa ** 2
