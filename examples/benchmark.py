@@ -17,7 +17,7 @@ except ImportError:
     # sys.path.remove(str(_parentdir))
 
 
-from chsimpy import Controller, Parameters, CLIParser
+from chsimpy import Simulator, Parameters, CLIParser
 
 
 class BenchmarkParams:
@@ -76,9 +76,9 @@ def validation_test():
     params.dump_id = 'benchmark-validation'
     params.use_lcg = True  # to be comparable with matlab
 
-    controller = Controller(params)
-    # dump_id = controller.get_current_id_for_dump()
-    solution = controller.run()
+    controller = Simulator(params)
+    # dump_id = simulator.get_current_id_for_dump()
+    solution = controller.solve()
     U_python = solution.U
     # chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')
     U_matlab = chsimpy.utils.csv_load_matrix('../validation/U-matlab-lcg-N512n100.csv')
@@ -93,11 +93,11 @@ def validation_test():
         return False
 
 
-def time_repetitions(controller, ntmax, repetitions):
+def time_repetitions(simulator, ntmax, repetitions):
     tv_run = np.zeros(repetitions)
     for i in range(repetitions):
         t1 = time.time()
-        controller.run(ntmax)
+        simulator.solve(ntmax)
         tv_run[i] = time.time() - t1
     return tv_run
 
@@ -118,9 +118,9 @@ if __name__ == '__main__':
     ts_runs = None
     t1 = time.time()
 
-    controller = Controller(params)
+    simulator = Simulator(params)
     if bmark_params.warmups > 0:
-        ts_warmup = time_repetitions(controller=controller,
+        ts_warmup = time_repetitions(simulator=simulator,
                                      ntmax=bmark_params.warmup_ntmax,
                                      repetitions=bmark_params.warmups)
         print(f"Warmup ({bmark_params.warmups} repetitions, ntmax={bmark_params.warmup_ntmax}):")
@@ -128,7 +128,7 @@ if __name__ == '__main__':
         print(f" run/sum:  {sum(ts_warmup)} sec")
 
     if bmark_params.runs > 0:
-        ts_runs = time_repetitions(controller=controller,
+        ts_runs = time_repetitions(simulator=simulator,
                                    ntmax=params.ntmax,
                                    repetitions=bmark_params.runs)
         print(f"Benchmark ({bmark_params.runs} repetitions, ntmax={params.ntmax}):")
@@ -143,4 +143,4 @@ if __name__ == '__main__':
         f.write(f"warmup,{ts_warmup}\n")
         f.write(f"runs,{ts_runs}\n")
         f.write(f"total,{time_total}\n")
-    controller.dump_solution(dump_id)
+    simulator.dump_solution(dump_id)

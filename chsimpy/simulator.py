@@ -6,9 +6,9 @@ from . import solver
 from . import utils
 
 
-class Controller:
+class Simulator:
     def __init__(self, params=None, U_init=None):
-        """Simulation controller"""
+        """Simulation simulator"""
         if params is None:
             self.params = parameters.Parameters()
         else:
@@ -20,7 +20,7 @@ class Controller:
         else:
             self.view = None
 
-    def run(self, nsteps=None):
+    def solve(self, nsteps=None):
         return self.solver.solve(nsteps)
 
     def _render(self):

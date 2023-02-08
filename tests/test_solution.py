@@ -12,7 +12,7 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-from chsimpy import Parameters, Solution, Controller
+from chsimpy import Parameters, Solution, Simulator
 
 
 class TestCompareMatlabSolutionU(unittest.TestCase):
@@ -28,11 +28,11 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         params.seed = 2023
         params.render_target = 'none'
         params.use_lcg = True  # to be comparable with matlab
-        controller = Controller(params)
+        simulator = Simulator(params)
 
-        solution = controller.run()
-        # dump_id = controller.get_current_id_for_dump()
-        # fname_sol,_ = controller.dump(dump_id)
+        solution = simulator.solve()
+        # dump_id = simulator.get_current_id_for_dump()
+        # fname_sol,_ = simulator.dump(dump_id)
         # U_python = utils.csv_load_matrix(fname_sol+'.U.csv')
         U_python = solution.U
         # chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')

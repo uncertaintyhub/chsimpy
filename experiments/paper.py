@@ -16,7 +16,7 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-from chsimpy import Controller, Parameters, CLIParser
+from chsimpy import Simulator, Parameters, CLIParser
 
 # multiprocessing start, see example here https://github.com/alphatwirl/atpbar/issues/21#issuecomment-766468695
 multiprocessing.set_start_method('fork', force=True)
@@ -77,13 +77,13 @@ def run_experiment(workpiece):
         params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * rng.uniform(
             exp_params.jitter_Arellow, exp_params.jitter_Arelhigh)
 
-        # sim controller
-        controller = Controller(params)
+        # sim simulator
+        simulator = Simulator(params)
         # solve
-        solution = controller.run()
+        solution = simulator.solve()
         # TODO: dump U_0
-        controller.dump_solution(params.dump_id, ('U', 'E', 'E2', 'SA'))
-        controller.render()
+        simulator.dump_solution(params.dump_id, ('U', 'E', 'E2', 'SA'))
+        simulator.render()
         cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
                                                  solution.A0, solution.A1)
         results[r] = (solution.A0,
