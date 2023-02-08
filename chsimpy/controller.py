@@ -2,7 +2,7 @@ import numpy as np
 
 from . import parameters
 from . import plotview
-from . import model
+from . import solver
 from . import utils
 
 
@@ -14,7 +14,7 @@ class Controller:
         else:
             self.params = params
         self.U_init = U_init
-        self.model = model.Model()
+        self.solver = solver.Solver()
         self.solution = None
         # only allocate PlotView if required
         if 'gui' in self.params.render_target or 'png' in self.params.render_target:
@@ -24,7 +24,7 @@ class Controller:
         self.computed_steps = 0
 
     def run(self):
-        self.solution = self.model.run(self.params, self.U_init)
+        self.solution = self.solver.run(self.params, self.U_init)
         self.computed_steps = self.solution.computed_steps
         return self.solution
 

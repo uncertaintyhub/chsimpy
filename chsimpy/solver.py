@@ -115,7 +115,7 @@ def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, 
     return U, data, tau0
 
 
-class Model:
+class Solver:
     """Implements Cahn-Hilliard (CH) integrator
     (Discrete Cosine Transformation; Flory-Huggins-Energy)
 
