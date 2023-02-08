@@ -45,6 +45,13 @@ class Solution:
         # scaled eigenvalues of the laplacian
         self.Seig = (1.0 / self.params.kappa) * lam1 * leig
 
+        self.RT = params.R * params.temp
+        self.BRT = params.B * params.R * params.temp
+        self.Amr = 1 / self.Am
+        self.A0 = params.func_A0(params.temp)
+        self.A1 = params.func_A1(params.temp)
+        self.time_fac = (1 / (params.M * params.kappa)) * params.delt
+
         self.restime = 0
         self.tau0 = 0
         self.t0 = 0

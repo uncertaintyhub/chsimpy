@@ -13,25 +13,20 @@ class Controller:
             self.params = parameters.Parameters()
         else:
             self.params = params
-        self.U_init = U_init
-        self.solver = solver.Solver()
-        self.solution = None
+        self.solver = solver.Solver(params, U_init)
         # only allocate PlotView if required
         if 'gui' in self.params.render_target or 'png' in self.params.render_target:
             self.view = plotview.PlotView(self.params.N)
         else:
             self.view = None
-        self.computed_steps = 0
 
-    def run(self):
-        self.solution = self.solver.run(self.params, self.U_init)
-        self.computed_steps = self.solution.computed_steps
-        return self.solution
+    def run(self, nsteps=None):
+        return self.solver.solve(nsteps)
 
     def _render(self):
         view = self.view
         params = self.params
-        solution = self.solution
+        solution = self.solver.solution
         time_total = (1 / (params.M * params.kappa) * (solution.computed_steps-1) * params.delt)
         view.set_Umap(U=solution.U,
                       threshold=params.threshold,
@@ -69,11 +64,16 @@ class Controller:
         if dump_id is None or dump_id == '' or dump_id.lower() == 'none':
             return
         fname_sol = 'solution-'+dump_id
-        self.solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
+        solution = self.solver.solution
+
+        solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
+        if members is None:
+            return fname_sol
+
         for member in members:
             varray = None
-            if hasattr(self.solution, member):
-                varray = getattr(self.solution, member)
+            if hasattr(solution, member):
+                varray = getattr(solution, member)
             if isinstance(varray, np.ndarray):
                 utils.csv_dump_matrix(varray, fname=f"{fname_sol}.{member}.csv")
         return fname_sol
