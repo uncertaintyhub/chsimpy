@@ -30,7 +30,7 @@ class Controller:
         view = self.view
         params = self.params
         solution = self.solution
-        time_total = (1 / (solution.M * params.kappa) * (solution.computed_steps-1) * params.delt)
+        time_total = (1 / (params.M * params.kappa) * (solution.computed_steps-1) * params.delt)
         view.set_Umap(U=solution.U,
                       threshold=params.threshold,
                       title='rescaled time ' + str(round(solution.restime / 60, 4)) + ' min; steps = ' + str(

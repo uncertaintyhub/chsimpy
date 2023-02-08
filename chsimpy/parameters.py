@@ -21,16 +21,19 @@ class Parameters:
         self.N = 512
         self.L = 2
         self.XXX = 0.875  # mean value in initial composition mix U
-        self.temp = 650 + 273.15  # temperature
+        self.temp = 650 + 273.15  # temperature (in Kelvin)
         self.Vm = 25.13 * 1e-06  # (micrometer^3/mol) # FIXME: validate incl Vmm
         self.Vmm = 25.13 * 1e6
-        self.B = 12.86  # tuning parameter from R. Charles, Activities in Li2O-, Na2O, and K2O-SiO2 Solutions, J. Am. Ceram. Soc. 50 (12) (1967) 631–641.
+        # chemical tuning parameter for the Gibbs free energy from R. Charles,
+        #   Activities in Li2O-, Na2O, and K2O-SiO2 Solutions, J. Am. Ceram. Soc. 50 (12) (1967) 631–641.
+        self.B = 12.86
 
         self.R = 0.0083144626181532   # universal gas constant
         self.N_A = 6.02214076e+23  # and with the Avogadro constant
 
         self.kappa = 30 / 105.1939
         self.delt = 1e-11
+        self.M = 9e-12  # mobility factor
 
         self.threshold = 0.9  # value determines component A and B in U (U <> threshold)
         self.ntmax = np.int(1e6)  # stops earlier when energy falls

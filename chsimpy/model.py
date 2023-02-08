@@ -197,8 +197,8 @@ class Model:
         A0 = self.params.func_A0(self.params.temp)
         A1 = self.params.func_A1(self.params.temp)
 
-        time_fac = (1 / (solution.M * self.params.kappa)) * self.params.delt
-        # compute_run
+        time_fac = (1 / (params.M * params.kappa)) * params.delt
+        # solve CH equation in nsteps iterations (or less if energy falls and full_sim is false)
         [solution.U, solution.timedata, solution.tau0] = compute_run(
             nsteps    = nsteps,
             U         = solution.U,

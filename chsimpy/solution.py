@@ -33,11 +33,6 @@ class Solution:
         self.eps2 = self.params.kappa ** 2
         self.D = -3.474 * 1e-4 * np.exp(-272.4 / (self.params.R * self.params.temp)) * 1e12
 
-        x = self.params.XXX
-        self.M = self.D / (x + x/((1-x)**2)
-                           - 2.0*utils.A0(self.params.temp)
-                           - 6.0*utils.A1(self.params.temp) * (1-2.0*x))
-        self. M = 9e-12
         # discretizations
         self.delx = self.params.L / (N - 1)
         self.delx2 = self.delx ** 2
