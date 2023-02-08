@@ -17,7 +17,7 @@ from . import utils
 
 #@profile
 def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, time_fac, threshold, full_sim):
-    """Performs full simulation on U with nsteps or less if energy eventually falls"""
+    """Performs full simulation on U with nsteps or less if energy eventually falls and full_sim is false"""
 
     # init
     DUx, DUy = np.gradient(U, delx, axis=[0, 1], edge_order=1)
@@ -112,121 +112,98 @@ def compute_run(nsteps, U, delx, N, A0, A1, Amr, B, eps2, RT, BRT, Seig, CHeig, 
             else:
                 skip_check = True
 
-    return (U, data, tau0)
+    return U, data, tau0
 
 
 class Model:
-    def __init__(self, params = None):
-        """Simulation model of Cahn-Hilliard equation
+    """Implements Cahn-Hilliard (CH) integrator
+    (Discrete Cosine Transformation; Flory-Huggins-Energy)
 
-        Cahn-Hilliard; Discrete Cosine Transformation; Flory-Huggins-Energy
+      du/dt = M * lap[ dG(u)/du - kappa * lap(u)]
 
-        Cahn-Hilliard integrator: Solves the Cahn-Hilliard equation
+    (with natural and no-flux boundary conditions), where
 
-          du/dt = M * lap[ dG(u)/du - kappa * lap(u)]
+     G       = Flory-Huggins-Gibbs-Energy with Redlich-Kister interaction
+               model for the Na2O-SiO2  glass
 
-        (with natural and no-flux boundary conditions), where
+     kappa   = gradient energy parameter, surface parameter
+               (Attention: there are several parametrizations
+                for this parameter)
 
-         G       = Flory-Huggins-Gibbs-Energy with Redlich-Kister interaction
-                   model for the Na2O-SiO2  glass
+     M       = Mobility (given in (micrometer^2 (mol-#)^2) / (kJ * s))
+               (mol-#; mol fraction is obviously dimensionless)
 
-         kappa   = gradien energy parameter, surface parameter
-                   (Attention: there are several parametrizations
-                    for this parameter)
+    To solve the Cahn-Hilliard equation a Discrete Cosine Transformation
+    is considered which leads to an ODE for the coefficients. This ODE is
+    solved using a semi-implicit finite difference method.
 
-         M       = Mobility (given in (micrometer^2 (mol-#)^2) / (kJ * s))
-                   (mol-#; mol fraction is obviously dimensionless)
+    See Ghiass et al (2016). 'Numerical Simulation of Phase Separation
+    Kinetic of Polymer Solutions Using the Spectral Discrete Cosine
+    Transform Method', Journal of Macromolecular Science, Part B,
+    VOL. 55, NO. 4, 411–425. (DOI: 10.1080/00222348.2016.1153403).
+    """
 
-        To solve the Cahn-Hilliard equation a Discrete Cosine Transformation
-        is considered which lead to an ODE for the coefficients. This ODE is
-        solved using a semi-implicit finite difference method.
+    def run(self, params=None, U_init=None):
+        """Full simulation run solving Cahn-Hilliard equation returning solution object"""
 
-        see Ghiass et al (2016). 'Numerical Simulation of Phase Separation
-        Kinetic of Polymer Solutions Using the Spectral Discrete Cosine
-        Transform Method', Journal of Macromolecular Science, Part B,
-        VOL. 55, NO. 4, 411–425. (DOI: 10.1080/00222348.2016.1153403).
+        solution = Solution(params)
+        N = params.N
 
-        Numerical Scheme
-        N       -> domain resolution
-        delt    -> timestep delta
-        tmax    -> max # of time steps
-        U       -> initial field
-
-        Chemico-Physical Scheme
-        Lu      -> length of squared image window
-                   (size of the simulated sample,
-                   given in micrometer)
-        temp    -> temperature (in Kelvin)
-        kappa -> CH parameters
-                   Gradient-Parameter.
-        M       -> Mobility
-        B       -> chemical tuning parameter for the Gibbs free energy
-                   (see also Charles (1967)).
-        (original source from matlab function 'ch_DCT_FHE71')
-        """
-        self.params = params
-
-    def run(self, nsteps=None):
-        """Complete simulation run until Energy eventually falls"""
-        if nsteps < 1:
-            nsteps = self.params.ntmax
-        if nsteps > self.params.ntmax:
-            nsteps = self.params.ntmax
-
-        solution = Solution(self.params)
-        N = self.params.N
-
-        if self.params.use_lcg:  # using linear-congruential generator for portable reproducible random numbers
-            solution.U = self.params.XXX * np.ones((N, N)) + (
-                0.01 * mport.matlab_lcg_sample(N, N, self.params.seed))
-        elif self.params.use_quasi:
+        # initialize U (concentration)
+        if U_init is not None:
+            if U_init.shape == (params.N, params.N):
+                solution.U = U_init
+            else:
+                print("U_init has wrong shape, must match parameters.N")
+                exit(1)
+        elif params.use_lcg:  # using linear-congruential generator for portable reproducible random numbers
+            solution.U = params.XXX + (0.01 * mport.matlab_lcg_sample(N, N, params.seed))
+        elif params.use_quasi:
             # https://blog.scientific-python.org/scipy/qmc-basics/
             # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.Sobol.html
-            qrng = qmc.Sobol(d=N) # 2D
-            solution.U = self.params.XXX * np.ones((N, N)) + (
-                    0.01 * (qrng.random(N) - 0.5))
+            qrng = qmc.Sobol(d=N)  # 2D
+            solution.U = params.XXX + (0.01 * (qrng.random(N) - 0.5))
         else:
             # https://builtin.com/data-science/numpy-random-seed
-            rng = np.random.default_rng(self.params.seed)
-            solution.U = self.params.XXX * np.ones((N, N)) + (
-                0.01 * (rng.random((N, N)) - 0.5))
+            rng = np.random.default_rng(params.seed)
+            solution.U = params.XXX + (0.01 * (rng.random((N, N)) - 0.5))
 
-        RT = self.params.R * self.params.temp
-        BRT = self.params.B * self.params.R * self.params.temp
+        RT = params.R * params.temp
+        BRT = params.B * params.R * params.temp
         Amr = 1 / solution.Am
-        A0 = self.params.func_A0(self.params.temp)
-        A1 = self.params.func_A1(self.params.temp)
+        A0 = params.func_A0(params.temp)
+        A1 = params.func_A1(params.temp)
+        # assign computed temperature lambdas to solution
+        solution.A0 = A0
+        solution.A1 = A1
 
         time_fac = (1 / (params.M * params.kappa)) * params.delt
         # solve CH equation in nsteps iterations (or less if energy falls and full_sim is false)
         [solution.U, solution.timedata, solution.tau0] = compute_run(
-            nsteps    = nsteps,
+            nsteps    = params.ntmax,
             U         = solution.U,
             delx      = solution.delx,
-            N         = self.params.N,
+            N         = params.N,
             A0        = A0,
             A1        = A1,
             Amr       = Amr,
-            B         = self.params.B,
+            B         = params.B,
             eps2      = solution.eps2,
             RT        = RT,
             BRT       = BRT,
             Seig      = solution.Seig,
             CHeig     = solution.CHeig,
             time_fac  = time_fac,
-            threshold = self.params.threshold,
-            full_sim  = self.params.full_sim
+            threshold = params.threshold,
+            full_sim  = params.full_sim
         )
 
-        # return actual number of iterations computed
-        solution.computed_steps = nsteps
+        solution.computed_steps = params.ntmax
+        # actual number of iterations computed
         if solution.tau0 == 0:
-            solution.tau0 = nsteps-1
-        elif not self.params.full_sim and solution.tau0 > 0:
-            solution.computed_steps = solution.tau0+1  # tau0 equals 'it' in simulation for-loop
+            solution.tau0 = solution.computed_steps - 1
+        elif not params.full_sim and solution.tau0 > 0:
+            solution.computed_steps = solution.tau0 + 1  # tau0 equals 'it' in simulation for-loop
 
         solution.t0 = time_fac * solution.tau0
-        # assign computed temperature lambdas to solution
-        solution.A0 = A0
-        solution.A1 = A1
         return solution

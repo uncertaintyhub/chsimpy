@@ -7,22 +7,24 @@ from . import utils
 
 
 class Controller:
-    def __init__(self, params=None):
+    def __init__(self, params=None, U_init=None):
         """Simulation controller"""
         if params is None:
             self.params = parameters.Parameters()
         else:
             self.params = params
-        self.model = model.Model(self.params)
+        self.U_init = U_init
+        self.model = model.Model()
         self.solution = None
+        # only allocate PlotView if required
         if 'gui' in self.params.render_target or 'png' in self.params.render_target:
             self.view = plotview.PlotView(self.params.N)
         else:
             self.view = None
         self.computed_steps = 0
 
-    def run(self, nsteps=-1):
-        self.solution = self.model.run(nsteps)
+    def run(self):
+        self.solution = self.model.run(self.params, self.U_init)
         self.computed_steps = self.solution.computed_steps
         return self.solution
 
@@ -59,7 +61,6 @@ class Controller:
                         t0=solution.t0)
 
         view.set_Uhist(solution.U, "Solution Histogram")
-        return
 
     # TODO: too much logic hidden w.r.t. dump_id, should be more like dump_with_auto_id and dump_with_custom_id
     # TODO: dump and render_target parsing? (yaml, csv, ..)
