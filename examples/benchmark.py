@@ -121,16 +121,16 @@ if __name__ == '__main__':
     controller = Controller(params)
     if bmark_params.warmups > 0:
         ts_warmup = time_repetitions(controller=controller,
-                              ntmax=bmark_params.warmup_ntmax,
-                              repetitions=bmark_params.warmups)
+                                     ntmax=bmark_params.warmup_ntmax,
+                                     repetitions=bmark_params.warmups)
         print(f"Warmup ({bmark_params.warmups} repetitions, ntmax={bmark_params.warmup_ntmax}):")
         print(f" run/single: {ts_warmup} sec")
         print(f" run/sum:  {sum(ts_warmup)} sec")
 
     if bmark_params.runs > 0:
         ts_runs = time_repetitions(controller=controller,
-                              ntmax=params.ntmax,
-                              repetitions=bmark_params.runs)
+                                   ntmax=params.ntmax,
+                                   repetitions=bmark_params.runs)
         print(f"Benchmark ({bmark_params.runs} repetitions, ntmax={params.ntmax}):")
         print(f" run/single: {ts_runs} sec")
         print(f" run/sum:  {sum(ts_runs)} sec")
