@@ -36,7 +36,7 @@ class Parameters:
         self.M = 9e-12  # mobility factor
 
         self.threshold = 0.9  # value determines component A and B in U (U <> threshold)
-        self.ntmax = np.int(1e6)  # stops earlier when energy falls
+        self.ntmax = int(1e6)  # stops earlier when energy falls
 
         # lcg: linear-congruential generator (for portable reproducible random numbers)
         self.use_lcg = False
