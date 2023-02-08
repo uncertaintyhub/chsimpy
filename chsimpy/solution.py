@@ -143,6 +143,10 @@ class Solution:
         del state['timedata']
         del state['CHeig']
         del state['Seig']
+        del state['Ra']
+        del state['L2']
+        del state['PS']
+        del state['it_range']
         return state
 
     def is_scalarwise_equal_with(self, other):
@@ -152,7 +156,7 @@ class Solution:
             od = dict(sorted(other.__dict__.items()))
             entities_to_remove = ('U', 'hat_U', 'params',
                                   'timedata', 'CHeig', 'Seig',
-                                  'E', 'E2', 'SA', 'domtime')
+                                  'E', 'E2', 'SA', 'domtime', 'PS', 'Ra', 'L2', 'it_range')
             [sd.pop(k, None) for k in entities_to_remove]
             [od.pop(k, None) for k in entities_to_remove]
             return params_equal and sd == od
