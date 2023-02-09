@@ -51,6 +51,8 @@ class TestDumpParameters(unittest.TestCase):
         p1.yaml_dump_scalars(fname)
         p2 = chsimpy.utils.yaml_load(fname)
         self.assertTrue(p1.is_scalarwise_equal_with(p2))
+        if os.path.isfile(fname):
+            os.remove(fname)
 
     def test_dump_roundtrip_mismatch(self):
         """
@@ -65,6 +67,8 @@ class TestDumpParameters(unittest.TestCase):
         p2 = chsimpy.utils.yaml_load(fname)
         p1.N = 256
         self.assertTrue(p1 != p2 and p2.N == 512 and p1.N == 256)
+        if os.path.isfile(fname):
+            os.remove(fname)
 
 
 class TestDumpSolution(unittest.TestCase):
@@ -82,6 +86,8 @@ class TestDumpSolution(unittest.TestCase):
         s1.yaml_dump_scalars(fname)
         s2 = chsimpy.utils.yaml_load(fname)
         self.assertTrue(s1.is_scalarwise_equal_with(s2))
+        if os.path.isfile(fname):
+            os.remove(fname)
 
     def test_dump_csv_roundtrip(self):
         """
@@ -92,6 +98,8 @@ class TestDumpSolution(unittest.TestCase):
         chsimpy.utils.csv_dump_matrix(lcg_matrix_out, fname=fname)
         lcg_matrix_in = chsimpy.utils.csv_load_matrix(fname)
         self.assertTrue(np.allclose(lcg_matrix_out, lcg_matrix_in))
+        if os.path.isfile(fname):
+            os.remove(fname)
 
 
 if __name__ == '__main__':
