@@ -69,13 +69,17 @@ class Simulator:
         solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
         if members is None:
             return fname_sol
-
+        if self.params.compress_csv:
+            fending = 'csv.bz2'
+        else:
+            fending = 'csv'
         for member in members:
             varray = None
             if hasattr(solution, member):
                 varray = getattr(solution, member)
             if isinstance(varray, np.ndarray):
-                utils.csv_dump_matrix(varray, fname=f"{fname_sol}.{member}.csv")
+                fname = f"{fname_sol}.{member}.{fending}"
+                utils.csv_dump_matrix(varray, fname=fname)
         return fname_sol
 
     def render(self):

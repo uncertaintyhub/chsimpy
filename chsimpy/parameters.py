@@ -31,7 +31,8 @@ class Parameters:
         self.R = 0.0083144626181532   # universal gas constant
         self.N_A = 6.02214076e+23  # and with the Avogadro constant
 
-        self.kappa = 30 / 105.1939
+        self.kappa_base = 30.0
+        self.kappa = self.kappa_base / 105.1939
         self.delt = 1e-11
         self.M = 9e-12  # mobility factor
 
@@ -45,6 +46,7 @@ class Parameters:
         self.export_csv = ''
         self.full_sim = False
         self.use_quasi = False
+        self.compress_csv = False
 
         self.func_A0 = lambda temp: utils.A0(temp)
         self.func_A1 = lambda temp: utils.A1(temp)

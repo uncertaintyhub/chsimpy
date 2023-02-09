@@ -6,6 +6,7 @@ from datetime import datetime
 import psutil
 import platform
 import sympy as sym
+import pandas as pd
 
 
 # Experimentelle Bestimmung der Koeffizenten einer
@@ -55,11 +56,17 @@ def yaml_load(fname):
 
 
 def csv_dump_matrix(V, fname):
-    np.savetxt(fname, V, delimiter=",", fmt='%s')
+    if fname.endswith('bz2'):
+        pd.DataFrame(V).to_csv(fname, index=False, header=None, sep=',', compression='bz2')
+    else:
+        np.savetxt(fname, V, delimiter=',', fmt='%s')
 
 
 def csv_load_matrix(fname):
-    return np.loadtxt(fname, delimiter=",")
+    if fname.endswith('bz2'):
+        return pd.read_csv(fname, sep=',', header=None, compression='bz2').values
+    else:
+        return np.loadtxt(fname, delimiter=',')
 
 
 # validate solution1 with solution2

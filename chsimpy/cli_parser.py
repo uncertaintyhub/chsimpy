@@ -65,6 +65,9 @@ class CLIParser:
         parser.add_argument('-Q', '--use-quasi',
                             action='store_true',
                             help='Quasi-random numbers for initial concentration')
+        parser.add_argument('-C', '--compress-csv',
+                            action='store_true',
+                            help='Compress csv dumps with bz2')
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s 0.0')  # TODO:
@@ -86,4 +89,5 @@ class CLIParser:
         params.kappa_base = self.args.kappa_base
         params.use_quasi = self.args.use_quasi
         params.kappa = params.kappa_base / 105.1939
+        params.compress_csv = self.args.compress_csv
         return params
