@@ -33,17 +33,10 @@ class Solution:
         self.delx = self.params.L / (N - 1)
         self.delx2 = self.delx ** 2
 
-        # time marching update parameters
-        lam1 = self.params.delt / self.delx2
-        lam2 = lam1 / self.delx2
-        # matrix of eigenvalues of the DCT
-        # lambda_{k_1,k_2} = 2*(cos(k_1 * pi / N) - 1) + 2*(cos(k_2 * pi / N) - 1)
-
-        leig = utils.eigenvalues(N)
-        # scaled eigenvalues of stabilized CH update matrix
-        self.CHeig = np.ones((N, N)) + lam2 * leig * leig
-        # scaled eigenvalues of the laplacian
-        self.Seig = (1.0 / self.params.kappa) * lam1 * leig
+        self.CHeig, self.Seig = utils.get_coefficients(N=N,
+                                                       kappa=self.params.kappa,
+                                                       delt=self.params.delt,
+                                                       delx2=self.delx2)
 
         self.RT = params.R * params.temp
         self.BRT = params.B * params.R * params.temp

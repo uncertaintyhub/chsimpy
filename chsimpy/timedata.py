@@ -5,10 +5,10 @@ from . import utils
 
 class TimeData:
     def __init__(self):
-        self._data = np.empty(shape=(0, 8))
+        self._data = np.empty(shape=(0, 9))
 
-    def insert(self, it, E, E2, SA, domtime, Ra, L2, PS):
-        self._data = np.append(self._data, [[it, E, E2, SA, domtime, Ra, L2, PS]], axis=0)
+    def insert(self, it, delt, E, E2, SA, domtime, Ra, L2, PS):
+        self._data = np.append(self._data, [[it, E, E2, SA, domtime, Ra, L2, PS, delt]], axis=0)
 
     def data(self):
         return self._data
@@ -44,6 +44,10 @@ class TimeData:
     @property
     def PS(self):
         return self._data[:, 7]
+
+    @property
+    def delt(self):
+        return self._data[:, 8]
 
     def energy_falls(self, it=None):
         """Checks if E2 curve really falls and returns True then.

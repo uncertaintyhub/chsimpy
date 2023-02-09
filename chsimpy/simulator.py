@@ -27,19 +27,28 @@ class Simulator:
         view = self.view
         params = self.params
         solution = self.solver.solution
-        time_total = (1 / (params.M * params.kappa) * (solution.computed_steps-1) * params.delt)
+        #time_total = (1 / (params.M * params.kappa) * (solution.computed_steps-1) * params.delt)
+        time_total = solution.domtime[-1] ** 3
         view.set_Umap(U=solution.U,
                       threshold=params.threshold,
-                      title='rescaled time ' + str(round(solution.restime / 60, 4)) + ' min; steps = ' + str(
+                      title='rescaled time ' + str(round(time_total / 60, 4)) + ' min; steps = ' + str(
                           solution.computed_steps))
 
         view.set_Uline(U=solution.U,
-                       title='U(N/2,:), it = ' + str(solution.computed_steps))
+                       title='U(N/2,:), steps = ' + str(solution.computed_steps))
 
-        view.set_Eline(E=solution.E,
-                       it_range=solution.it_range,
-                       title=f"Total Energy, Total Time={time_total:g} s",
-                       computed_steps=solution.computed_steps)
+        if self.params.adaptive_time:
+            view.set_Eline_delt(E=solution.E,
+                                it_range=solution.it_range,
+                                delt=solution.timedata.delt,
+                                title=f"Total Energy, Total Time={time_total:g} s",
+                                computed_steps=solution.computed_steps)
+        else:
+            view.set_Eline(E=solution.E,
+                           it_range=solution.it_range,
+                           title=f"Total Energy, Total Time={time_total:g} s",
+                           computed_steps=solution.computed_steps)
+
 
         view.set_SAlines(domtime=solution.domtime,
                          SA=solution.SA,
@@ -48,12 +57,13 @@ class Simulator:
                          x2=time_total ** (1 / 3),  # = x2 of x axis
                          t0=solution.t0)
 
-        view.set_E2line(E2=solution.E2,
-                        it_range=solution.it_range,
-                        title=f"Surf.Energy | Separation t0 = {str(round(solution.t0, 4))} s",
-                        computed_steps=solution.computed_steps,
-                        tau0=solution.tau0,
-                        t0=solution.t0)
+        view.set_E2line_L2(E2=solution.E2,
+                           L2=solution.L2,
+                           it_range=solution.it_range,
+                           title=f"Surf.Energy | Separation t0 = {str(round(solution.t0, 4))} s",
+                           computed_steps=solution.computed_steps,
+                           tau0=solution.tau0,
+                           t0=solution.t0)
 
         view.set_Uhist(solution.U, "Solution Histogram")
 

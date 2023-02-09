@@ -85,6 +85,8 @@ class Solver:
         CHeig = self.solution.CHeig
         threshold = self.params.threshold
         time_fac = self.solution.time_fac
+        time_delta_sum = 0.0
+        delt = self.params.delt
 
         assert (U.shape == (N, N))
 
@@ -103,7 +105,7 @@ class Solver:
 
         Um = U - np.mean(U)
         PS = np.sum(np.abs(Um)) / (N ** 2)
-        L2 = 1 / (N ** 2) * np.sum(Um ** 2)
+        L2 = 0# 1 / (N ** 2) * np.sum(Um ** 2)
         Ra = np.mean(np.abs(
             U[int(N / 2) + 1, :] - np.mean(U[int(N / 2) + 1, :])))
 
@@ -115,6 +117,7 @@ class Solver:
         # contains time data vectors
         data = TimeData()
         data.insert(it=0,
+                    delt=delt,
                     E=E,
                     E2=E2,
                     SA=0,
@@ -136,6 +139,17 @@ class Solver:
                 RT * np.log(U1Uinv)
                 - BRT + (A0 + A1 * U2inv) * U2inv
                 - 2 * A1 * U * Uinv)
+
+            if self.params.adaptive_time and it > 1 and np.remainder(it, 5) == 0:
+                delt_alpha = 500 / (self.params.kappa_base/15)**3
+                delt_dyn = np.linalg.norm(self.params.delt_max / np.sqrt(1 + delt_alpha*np.abs(EnergieEut)**2), ord=-1)
+                delt = max(self.params.delt, delt_dyn)
+                CHeig, Seig = utils.get_coefficients(
+                    N=N,
+                    kappa=self.params.kappa,
+                    delt=delt,
+                    delx2=self.solution.delx2)
+
             # compute the right hand side in tranform space
             hat_rhs = hat_U + Seig * scifft.dctn(EnergieEut, norm="ortho")
 
@@ -159,13 +173,15 @@ class Solver:
 
             Um = U - np.mean(U)
             PS = np.sum(np.abs(Um)) / (N ** 2)
-            L2 = 1 / (N ** 2) * np.sum(Um ** 2)
+            L2 = np.linalg.norm(EnergieEut)/N**2 #1 / (N ** 2) * np.sum(Um ** 2)
             Ra = np.mean(np.abs(
                 U[int(N / 2) + 1, :] - np.mean(U[int(N / 2) + 1, :])))
-
             SA = np.sum(U < threshold) / (N ** 2)  # determining relative concentration of A in U by threshold
-            domtime = (time_fac * it) ** (1 / 3)
+
+            time_delta_sum += delt
+            domtime = (time_delta_sum / (self.params.M * self.params.kappa)) ** (1 / 3)
             data.insert(it=it,
+                        delt=delt,
                         E=E,
                         E2=E2,
                         SA=SA,
@@ -176,6 +192,7 @@ class Solver:
 
             if not skip_check and data.energy_falls(it):
                 tau0 = it
+                t0 = time_delta_sum
                 if not self.params.full_sim:
                     break
                 else:
@@ -184,12 +201,13 @@ class Solver:
         self.solution.U = U
         self.solution.timedata = data
         self.solution.tau0 = tau0
+        self.solution.t0 = t0 / (self.params.M * self.params.kappa)
         self.solution.computed_steps = nsteps
         # actual number of iterations computed
         if tau0 == 0:
             self.solution.tau0 = nsteps - 1
+            self.solution.t0 = time_delta_sum / (self.params.M * self.params.kappa)
         elif not self.params.full_sim and tau0 > 0:
             self.solution.computed_steps = tau0 + 1  # tau0 equals 'it' in simulation for-loop
 
-        self.solution.t0 = time_fac * tau0
         return self.solution

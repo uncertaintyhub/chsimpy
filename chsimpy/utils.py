@@ -25,6 +25,19 @@ def eigenvalues(N):
         + np.ones((N, 1)) @ ((2 * np.cos(np.pi * (np.arange(0, N - 1 + 1)) / (N - 1))) - 2).reshape(1, N)
 
 
+def get_coefficients(N, kappa, delt, delx2):
+    # time marching update parameters
+    lam1 = delt / delx2
+    lam2 = lam1 / delx2
+    # matrix of eigenvalues of the DCT
+    leig = eigenvalues(N)
+    # scaled eigenvalues of stabilized CH update matrix
+    CHeig = np.ones((N, N)) + lam2 * leig * leig
+    # scaled eigenvalues of the laplacian
+    Seig = (1.0 / kappa) * lam1 * leig
+    return CHeig, Seig
+
+
 def yaml_repr_ndarray(representer, data):
     return representer.represent_scalar(u'!ndarray', np.array2string(data, separator=',', threshold=2147483647),
                                         style='|')

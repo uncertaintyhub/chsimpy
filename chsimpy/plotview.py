@@ -52,6 +52,15 @@ class PlotView:
         self.ax_Eline.set_ylim(np.min(E[0:computed_steps]), np.max(E[0:computed_steps]))
         self.ax_Eline.set_title(title)
 
+    def set_Eline_delt(self, E, it_range, delt, title, computed_steps):
+        self.Eline.set_data((it_range[0:computed_steps], E[0:computed_steps]))
+        ax2 = self.ax_Eline.twinx()
+        ax2.plot(it_range[0:computed_steps], delt[0:computed_steps], color='black')
+        ax2.set_ylabel('time-delta')
+        self.ax_Eline.set_xlim(0, computed_steps)
+        self.ax_Eline.set_ylim(np.min(E[0:computed_steps]), np.max(E[0:computed_steps]))
+        self.ax_Eline.set_title(title)
+
     def set_SAlines(self, domtime, SA, title, computed_steps, x2, t0):
         self.SAlines[0].set_data((domtime[1:computed_steps], SA[1:computed_steps]))
         self.SAlines[1].set_data((domtime[1:computed_steps], 1-SA[1:computed_steps]))
@@ -67,6 +76,21 @@ class PlotView:
         e2min = np.min(E2[0:computed_steps])
         e2max = np.max(E2[0:computed_steps])
         self.E2line.set_data((it_range[0:computed_steps], E2[0:computed_steps]))
+        self.ax_E2line.set_xlim(0, computed_steps)
+        self.ax_E2line.set_ylim(e2min, 1.25*e2max)
+        self.ax_E2line.axvline(tau0, color='black')
+        self.ax_E2line.text(tau0-0.05*computed_steps, 0.15*e2max, f"{t0:g} s @ {tau0} it", rotation=90)
+        # self.ax_E2line.relim()
+        # self.ax_E2line.autoscale()
+        self.ax_E2line.set_title(title)
+
+    def set_E2line_L2(self, E2, L2, it_range, title, computed_steps, tau0, t0):
+        e2min = np.min(E2[0:computed_steps])
+        e2max = np.max(E2[0:computed_steps])
+        self.E2line.set_data((it_range[0:computed_steps], E2[0:computed_steps]))
+        ax2 = self.ax_E2line.twinx()
+        ax2.plot(it_range[1:computed_steps], L2[1:computed_steps], color='red')
+        ax2.set_ylabel('L2-norm(EP)')
         self.ax_E2line.set_xlim(0, computed_steps)
         self.ax_E2line.set_ylim(e2min, 1.25*e2max)
         self.ax_E2line.axvline(tau0, color='black')

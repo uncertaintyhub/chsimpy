@@ -34,6 +34,7 @@ class Parameters:
         self.kappa_base = 30.0
         self.kappa = self.kappa_base / 105.1939
         self.delt = 1e-11
+        self.delt_max = 1e-10
         self.M = 9e-12  # mobility factor
 
         self.threshold = 0.9  # value determines component A and B in U (U <> threshold)
