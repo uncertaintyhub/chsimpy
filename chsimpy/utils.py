@@ -158,3 +158,10 @@ def is_notebook() -> bool:
             return False  # Other type (?)
     except NameError:
         return False      # Probably standard Python interpreter
+
+
+def sec_to_min_if(value, t=60):
+    if value > t:
+        return str(round(value/60.0, 1))+'min'
+    else:
+        return str(round(value,1))+'s'

@@ -33,35 +33,34 @@ class Simulator:
             time_total = solution.domtime[-1] ** 3
         view.set_Umap(U=solution.U,
                       threshold=params.threshold,
-                      title='rescaled time ' + str(round(time_total / 60, 4)) + ' min; steps = ' + str(
-                          solution.computed_steps))
+                      title=f"U <> {params.threshold}, total time = {utils.sec_to_min_if(time_total)}, "
+                            f"steps = {solution.computed_steps}")
 
-        view.set_Uline(U=solution.U,
-                       title='U(N/2,:), steps = ' + str(solution.computed_steps))
+        view.set_Uline(U=solution.U, title='Slice at U(N/2,:)')
 
         if self.params.adaptive_time:
             view.set_Eline_delt(E=solution.E,
                                 it_range=solution.it_range,
                                 delt=solution.delt,
-                                title=f"Total Energy, Total Time={time_total:g} s",
+                                title='Total Energy',
                                 computed_steps=solution.computed_steps)
         else:
             view.set_Eline(E=solution.E,
                            it_range=solution.it_range,
-                           title=f"Total Energy, Total Time={time_total:g} s",
+                           title='Total Energy',
                            computed_steps=solution.computed_steps)
 
 
         view.set_SAlines(domtime=solution.domtime,
                          SA=solution.SA,
-                         title='Area of high silica',
+                         title=f"Area of high silica (U <> {params.threshold})",
                          computed_steps=solution.computed_steps,
                          x2=time_total ** (1 / 3),  # = x2 of x axis
                          t0=solution.t0)
 
         view.set_E2line(E2=solution.E2,
                         it_range=solution.it_range,
-                        title=f"Surf.Energy | Separation t0 = {str(round(solution.t0, 4))} s",
+                        title=f"Surf.Energy | Separation t0 = {utils.sec_to_min_if(solution.t0)}",
                         computed_steps=solution.computed_steps,
                         tau0=solution.tau0,
                         t0=solution.t0)

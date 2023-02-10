@@ -80,7 +80,7 @@ class PlotView:
         self.ax_Eline.set_xlim(0, computed_steps)
         self.ax_Eline.set_ylim(np.nanmin(E[0:computed_steps]), np.nanmax(E[0:computed_steps]))
         self.ElineDelt.set_data((it_range[0:computed_steps], delt[0:computed_steps]))
-        self.ax2_Eline.set_ylabel('time-delta')
+        self.ax2_Eline.set_ylabel('delt (gray)')
         self.ax2_Eline.set_xlim(0, computed_steps)
         self.ax2_Eline.set_ylim(0.95*np.nanmin(delt[0:computed_steps]),
                                 1.05*np.nanmax(delt[0:computed_steps]))
