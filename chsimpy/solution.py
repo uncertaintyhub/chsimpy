@@ -108,6 +108,13 @@ class Solution:
         else:
             return self.timedata.PS
 
+    @property
+    def delt(self):
+        if self.timedata is None:
+            return None
+        else:
+            return self.timedata.delt
+
     @classmethod
     def to_yaml(cls, representer, node):
         tag = getattr(cls, 'yaml_tag', '!' + cls.__name__)
