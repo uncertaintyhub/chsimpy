@@ -15,7 +15,7 @@ class PlotView:
         self.bins = 15
         # Turn interactive plotting off
         plt.ioff()
-        self.fig = plt.figure(figsize=(10, 10))
+        self.fig = plt.figure(figsize=(10, 10), layout="constrained")
         nrow=3  # plot-subfigure rows
         ncol=2  # plot-subfigure columns
         self.ax_Umap = self.fig.add_subplot(nrow, ncol, 1)
@@ -136,5 +136,4 @@ class PlotView:
             plt.show()
 
     def render_to(self, fname='diagrams.png'):
-        self.fig.savefig(fname, bbox_inches='tight', pad_inches=0.75)
-        #plt.close(self.fig)
+        self.fig.savefig(fname, bbox_inches='tight', pad_inches=0.5, dpi=100)
