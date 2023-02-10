@@ -134,6 +134,7 @@ class PlotView:
     def show(self):
         plt.tight_layout()
         self.fig.subplots_adjust(top=0.9, right=0.9, bottom=0.1, left=0.1)
+        plt.tight_layout()
         if chsimpy.utils.is_notebook():
             IPython.display.display(self.fig)
         else:
