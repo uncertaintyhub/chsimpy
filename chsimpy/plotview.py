@@ -65,12 +65,14 @@ class PlotView:
 
     def set_Eline(self, E, it_range, title, computed_steps):
         self.ax_Eline.set_title(title)
+        self.ax2_Eline.set_ylabel('')
+        self.ax2_Eline.get_yaxis().set_visible(False)
         if E is None:
             return
         self.Eline.set_data((it_range[0:computed_steps], E[0:computed_steps]))
         self.ax_Eline.set_xlim(0, computed_steps)
-        self.ax_Eline.set_ylim(0.95*np.nanmin(E[0:computed_steps]),
-                               1.05*np.nanmax(E[0:computed_steps]))
+        self.ax_Eline.set_ylim(np.nanmin(E[0:computed_steps]),
+                               np.nanmax(E[0:computed_steps]))
 
     def set_Eline_delt(self, E, it_range, delt, title, computed_steps):
         self.ax_Eline.set_title(title)
@@ -80,10 +82,11 @@ class PlotView:
         self.ax_Eline.set_xlim(0, computed_steps)
         self.ax_Eline.set_ylim(np.nanmin(E[0:computed_steps]), np.nanmax(E[0:computed_steps]))
         self.ElineDelt.set_data((it_range[0:computed_steps], delt[0:computed_steps]))
+        self.ax2_Eline.get_yaxis().set_visible(True)
         self.ax2_Eline.set_ylabel('delt (gray)')
         self.ax2_Eline.set_xlim(0, computed_steps)
-        self.ax2_Eline.set_ylim(0.95*np.nanmin(delt[0:computed_steps]),
-                                1.05*np.nanmax(delt[0:computed_steps]))
+        self.ax2_Eline.set_ylim(np.nanmin(delt[0:computed_steps]),
+                                np.nanmax(delt[0:computed_steps]))
 
     def set_SAlines(self, domtime, SA, title, computed_steps, x2, t0):
         if SA is None or domtime is None:
@@ -129,8 +132,8 @@ class PlotView:
         self.ax_Uhist.set_title(title)
 
     def show(self):
-        self.fig.subplots_adjust(top=0.9, right=0.9, bottom=0.1, left=0.1)
         plt.tight_layout()
+        self.fig.subplots_adjust(top=0.9, right=0.9, bottom=0.1, left=0.1)
         if chsimpy.utils.is_notebook():
             IPython.display.display(self.fig)
         else:
