@@ -27,8 +27,10 @@ class Simulator:
         view = self.view
         params = self.params
         solution = self.solver.solution
-        #time_total = (1 / (params.M * params.kappa) * (solution.computed_steps-1) * params.delt)
-        time_total = solution.domtime[-1] ** 3
+        if solution.domtime is None:
+            time_total = (1 / (params.M * params.kappa) * (solution.computed_steps-1) * params.delt)
+        else:
+            time_total = solution.domtime[-1] ** 3
         view.set_Umap(U=solution.U,
                       threshold=params.threshold,
                       title='rescaled time ' + str(round(time_total / 60, 4)) + ' min; steps = ' + str(
