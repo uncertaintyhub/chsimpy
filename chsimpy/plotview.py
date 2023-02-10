@@ -69,17 +69,21 @@ class PlotView:
             return
         self.Eline.set_data((it_range[0:computed_steps], E[0:computed_steps]))
         self.ax_Eline.set_xlim(0, computed_steps)
-        self.ax_Eline.set_ylim(np.min(E[0:computed_steps]), np.max(E[0:computed_steps]))
+        self.ax_Eline.set_ylim(0.95*np.nanmin(E[0:computed_steps]),
+                               1.05*np.nanmax(E[0:computed_steps]))
 
     def set_Eline_delt(self, E, it_range, delt, title, computed_steps):
         self.ax_Eline.set_title(title)
         if E is None or delt is None:
             return
         self.Eline.set_data((it_range[0:computed_steps], E[0:computed_steps]))
+        self.ax_Eline.set_xlim(0, computed_steps)
+        self.ax_Eline.set_ylim(np.nanmin(E[0:computed_steps]), np.nanmax(E[0:computed_steps]))
         self.ElineDelt.set_data((it_range[0:computed_steps], delt[0:computed_steps]))
         self.ax2_Eline.set_ylabel('time-delta')
-        self.ax_Eline.set_xlim(0, computed_steps)
-        self.ax_Eline.set_ylim(np.min(E[0:computed_steps]), np.max(E[0:computed_steps]))
+        self.ax2_Eline.set_xlim(0, computed_steps)
+        self.ax2_Eline.set_ylim(0.95*np.nanmin(delt[0:computed_steps]),
+                                1.05*np.nanmax(delt[0:computed_steps]))
 
     def set_SAlines(self, domtime, SA, title, computed_steps, x2, t0):
         if SA is None or domtime is None:
@@ -99,8 +103,8 @@ class PlotView:
     def set_E2line(self, E2, it_range, title, computed_steps, tau0, t0):
         if E2 is None:
             return
-        e2min = np.min(E2[0:computed_steps])
-        e2max = np.max(E2[0:computed_steps])
+        e2min = np.nanmin(E2[0:computed_steps])
+        e2max = np.nanmax(E2[0:computed_steps])
         self.E2line.set_data((it_range[0:computed_steps], E2[0:computed_steps]))
         self.ax_E2line.set_xlim(0, computed_steps)
         self.ax_E2line.set_ylim(e2min, 1.25*e2max)
@@ -132,5 +136,5 @@ class PlotView:
             plt.show()
 
     def render_to(self, fname='diagrams.png'):
-        self.fig.savefig(fname, bbox_inches='tight')
+        self.fig.savefig(fname, bbox_inches='tight', pad_inches=0.75)
         #plt.close(self.fig)
