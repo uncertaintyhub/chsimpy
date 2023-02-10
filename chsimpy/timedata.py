@@ -9,6 +9,7 @@ class TimeData:
 
     def insert(self, it, delt, E, E2, SA, domtime, Ra, L2, PS):
         self._data = np.append(self._data, [[it, E, E2, SA, domtime, Ra, L2, PS, delt]], axis=0)
+        assert(not np.any(np.isnan(self._data[-1])))
 
     def data(self):
         return self._data
