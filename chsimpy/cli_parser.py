@@ -91,7 +91,6 @@ class CLIParser:
         params.full_sim = self.args.full_sim
         params.kappa_base = self.args.kappa_base
         params.use_quasi = self.args.use_quasi
-        params.kappa = params.kappa_base / 105.1939
         params.compress_csv = self.args.compress_csv
         params.adaptive_time = self.args.adaptive_time
         return params

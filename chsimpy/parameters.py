@@ -29,8 +29,8 @@ class Parameters:
         self.R = 0.0083144626181532   # universal gas constant
         self.N_A = 6.02214076e+23  # and with the Avogadro constant
 
-        self.kappa_base = 30.0
-        self.kappa = self.kappa_base / 105.1939
+        self._kappa_base = 30.0
+        self.kappa = self._kappa_base / 105.1939
         self.delt = 1e-11
         self.delt_max = 1e-10
         self.M = 9e-12  # mobility factor
@@ -49,6 +49,19 @@ class Parameters:
 
         self.func_A0 = lambda temp: utils.A0(temp)
         self.func_A1 = lambda temp: utils.A1(temp)
+
+    @property
+    def kappa_base(self):
+        return self._kappa_base
+
+    @kappa_base.setter
+    def kappa_base(self, value):
+        self._kappa_base = value
+        self.kappa = value / 105.1939
+
+    @kappa_base.deleter
+    def kappa_base(self):
+        del self._kappa_base
 
     @classmethod
     def to_yaml(cls, representer, node):
