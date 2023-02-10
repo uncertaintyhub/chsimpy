@@ -7,6 +7,7 @@ import psutil
 import platform
 import sympy as sym
 import pandas as pd
+from IPython import get_ipython
 
 
 # Experimentelle Bestimmung der Koeffizenten einer
@@ -143,3 +144,17 @@ def get_miscibility_gap(R, T, B, A0, A1, xlower=0.7, xupper=0.9999, prec=7):
     eq1 = sym.Eq(dy1, dy2)  # dy1 == dy2
     eq2 = sym.Eq(dy1, (y2 - y1) / (x2 - x1))
     return sym.nsolve((eq1, eq2), (x1, x2), (xlower, xupper), prec=prec)
+
+
+# https://stackoverflow.com/a/39662359
+def is_notebook() -> bool:
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':
+            return True   # Jupyter notebook or qtconsole
+        elif shell == 'TerminalInteractiveShell':
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False      # Probably standard Python interpreter
