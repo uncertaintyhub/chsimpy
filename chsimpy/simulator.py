@@ -57,13 +57,12 @@ class Simulator:
                          x2=time_total ** (1 / 3),  # = x2 of x axis
                          t0=solution.t0)
 
-        view.set_E2line_L2(E2=solution.E2,
-                           L2=solution.L2,
-                           it_range=solution.it_range,
-                           title=f"Surf.Energy | Separation t0 = {str(round(solution.t0, 4))} s",
-                           computed_steps=solution.computed_steps,
-                           tau0=solution.tau0,
-                           t0=solution.t0)
+        view.set_E2line(E2=solution.E2,
+                        it_range=solution.it_range,
+                        title=f"Surf.Energy | Separation t0 = {str(round(solution.t0, 4))} s",
+                        computed_steps=solution.computed_steps,
+                        tau0=solution.tau0,
+                        t0=solution.t0)
 
         view.set_Uhist(solution.U, "Solution Histogram")
 

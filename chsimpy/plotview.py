@@ -84,21 +84,6 @@ class PlotView:
         # self.ax_E2line.autoscale()
         self.ax_E2line.set_title(title)
 
-    def set_E2line_L2(self, E2, L2, it_range, title, computed_steps, tau0, t0):
-        e2min = np.min(E2[0:computed_steps])
-        e2max = np.max(E2[0:computed_steps])
-        self.E2line.set_data((it_range[0:computed_steps], E2[0:computed_steps]))
-        ax2 = self.ax_E2line.twinx()
-        ax2.plot(it_range[1:computed_steps], L2[1:computed_steps], color='red')
-        ax2.set_ylabel('L2-norm(EP)')
-        self.ax_E2line.set_xlim(0, computed_steps)
-        self.ax_E2line.set_ylim(e2min, 1.25*e2max)
-        self.ax_E2line.axvline(tau0, color='black')
-        self.ax_E2line.text(tau0-0.05*computed_steps, 0.15*e2max, f"{t0:g} s @ {tau0} it", rotation=90)
-        # self.ax_E2line.relim()
-        # self.ax_E2line.autoscale()
-        self.ax_E2line.set_title(title)
-
     def set_Uhist(self, U, title):
         Ureal = np.real(U)
         self.ax_Uhist.cla()
