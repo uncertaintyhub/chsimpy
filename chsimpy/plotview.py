@@ -129,6 +129,7 @@ class PlotView:
         self.ax_Uhist.set_title(title)
 
     def show(self):
+        self.fig.subplots_adjust(top=0.9, right=0.9, bottom=0.1, left=0.1)
         plt.tight_layout()
         if chsimpy.utils.is_notebook():
             IPython.display.display(self.fig)
@@ -137,3 +138,6 @@ class PlotView:
 
     def render_to(self, fname='diagrams.png'):
         self.fig.savefig(fname, bbox_inches='tight', pad_inches=0.5, dpi=100)
+
+    def close(self):
+        plt.close(self.fig)
