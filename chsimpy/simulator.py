@@ -40,7 +40,7 @@ class Simulator:
         if self.params.adaptive_time:
             view.set_Eline_delt(E=solution.E,
                                 it_range=solution.it_range,
-                                delt=solution.timedata.delt,
+                                delt=solution.delt,
                                 title=f"Total Energy, Total Time={time_total:g} s",
                                 computed_steps=solution.computed_steps)
         else:
