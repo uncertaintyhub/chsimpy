@@ -32,8 +32,8 @@ class Parameters:
         self._kappa_base = 30.0
         self.kappa = self._kappa_base / 105.1939
         self.delt = 1e-11
-        self.delt_max = 1e-10
-        self.M = 9e-12  # mobility factor
+        self.delt_max = 9e-11
+        self.M = 2e-11  # mobility factor
 
         self.threshold = 0.9  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls
