@@ -54,16 +54,16 @@ class Solver:
                 print("U_init has wrong shape, must match parameters.N")
                 exit(1)
         elif params.use_lcg:  # using linear-congruential generator for portable reproducible random numbers
-            self.U_init = params.XXX + (0.01 * mport.matlab_lcg_sample(N, N, params.seed))
+            self.U_init = params.XXX + (params.XXX*0.01 * mport.matlab_lcg_sample(N, N, params.seed))
         elif params.use_quasi:
             # https://blog.scientific-python.org/scipy/qmc-basics/
             # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.Sobol.html
             qrng = qmc.Sobol(d=N)  # 2D
-            self.U_init = params.XXX + (0.01 * (qrng.random(N) - 0.5))
+            self.U_init = params.XXX + (params.XXX*0.01 * (qrng.random(N) - 0.5))
         else:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.default_rng(params.seed)
-            self.U_init = params.XXX + (0.01 * (rng.random((N, N)) - 0.5))
+            self.U_init = params.XXX + (params.XXX*0.01 * (rng.random((N, N)) - 0.5))
 
     def solve(self, nsteps=None):
         """Full simulation run solving Cahn-Hilliard equation returning solution object"""

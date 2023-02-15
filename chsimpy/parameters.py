@@ -23,7 +23,7 @@ class Parameters:
         self.seed = 2023
         self.N = 512
         self.L = 2
-        self.XXX = 0.875  # mean value in initial composition mix U
+        self.XXX = 0.89  # mean value in initial composition mix U
         self.temp = 650 + 273.15  # temperature (in Kelvin)
         # chemical tuning parameter for the Gibbs free energy from R. Charles,
         #   Activities in Li2O-, Na2O, and K2O-SiO2 Solutions, J. Am. Ceram. Soc. 50 (12) (1967) 631–641.
