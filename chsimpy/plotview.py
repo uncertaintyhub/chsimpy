@@ -40,7 +40,8 @@ class PlotView:
         self.E2line, = self.ax_E2line.plot([], [])
         self.E2lineV = None
         self.E2lineText = None
-        plt.ion()
+        if chsimpy.utils.is_notebook():
+            plt.ion()
 
     def set_Umap(self, U, threshold, title):
         self.ax_Umap.set_title(title)
