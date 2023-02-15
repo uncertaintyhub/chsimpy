@@ -76,7 +76,7 @@ class CLIParser:
                             help='Maximal time in minutes to simulate (ignores ntmax)')
         parser.add_argument('--version',
                             action='version',
-                            version='%(prog)s 0.0')  # TODO:
+                            version=f"%(prog)s {parameters.Parameters.version}")
         self.args = None
 
     def get_parameters(self):

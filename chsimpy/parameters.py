@@ -4,6 +4,7 @@ import ruamel.yaml
 import re
 import copy
 
+from . import _version
 from . import utils
 
 yaml = ruamel.yaml.YAML(typ='safe')
@@ -14,6 +15,8 @@ yaml.default_flow_style = False
 
 @yaml.register_class
 class Parameters:
+
+    version = _version.get_versions()['version']
 
     def __init__(self):
         """Initial Simulation parameters"""

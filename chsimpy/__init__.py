@@ -8,10 +8,8 @@ from .timedata import TimeData
 from .utils import A0, A1, eigenvalues, csv_dump_matrix, csv_load_matrix, get_current_localtime, yaml_load
 from .mport import gradient, dct2, idct2, rem, matlab_lcg_sample
 
-# TODO: implement automatism
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+from . import _version
+__version__ = _version.get_versions()['version']
 
 
 __all__ = ['CLIParser', 'PlotView', 'Solver', 'Simulator', 'Parameters', 'Solution', 'TimeData']
