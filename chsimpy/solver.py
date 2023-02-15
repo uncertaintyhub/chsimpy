@@ -7,6 +7,9 @@ Model class that contains the actual simulation algorithm
 import numpy as np
 import scipy.fftpack as scifft
 from scipy.stats import qmc
+from perlin_numpy import (
+    generate_perlin_noise_2d, generate_fractal_noise_2d
+)
 
 from .solution import Solution, TimeData
 from . import mport
@@ -53,13 +56,18 @@ class Solver:
             else:
                 print("U_init has wrong shape, must match parameters.N")
                 exit(1)
-        elif params.use_lcg:  # using linear-congruential generator for portable reproducible random numbers
+        elif params.generator == 'lcg':  # using linear-congruential generator for portable reproducible random numbers
             self.U_init = params.XXX + (params.XXX*0.01 * mport.matlab_lcg_sample(N, N, params.seed))
-        elif params.use_quasi:
+        elif params.generator == 'sobol':
             # https://blog.scientific-python.org/scipy/qmc-basics/
             # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.Sobol.html
-            qrng = qmc.Sobol(d=N)  # 2D
-            self.U_init = params.XXX + (params.XXX*0.01 * (qrng.random(N) - 0.5))
+            qrng = qmc.Sobol(d=N, seed=params.seed)  # 2D
+            self.U_init = params.XXX + (params.XXX * 0.01 * (qrng.random(N) - 0.5))
+        elif params.generator == 'perlin':
+            # https://github.com/pvigier/perlin-numpy
+            np.random.seed(params.seed)
+            noise = generate_fractal_noise_2d((512, 512), (8, 8), 5)
+            self.U_init = params.XXX + (params.XXX * 0.01 * (noise - 0.5))
         else:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.default_rng(params.seed)

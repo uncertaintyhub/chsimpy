@@ -41,15 +41,16 @@ class Parameters:
         self.threshold = 0.9  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls
 
-        # lcg: linear-congruential generator (for portable reproducible random numbers)
-        self.use_lcg = False
         self.render_target = 'gui'  # e.g. image file diagrams are rendered to
         self.dump_id = 'auto'  # id for filenames (solution, parameters)
         self.export_csv = ''
         self.full_sim = False
-        self.use_quasi = False
         self.compress_csv = False
         self.time_max = None  # time in minutes to simulate (ignores ntmax)
+        # lcg - linear congruential generator for reproducible portable random numbers
+        # sobol - quasi-random numbers
+        # perlin - perlin noise
+        self.generator = 'uniform'
 
         self.func_A0 = lambda temp: utils.A0(temp)
         self.func_A1 = lambda temp: utils.A1(temp)

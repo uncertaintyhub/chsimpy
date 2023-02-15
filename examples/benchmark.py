@@ -74,7 +74,7 @@ def validation_test():
     params.seed = 2023
     params.render_target = 'none'
     params.dump_id = 'benchmark-validation'
-    params.use_lcg = True  # to be comparable with matlab
+    params.generator = 'lcg'  # to be comparable with matlab
 
     controller = Simulator(params)
     # dump_id = simulator.get_current_id_for_dump()

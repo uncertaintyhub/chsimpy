@@ -45,7 +45,7 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         params.ntmax = 100
         params.seed = 2023
         params.render_target = 'none'
-        params.use_lcg = True  # to be comparable with matlab
+        params.generator = 'lcg'  # to be comparable with matlab
         simulator = Simulator(params)
 
         solution = simulator.solve()

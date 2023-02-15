@@ -24,9 +24,6 @@ class CLIParser:
                             default=int(1e6),
                             type=int,
                             help='Maximum number of simulation steps (stops earlier when energy falls)')
-        parser.add_argument('--lcg',
-                            action='store_true',
-                            help='Use linear congruential generator for initial random numbers.')
         parser.add_argument('-p',
                             '--parameter-file',
                             help='Input yaml file with parameter values [TODO]')  # TODO:
@@ -62,9 +59,9 @@ class CLIParser:
                             default=30,
                             type=int,
                             help='Value for kappa = K/105.1939')
-        parser.add_argument('-Q', '--use-quasi',
-                            action='store_true',
-                            help='Quasi-random numbers for initial concentration')
+        parser.add_argument('-g', '--generator',
+                            choices=['uniform', 'perlin', 'sobol', 'lcg'],
+                            help='Generator for initial random deviations in concentration')
         parser.add_argument('-C', '--compress-csv',
                             action='store_true',
                             help='Compress csv dumps with bz2')
@@ -88,13 +85,12 @@ class CLIParser:
         params.ntmax = self.args.ntmax
         params.N = self.args.N
         params.dump_id = self.args.dump_id
-        params.use_lcg = self.args.lcg
         params.seed = self.args.seed
         params.export_csv = self.args.export_csv
         params.full_sim = self.args.full_sim
         params.kappa_base = self.args.kappa_base
-        params.use_quasi = self.args.use_quasi
         params.compress_csv = self.args.compress_csv
         params.adaptive_time = self.args.adaptive_time
         params.time_max = self.args.time_max
+        params.generator = self.args.generator
         return params
