@@ -165,3 +165,7 @@ def sec_to_min_if(value, t=60):
         return str(round(value/60.0, 1))+'min'
     else:
         return str(round(value,1))+'s'
+
+
+def get_int_max_value():
+    return np.iinfo(np.intp).max

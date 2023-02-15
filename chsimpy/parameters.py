@@ -46,6 +46,7 @@ class Parameters:
         self.full_sim = False
         self.use_quasi = False
         self.compress_csv = False
+        self.time_max = None  # time in minutes to simulate (ignores ntmax)
 
         self.func_A0 = lambda temp: utils.A0(temp)
         self.func_A1 = lambda temp: utils.A1(temp)

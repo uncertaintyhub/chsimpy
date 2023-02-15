@@ -51,6 +51,7 @@ class Solution:
         self.it = 0
         self.t = 0
         self.computed_steps = 0
+        self.stop_reason = 'None'  # why the sim stopped
 
     @property
     def it_range(self):

@@ -71,6 +71,9 @@ class CLIParser:
         parser.add_argument('-a', '--adaptive-time',
                             action='store_true',
                             help='Use adaptive-time stepping')
+        parser.add_argument('-t', '--time-max',
+                            type=float,
+                            help='Maximal time in minutes to simulate (ignores ntmax)')
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s 0.0')  # TODO:
@@ -93,4 +96,5 @@ class CLIParser:
         params.use_quasi = self.args.use_quasi
         params.compress_csv = self.args.compress_csv
         params.adaptive_time = self.args.adaptive_time
+        params.time_max = self.args.time_max
         return params

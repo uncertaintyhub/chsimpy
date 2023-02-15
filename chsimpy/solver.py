@@ -81,11 +81,14 @@ class Solver:
         A1 = self.solution.A1
         if nsteps is None:
             nsteps = max(self.params.ntmax, 0)
+        time_limit = None
+        if self.params.time_max is not None and self.params.time_max > 0:
+            nsteps = utils.get_int_max_value()  # just be large enough
+            time_limit = self.params.time_max * 60  # to seconds
         Seig = self.solution.Seig
         CHeig = self.solution.CHeig
         threshold = self.params.threshold
         time_fac = self.solution.time_fac
-        time_delta_sum = 0.0
         delt = self.params.delt
 
         assert (U.shape == (N, N))
@@ -128,6 +131,10 @@ class Solver:
         # used for ignoring early-break condition when full_sim is True
         skip_check = False
         # sim loop
+        self.solution.computed_steps = 1
+        time_delta_sum = 0.0
+        time_passed = 0.0
+        self.solution.stop_reason = 'None'
         for it in range(1, nsteps):
             Uinv = 1 - U
             U1Uinv = U / Uinv
@@ -154,6 +161,11 @@ class Solver:
                     delt=delt,
                     delx2=self.solution.delx2)
 
+            time_delta_sum += delt
+            time_passed = time_delta_sum / (self.params.M * self.params.kappa)
+            if time_limit is not None and time_passed > time_limit:
+                self.solution.stop_reason = 'time-limit'
+                break
             # compute the right hand side in tranform space
             hat_rhs = hat_U + Seig * scifft.dctn(EnergieEut, norm="ortho")
 
@@ -182,8 +194,8 @@ class Solver:
                 U[int(N / 2) + 1, :] - np.mean(U[int(N / 2) + 1, :])))
             SA = np.sum(U < threshold) / (N ** 2)  # determining relative concentration of A in U by threshold
 
-            time_delta_sum += delt
-            domtime = (time_delta_sum / (self.params.M * self.params.kappa)) ** (1 / 3)
+            self.solution.computed_steps += 1
+            domtime = time_passed ** (1 / 3)
             data.insert(it=it,
                         delt=delt,
                         E=E,
@@ -198,6 +210,7 @@ class Solver:
                 tau0 = it
                 t0 = time_delta_sum
                 if not self.params.full_sim:
+                    self.solution.stop_reason = 'energy'
                     break
                 else:
                     skip_check = True
@@ -206,12 +219,9 @@ class Solver:
         self.solution.timedata = data
         self.solution.tau0 = tau0
         self.solution.t0 = t0 / (self.params.M * self.params.kappa)
-        self.solution.computed_steps = nsteps
         # actual number of iterations computed
         if tau0 == 0:
-            self.solution.tau0 = nsteps - 1
+            self.solution.tau0 = self.solution.computed_steps - 1
             self.solution.t0 = time_delta_sum / (self.params.M * self.params.kappa)
-        elif not self.params.full_sim and tau0 > 0:
-            self.solution.computed_steps = tau0 + 1  # tau0 equals 'it' in simulation for-loop
 
         return self.solution

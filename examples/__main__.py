@@ -22,8 +22,8 @@ if __name__ == '__main__':
     solution = simulator.solve()
     simulator.render()
     print(f"computed_steps = {solution.computed_steps}, "
-          f"t0 = {solution.t0:g} s (energy falls = {solution.tau0 < (params.ntmax-1)}), "
-          f"early_break = {solution.tau0 < (params.ntmax-1) and not params.full_sim}")
+          f"t0 = {solution.t0:g} s ({chsimpy.utils.sec_to_min_if(solution.t0)}), "
+          f"stop reason = {solution.stop_reason}")
 
     if 'yaml' in params.render_target or params.export_csv:
         current_dump_id = chsimpy.utils.get_current_id_for_dump(params.dump_id)
