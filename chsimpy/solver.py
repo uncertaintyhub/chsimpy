@@ -155,7 +155,7 @@ class Solver:
                 - BRT + (A0 + A1 * U2inv) * U2inv
                 - 2 * A1 * U * Uinv)
 
-            if self.params.adaptive_time and it > 100 and np.remainder(it, 10) == 0:
+            if self.params.adaptive_time and it > 500 and np.remainder(it, 2) == 0:
                 delt_alpha = 500 / (self.params.kappa_base/15)**3
                 delt_dyn = np.linalg.norm(self.params.delt_max / np.sqrt(1 + delt_alpha*np.abs(EnergieEut)**2), ord=-1)
                 delt_new = max(self.params.delt, delt_dyn)
