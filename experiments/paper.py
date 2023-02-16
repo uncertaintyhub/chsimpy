@@ -67,13 +67,13 @@ init_params = None  # global as multiprocessing pool cannot pickle Parameters be
 def run_experiment(workpiece):
     workpiece = list(workpiece)
     results = np.zeros((len(workpiece), 7))  # subset of work, number of result columns (A0, A1, ...)
-    for r, w in enumerate(pb.atpbar(workpiece, name=multiprocessing.current_process().name)):
+    for work_id, run_id in enumerate(pb.atpbar(workpiece, name=multiprocessing.current_process().name)):
         # prepare params for actual run
         params = init_params.deepcopy()
         params.seed = init_params.seed
-        params.dump_id = f"{init_params.dump_id}-run{r}"
+        params.dump_id = f"{init_params.dump_id}-run{run_id}"
 
-        rng = np.random.default_rng(params.seed+r)
+        rng = np.random.default_rng(params.seed+run_id)
 
         # U[rel_low, rel_high) * A(temperature)
         params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * rng.uniform(
@@ -86,20 +86,19 @@ def run_experiment(workpiece):
         simulator = Simulator(params)
         # solve
         solution = simulator.solve()
-        # TODO: dump U_0
+
         simulator.dump_solution(dump_id=params.dump_id, members='U, E, E2, SA')
         simulator.render()
         cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
                                                  solution.A0, solution.A1)
-        results[r] = (solution.A0,
-                      solution.A1,
-                      solution.tau0,
-                      cgap[0],  # c_A
-                      cgap[1],  # c_B
-                      np.argmax(solution.E2),  # tsep
-                      w  # workpiece
-                      )
-
+        results[work_id] = (solution.A0,
+                            solution.A1,
+                            solution.tau0,
+                            cgap[0],  # c_A
+                            cgap[1],  # c_B
+                            np.argmax(solution.E2),  # tsep
+                            run_id  # run number
+                            )
     return results
 
 
