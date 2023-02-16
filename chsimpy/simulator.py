@@ -83,7 +83,8 @@ class Simulator:
             fending = 'csv.bz2'
         else:
             fending = 'csv'
-        for member in members:
+        members_array = members.replace(' ', '').split(',')
+        for member in members_array:
             varray = None
             if hasattr(solution, member):
                 varray = getattr(solution, member)
