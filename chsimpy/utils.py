@@ -7,6 +7,7 @@ import psutil
 import platform
 import sympy as sym
 import pandas as pd
+import sys
 from IPython import get_ipython
 
 
@@ -120,7 +121,8 @@ def get_system_info():
               f"cores_phys='{psutil.cpu_count(logical=False)}', cores_total='{psutil.cpu_count(logical=True)}', " \
               f"cpufreq_min='{cpufreq.min:.2f}', cpufreq_max='{cpufreq.max:.2f}', " \
               f"cpufreq_current='{cpufreq.current:.2f}', " \
-              f"localtime='{get_current_localtime()}'"
+              f"localtime='{get_current_localtime()}', " \
+              f"argv='{' '.join(sys.argv)}'"
     return sysinfo
 
 
