@@ -50,7 +50,6 @@ class CLIParser:
                             type=int,
                             help='Start seed for random number generators')
         parser.add_argument('-x', '--export-csv',
-                            default='',
                             help='Dump vector/matrices to csv by their names in Solution (U, E, E2, ...)')
         parser.add_argument('-z', '--full-sim',
                             action='store_true',

@@ -1,3 +1,4 @@
+from threadpoolctl import ThreadpoolController, threadpool_limits
 import numpy as np
 
 from . import parameters
@@ -7,6 +8,9 @@ from . import utils
 
 
 class Simulator:
+    threading = ThreadpoolController()
+
+    @threading.wrap(limits=1, user_api='blas')
     def __init__(self, params=None, U_init=None):
         """Simulation simulator"""
         if params is None:
@@ -20,6 +24,7 @@ class Simulator:
         else:
             self.view = None
 
+    @threading.wrap(limits=1, user_api='blas')
     def solve(self, nsteps=None):
         return self.solver.solve(nsteps)
 

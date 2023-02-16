@@ -28,12 +28,13 @@ class ExperimentParams:
         self.runs = 2
         self.jitter_Arellow = 0.995
         self.jitter_Arelhigh = 1.005
+        self.multiprocessing = False
 
 
 # parsing command-line-interface arguments
 class ExperimentCLIParser:
     def __init__(self):
-        self.cliparser = CLIParser('paper')
+        self.cliparser = CLIParser('paper.py')
         self.cliparser.parser.add_argument('-R', '--runs',
                                            default=3,
                                            type=int,
@@ -41,6 +42,9 @@ class ExperimentCLIParser:
         self.cliparser.parser.add_argument('-S', '--skip-test',
                                            action='store_true',
                                            help='Skip initial tests and validation [TODO].')
+        self.cliparser.parser.add_argument('-M', '--multiprocessing',
+                                           action='store_true',
+                                           help='Experiments are distributed to cores to run in parallel')
 
     def get_parameters(self):
         params = self.cliparser.get_parameters()
@@ -53,6 +57,7 @@ class ExperimentCLIParser:
         if 'gui' in params.render_target:
             print('No GUI visualization allowed.')
             exit(1)
+        exp_params.multiprocessing = self.cliparser.args.multiprocessing
         return exp_params, params
 
 
@@ -61,7 +66,7 @@ init_params = None  # global as multiprocessing pool cannot pickle Parameters be
 
 def run_experiment(workpiece):
     workpiece = list(workpiece)
-    results = np.zeros((len(workpiece), 7))
+    results = np.zeros((len(workpiece), 7))  # subset of work, number of result columns (A0, A1, ...)
     for r, w in enumerate(pb.atpbar(workpiece, name=multiprocessing.current_process().name)):
         # prepare params for actual run
         params = init_params.deepcopy()
@@ -82,7 +87,7 @@ def run_experiment(workpiece):
         # solve
         solution = simulator.solve()
         # TODO: dump U_0
-        simulator.dump_solution(params.dump_id, ('U', 'E', 'E2', 'SA'))
+        simulator.dump_solution(dump_id=params.dump_id, members='U, E, E2, SA')
         simulator.render()
         cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
                                                  solution.A0, solution.A1)
@@ -106,13 +111,16 @@ if __name__ == '__main__':
     # get sysinfo and current time and dump it to experiment-metadata csv file
     sysinfo = chsimpy.utils.get_system_info()
     init_params.dump_id = chsimpy.utils.get_current_id_for_dump(init_params.dump_id)
-    with open(f"experiment-{init_params.dump_id}.csv", 'w') as f:
+    with open(f"experiment-{init_params.dump_id}-sysinfo.csv", 'w') as f:
         f.writelines(sysinfo)
 
     # for multiprocessing
     items = range(exp_params.runs)
-    ncores = chsimpy.utils.get_number_physical_cores()
-    ncores = min(exp_params.runs, ncores)  # e.g. one run only needs one core
+    if exp_params.multiprocessing:
+        ncores = chsimpy.utils.get_number_physical_cores()
+        ncores = min(exp_params.runs, ncores)  # e.g. one run only needs one core
+    else:
+        ncores = 1
     workloads = more_itertools.divide(ncores, items)
     reporter = pb.find_reporter()
 
@@ -130,4 +138,8 @@ if __name__ == '__main__':
     cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'id']
     df_results = pd.DataFrame(results, columns=cols)
     df_results[['tau0', 'id']] = df_results[['tau0', 'id']].astype(int)
-    print(df_results)
+    df_results.to_csv(f"experiment-{init_params.dump_id}-raw.csv")
+    df_agg = df_results.loc[:, df_results.columns != 'id'].describe()
+    df_agg.loc['cv'] = df_agg.loc['std'] / df_agg.loc['mean']
+    print(df_agg.T)
+    df_agg.T.to_csv(f"experiment-{init_params.dump_id}-agg.csv")

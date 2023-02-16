@@ -43,7 +43,7 @@ class Parameters:
 
         self.render_target = 'gui'  # e.g. image file diagrams are rendered to
         self.dump_id = 'auto'  # id for filenames (solution, parameters)
-        self.export_csv = ''
+        self.export_csv = None
         self.full_sim = False
         self.compress_csv = False
         self.time_max = None  # time in minutes to simulate (ignores ntmax)

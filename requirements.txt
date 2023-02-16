@@ -11,3 +11,4 @@ more_itertools
 sympy
 versioneer
 git+https://github.com/pvigier/perlin-numpy@5e26837
+threadpoolctl
