@@ -132,9 +132,6 @@ if __name__ == '__main__':
     # merge list of lists
     results = list(itertools.chain(*results))
 
-    # TODO: ca, cb :"A final isothermal solution c is no longer homogeneous
-    #   but consists of a patch of the two new stable compositions cA and cB which lies outside the spinodal
-    #   region and defines the so-called miscibility gap."
     cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'id']
     df_results = pd.DataFrame(results, columns=cols)
     df_results[['tau0', 'id']] = df_results[['tau0', 'id']].astype(int)
