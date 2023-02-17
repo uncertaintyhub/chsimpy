@@ -55,8 +55,8 @@ class ExperimentCLIParser:
             print('Runs must be at least 1.')
             exit(1)
         if 'gui' in params.render_target:
-            print('No GUI visualization allowed.')
-            exit(1)
+            print('GUI visualization is disabled when running experiments.')
+            params.render_target = params.render_target.replace('gui', '')
         exp_params.multiprocessing = self.cliparser.args.multiprocessing
         return exp_params, params
 
