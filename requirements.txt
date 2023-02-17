@@ -6,9 +6,10 @@ matplotlib~=3.6.0
 seaborn~=0.12.0
 psutil~=5.9.0
 pandas~=1.5.0
-atpbar
+atpbar~=1.1.4
 more_itertools
-sympy
-versioneer
+sympy~=1.11.1
+versioneer~=0.28
 git+https://github.com/pvigier/perlin-numpy@5e26837
-threadpoolctl
+threadpoolctl~=3.1.0
+ipython~=8.7.0
