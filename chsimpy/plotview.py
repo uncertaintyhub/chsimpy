@@ -15,16 +15,23 @@ class PlotView:
         self.bins = 15
         # Turn interactive plotting off
         plt.ioff()
-        self.fig = plt.figure(figsize=(10, 10), layout="constrained")
-        nrow=3  # plot-subfigure rows
-        ncol=2  # plot-subfigure columns
-        self.ax_Umap = self.fig.add_subplot(nrow, ncol, 1)
-        self.ax_Uline = self.fig.add_subplot(nrow, ncol, 2)
-        self.ax_Eline = self.fig.add_subplot(nrow, ncol, 3)
+        self.fig, axs = plt.subplots(3, 2, figsize=(10, 9),
+                                     layout=None,
+                                     gridspec_kw={'wspace': 0.3,
+                                                  'hspace': 0.33,
+                                                  'top': 0.95,
+                                                  'right': 0.9,
+                                                  'bottom': 0.075,
+                                                  'left': 0.1
+                                                  },
+                                     clear=True)
+        self.ax_Umap = axs[0, 0]
+        self.ax_Uline = axs[0, 1]
+        self.ax_Eline = axs[1, 0]
         self.ax2_Eline = self.ax_Eline.twinx()
-        self.ax_SAlines = self.fig.add_subplot(nrow, ncol, 4)
-        self.ax_E2line = self.fig.add_subplot(nrow, ncol, 5)
-        self.ax_Uhist = self.fig.add_subplot(nrow, ncol, 6)
+        self.ax_SAlines = axs[1, 1]
+        self.ax_E2line = axs[2, 0]
+        self.ax_Uhist = axs[2, 1]
 
         self.Umap = self.ax_Umap.imshow(np.zeros((N, N)), cmap="plasma", aspect="equal")
         self.Uline, = self.ax_Uline.plot(np.arange(0, N), np.zeros(N))
@@ -63,6 +70,8 @@ class PlotView:
             return
         self.Uline.set_ydata(U[int(self.N / 2)+1, :])
         self.ax_Uline.set_ylim(0.75, 1.0)
+        self.ax_Uline.grid(True)
+        self.ax_Uline.set_ylabel('Concentration')
 
     def set_Eline(self, E, it_range, title, computed_steps):
         self.ax_Eline.set_title(title)
@@ -74,6 +83,9 @@ class PlotView:
         self.ax_Eline.set_xlim(0, computed_steps)
         self.ax_Eline.set_ylim(np.nanmin(E[0:computed_steps]),
                                np.nanmax(E[0:computed_steps]))
+        self.ax_Eline.grid(True)
+        self.ax_Eline.set_xlabel('Step')
+        self.ax_Eline.set_ylabel('Energy E')
 
     def set_Eline_delt(self, E, it_range, delt, title, computed_steps):
         self.ax_Eline.set_title(title)
@@ -82,8 +94,10 @@ class PlotView:
         self.Eline.set_data((it_range[0:computed_steps], E[0:computed_steps]))
         self.ax_Eline.set_xlim(0, computed_steps)
         self.ax_Eline.set_ylim(np.nanmin(E[0:computed_steps]), np.nanmax(E[0:computed_steps]))
+        self.ax_Eline.set_ylabel('Energy E')
         self.ElineDelt.set_data((it_range[0:computed_steps], delt[0:computed_steps]))
         self.ax2_Eline.get_yaxis().set_visible(True)
+        self.ax2_Eline.set_xlabel('Step')
         self.ax2_Eline.set_ylabel('delt (gray)')
         self.ax2_Eline.set_xlim(0, computed_steps)
         self.ax2_Eline.set_ylim(np.nanmin(delt[0:computed_steps]),
@@ -103,8 +117,12 @@ class PlotView:
         #self.ax_SAlines.relim()
         #self.ax_SAlines.autoscale()
         self.ax_SAlines.set_title(title)
+        self.ax_SAlines.grid(True)
+        self.ax_SAlines.set_xlabel('Time ** 1/3')
+        self.ax_SAlines.set_ylabel('Concentration Ratio')
 
     def set_E2line(self, E2, it_range, title, computed_steps, tau0, t0):
+        self.ax_E2line.set_title(title)
         if E2 is None:
             return
         e2min = np.nanmin(E2[0:computed_steps])
@@ -117,11 +135,11 @@ class PlotView:
         self.E2lineV = self.ax_E2line.axvline(tau0, color='black')
         if self.E2lineText is not None:
             self.E2lineText.remove()
-        self.E2lineText = self.ax_E2line.text(tau0-0.05*computed_steps, 0.15*e2max,
+        self.E2lineText = self.ax_E2line.text(tau0-0.05*computed_steps, 0.25*e2max,
                                               f"{t0:g} s @ {tau0} it", rotation=90)
-        # self.ax_E2line.relim()
-        # self.ax_E2line.autoscale()
-        self.ax_E2line.set_title(title)
+        self.ax_E2line.set_xlabel('Step')
+        self.ax_E2line.set_ylabel('Surface Energy E2')
+        self.ax_E2line.grid(True)
 
     def set_Uhist(self, U, title):
         if U is None:
@@ -131,18 +149,16 @@ class PlotView:
         # ravel gives 1D view on data
         sns.histplot(data=Ureal.ravel(), stat='probability', ax=self.ax_Uhist, bins=self.bins)
         self.ax_Uhist.set_title(title)
+        self.ax_Uhist.set_xlabel('Concentration')
 
     def show(self):
-        plt.tight_layout()
-        self.fig.subplots_adjust(top=0.9, right=0.9, bottom=0.1, left=0.1)
-        plt.tight_layout()
         if chsimpy.utils.is_notebook():
             IPython.display.display(self.fig)
         else:
             plt.show()
 
     def render_to(self, fname='diagrams.png'):
-        self.fig.savefig(fname, bbox_inches='tight', pad_inches=0.5, dpi=100)
+        self.fig.savefig(fname, pad_inches=0.5, dpi=100)
 
     def close(self):
         plt.close(self.fig)
