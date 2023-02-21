@@ -49,6 +49,8 @@ class Solver:
         self.solution = Solution(self.params)
         N = params.N
 
+        self.create_rand = None
+        self.U_init = None
         # initialize U (concentration)
         if U_init is not None:
             if U_init.shape == (params.N, params.N):
@@ -62,16 +64,18 @@ class Solver:
             # https://blog.scientific-python.org/scipy/qmc-basics/
             # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.Sobol.html
             qrng = qmc.Sobol(d=N, seed=params.seed)  # 2D
-            self.U_init = params.XXX + (params.XXX * 0.01 * (qrng.random(N) - 0.5))
+            self.create_rand = lambda n: qrng.random(n)
         elif params.generator == 'perlin':
             # https://github.com/pvigier/perlin-numpy
             np.random.seed(params.seed)
-            noise = generate_fractal_noise_2d((512, 512), (8, 8), 5)
-            self.U_init = params.XXX + (params.XXX * 0.01 * (noise - 0.5))
+            self.create_rand = lambda n: generate_fractal_noise_2d((n, n), (8, 8), 5)
         else:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.default_rng(params.seed)
-            self.U_init = params.XXX + (params.XXX*0.01 * (rng.random((N, N)) - 0.5))
+            self.create_rand = lambda n: rng.random((n, n))
+
+        if self.U_init is None:
+            self.U_init = params.XXX + (params.XXX * 0.01 * (self.create_rand(N) - 0.5))
 
     def solve(self, nsteps=None):
         """Full simulation run solving Cahn-Hilliard equation returning solution object"""
@@ -183,6 +187,9 @@ class Solver:
             hat_U = hat_rhs / CHeig
             # invert the cosine transform
             U = scifft.idctn(hat_U, norm="ortho")
+
+            if self.params.jitter is not None and 0.0 < self.params.jitter < 0.1:
+                U += self.params.jitter * (2*self.create_rand(N)-1)
 
             DUx, DUy = np.gradient(U, delx, axis=[0, 1], edge_order=1)
 

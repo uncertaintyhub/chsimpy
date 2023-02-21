@@ -70,6 +70,9 @@ class CLIParser:
         parser.add_argument('-t', '--time-max',
                             type=float,
                             help='Maximal time in minutes to simulate (ignores ntmax)')
+        parser.add_argument('-j', '--jitter',
+                            type=float,
+                            help='Adds noise based on -g in every step by provided factor [0, 0.1) (much slower)')
         parser.add_argument('--version',
                             action='version',
                             version=f"%(prog)s {parameters.Parameters.version}")
@@ -92,4 +95,5 @@ class CLIParser:
         params.adaptive_time = self.args.adaptive_time
         params.time_max = self.args.time_max
         params.generator = self.args.generator
+        params.jitter = self.args.jitter
         return params

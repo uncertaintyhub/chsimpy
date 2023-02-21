@@ -51,6 +51,8 @@ class Parameters:
         # sobol - quasi-random numbers
         # perlin - perlin noise
         self.generator = 'uniform'
+        self.adaptive_time = False
+        self.jitter = None
 
         self.func_A0 = lambda temp: utils.A0(temp)
         self.func_A1 = lambda temp: utils.A1(temp)
