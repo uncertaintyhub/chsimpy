@@ -46,7 +46,10 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         params.seed = 2023
         params.render_target = 'none'
         params.generator = 'lcg'  # to be comparable with matlab
-        simulator = Simulator(params)
+        params.kappa_base = 30
+        params.adaptive_time = False
+        U_init = 0.875 + 0.01 * chsimpy.mport.matlab_lcg_sample(params.N, params.N, params.seed)
+        simulator = Simulator(params=params, U_init=U_init)
 
         solution = simulator.solve()
         # dump_id = simulator.get_current_id_for_dump()
