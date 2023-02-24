@@ -62,25 +62,22 @@ class ExperimentCLIParser:
 
 
 init_params = None  # global as multiprocessing pool cannot pickle Parameters because of lambda
-
+rand_values = None  # global ndarray of random numbers, for multi-process access
 
 def run_experiment(workpiece):
     workpiece = list(workpiece)
-    results = np.zeros((len(workpiece), 7))  # subset of work, number of result columns (A0, A1, ...)
+    results = np.zeros((len(workpiece), 9))  # subset of work, number of result columns (A0, A1, ...)
     for work_id, run_id in enumerate(pb.atpbar(workpiece, name=multiprocessing.current_process().name)):
         # prepare params for actual run
         params = init_params.deepcopy()
         params.seed = init_params.seed
         params.dump_id = f"{init_params.dump_id}-run{run_id}"
 
-        rng = np.random.default_rng(params.seed+run_id)
-
+        fac_A0 = rand_values[run_id, 0]
+        fac_A1 = rand_values[run_id, 1]
         # U[rel_low, rel_high) * A(temperature)
-        params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * rng.uniform(
-            exp_params.jitter_Arellow, exp_params.jitter_Arelhigh)
-
-        params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * rng.uniform(
-            exp_params.jitter_Arellow, exp_params.jitter_Arelhigh)
+        params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * fac_A0
+        params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * fac_A1
 
         # sim simulator
         simulator = Simulator(params)
@@ -97,7 +94,9 @@ def run_experiment(workpiece):
                             cgap[0],  # c_A
                             cgap[1],  # c_B
                             np.argmax(solution.E2),  # tsep
-                            run_id  # run number
+                            run_id,  # run number
+                            fac_A0,
+                            fac_A1
                             )
     return results
 
@@ -108,13 +107,21 @@ if __name__ == '__main__':
     exp_params, init_params = exp_cliparser.get_parameters()
 
     # get sysinfo and current time and dump it to experiment-metadata csv file
-    sysinfo = chsimpy.utils.get_system_info()
     init_params.dump_id = chsimpy.utils.get_current_id_for_dump(init_params.dump_id)
-    with open(f"experiment-{init_params.dump_id}-sysinfo.csv", 'w') as f:
-        f.writelines(sysinfo)
+    sysinfo_list = chsimpy.utils.get_system_info()
+    exp_params_list = chsimpy.utils.vars_to_csv(exp_params)
+    chsimpy.utils.csv_dump_list(f"experiment-{init_params.dump_id}-metadata.csv",
+                                "\n".join(sysinfo_list + exp_params_list))
+
+    # generate random numbers for multi-processed runs
+    rng = np.random.default_rng(init_params.seed)
+    rtemp = rng.uniform(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, size=(2, exp_params.runs))
+    rand_values = np.ones((2*exp_params.runs, 2*exp_params.runs))  # first time A0 varies, second time A1
+    rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
+    rand_values[exp_params.runs:, 1] = rtemp[1]  # random factors for A1
 
     # for multiprocessing
-    items = range(exp_params.runs)
+    items = range(2*exp_params.runs)
     if exp_params.multiprocessing:
         ncores = chsimpy.utils.get_number_physical_cores()
         ncores = min(exp_params.runs, ncores)  # e.g. one run only needs one core
@@ -131,7 +138,7 @@ if __name__ == '__main__':
     # merge list of lists
     results = list(itertools.chain(*results))
 
-    cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'id']
+    cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'id', 'fac_A0', 'fac_A1']
     df_results = pd.DataFrame(results, columns=cols)
     df_results[['tau0', 'id']] = df_results[['tau0', 'id']].astype(int)
     df_results.to_csv(f"experiment-{init_params.dump_id}-raw.csv")
