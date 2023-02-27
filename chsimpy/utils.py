@@ -180,7 +180,7 @@ def get_int_max_value():
     return np.iinfo(np.intp).max
 
 
-def vars_to_csv(obj):
+def vars_to_list(obj):
     attribs = []
     for x in dir(obj):
         if x.startswith('_') or not hasattr(obj, x):

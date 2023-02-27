@@ -109,7 +109,7 @@ if __name__ == '__main__':
     # get sysinfo and current time and dump it to experiment-metadata csv file
     init_params.dump_id = chsimpy.utils.get_current_id_for_dump(init_params.dump_id)
     sysinfo_list = chsimpy.utils.get_system_info()
-    exp_params_list = chsimpy.utils.vars_to_csv(exp_params)
+    exp_params_list = chsimpy.utils.vars_to_list(exp_params)
     chsimpy.utils.csv_dump_list(f"experiment-{init_params.dump_id}-metadata.csv",
                                 "\n".join(sysinfo_list + exp_params_list))
 
@@ -146,3 +146,9 @@ if __name__ == '__main__':
     df_agg.loc['cv'] = df_agg.loc['std'] / df_agg.loc['mean']
     print(df_agg.T)
     df_agg.T.to_csv(f"experiment-{init_params.dump_id}-agg.csv")
+    print('Output files')
+    print(f"  experiment-{init_params.dump_id}-metadata.csv")
+    print(f"  experiment-{init_params.dump_id}-agg.csv")
+    print(f"  experiment-{init_params.dump_id}-raw.csv")
+    print(f"  {{solution-{init_params.dump_id}-run***.yaml}}")
+    print(f"  {{solution-{init_params.dump_id}-run***.*.csv}}")

@@ -108,8 +108,9 @@ if __name__ == '__main__':
     bmark_params, params = bmark_cliparser.get_parameters()
 
     # get current time
-    sysinfo = chsimpy.utils.get_system_info()
     dump_id = chsimpy.utils.get_current_id_for_dump(params.dump_id)
+    sysinfo_list = chsimpy.utils.get_system_info()
+    bmark_params_list = chsimpy.utils.vars_to_list(bmark_params)
 
     if not bmark_params.skip_test:
         validation_test()
@@ -139,8 +140,11 @@ if __name__ == '__main__':
     print(f"Benchmark Total: {time_total} sec")
 
     with open(f"benchmark-{dump_id}.csv", 'w') as f:
-        f.write(sysinfo+"\n")
+        f.write("\n".join(sysinfo_list + bmark_params_list))
         f.write(f"warmup,{ts_warmup}\n")
         f.write(f"runs,{ts_runs}\n")
         f.write(f"total,{time_total}\n")
-    simulator.dump_solution(dump_id)
+    print('Output files:')
+    print(f"  results and meta data: benchmark-{dump_id}.csv")
+    fname_sol = simulator.dump_solution(dump_id)
+    print(f"  solution & parameters: {fname_sol}.csv")
