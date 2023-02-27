@@ -21,7 +21,6 @@ class Solution:
         N = self.params.N
 
         self.U = None
-        self.hat_U = None
         self.timedata = None
 
         # # we compute the molar area (cf. molar volume above (line 72))
