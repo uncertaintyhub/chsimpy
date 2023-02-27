@@ -34,7 +34,7 @@ class ExperimentParams:
 # parsing command-line-interface arguments
 class ExperimentCLIParser:
     def __init__(self):
-        self.cliparser = CLIParser('paper.py')
+        self.cliparser = CLIParser('chsimpy (paper.py)')
         self.cliparser.parser.add_argument('-R', '--runs',
                                            default=3,
                                            type=int,

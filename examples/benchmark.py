@@ -31,7 +31,7 @@ class BenchmarkParams:
 # parsing command-line-interface arguments
 class BenchmarkCLIParser:
     def __init__(self):
-        self.cliparser = CLIParser('benchmark')
+        self.cliparser = CLIParser('chsimpy (benchmark.py)')
         self.cliparser.parser.add_argument('-R', '--runs',
                                            default=3,
                                            type=int,
