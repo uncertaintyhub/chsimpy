@@ -16,7 +16,8 @@ from chsimpy import CLIParser, Simulator
 
 
 if __name__ == '__main__':
-    parser = CLIParser('chsimpy')
+    parser = CLIParser()
+    parser.print_info()
     params = parser.get_parameters()
     simulator = chsimpy.simulator.Simulator(params)
     solution = simulator.solve()

@@ -97,3 +97,6 @@ class CLIParser:
         params.generator = self.args.generator
         params.jitter = self.args.jitter
         return params
+
+    def print_info(self):
+        print(f"{self.parser.prog} {parameters.Parameters.version} ('--help' for command parameters)")

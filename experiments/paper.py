@@ -104,6 +104,7 @@ def run_experiment(workpiece):
 if __name__ == '__main__':
 
     exp_cliparser = ExperimentCLIParser()
+    exp_cliparser.cliparser.print_info()
     exp_params, init_params = exp_cliparser.get_parameters()
 
     # get sysinfo and current time and dump it to experiment-metadata csv file
@@ -146,9 +147,9 @@ if __name__ == '__main__':
     df_agg.loc['cv'] = df_agg.loc['std'] / df_agg.loc['mean']
     print(df_agg.T)
     df_agg.T.to_csv(f"experiment-{init_params.dump_id}-agg.csv")
-    print('Output files')
+    print('Output files:')
     print(f"  experiment-{init_params.dump_id}-metadata.csv")
     print(f"  experiment-{init_params.dump_id}-agg.csv")
     print(f"  experiment-{init_params.dump_id}-raw.csv")
     print(f"  {{solution-{init_params.dump_id}-run***.yaml}}")
-    print(f"  {{solution-{init_params.dump_id}-run***.*.csv}}")
+    print(f"  {{solution-{init_params.dump_id}-run***.*.csv[.bz2]}}")

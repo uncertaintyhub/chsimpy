@@ -105,6 +105,7 @@ def time_repetitions(simulator, ntmax, repetitions):
 if __name__ == '__main__':
 
     bmark_cliparser = BenchmarkCLIParser()
+    bmark_cliparser.cliparser.print_info()
     bmark_params, params = bmark_cliparser.get_parameters()
 
     # get current time
