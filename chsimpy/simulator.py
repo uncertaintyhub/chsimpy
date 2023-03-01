@@ -109,7 +109,7 @@ class Simulator:
                 self._render()
             if 'png' in render_target:
                 fname = 'diagrams-'+current_dump_id+'.png'
-                self.view.render_to(fname)
+                self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
             if 'gui' in render_target:
                 self.view.show()
         else: # invalid dump id, only gui is now possible

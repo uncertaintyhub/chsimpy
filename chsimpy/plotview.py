@@ -62,7 +62,6 @@ class PlotView:
         self.Umap.set_norm(norm)
         Ureal = np.real(U)
         self.Umap.set_data(Ureal)
-        #self.Umap.set_clim(vmin=np.min(Ureal), vmax=np.max(Ureal))
 
     def set_Uline(self, U, title):
         self.ax_Uline.set_title(title)
@@ -158,7 +157,7 @@ class PlotView:
             plt.show()
 
     def render_to(self, fname='diagrams.png'):
-        self.fig.savefig(fname, pad_inches=0.5, dpi=100)
+        self.fig.savefig(fname, pad_inches=0.5, dpi=100)  # should be called before any plt.show() command
 
     def close(self):
         plt.close(self.fig)

@@ -16,13 +16,15 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-from chsimpy import Simulator, Parameters, CLIParser
+from chsimpy import Simulator, CLIParser
 
 import matplotlib
 # https://matplotlib.org/stable/users/faq/howto_faq.html#work-with-threads
 matplotlib.use('Agg')
 # multiprocessing start, see example here https://github.com/alphatwirl/atpbar/issues/21#issuecomment-766468695
 multiprocessing.set_start_method('fork', force=True)
+init_params = None  # global as multiprocessing pool cannot pickle Parameters because of lambda
+rand_values = None  # global ndarray of random numbers, for multi-process access
 
 
 class ExperimentParams:
@@ -64,9 +66,6 @@ class ExperimentCLIParser:
         return exp_params, params
 
 
-init_params = None  # global as multiprocessing pool cannot pickle Parameters because of lambda
-rand_values = None  # global ndarray of random numbers, for multi-process access
-
 def run_experiment(workpiece):
     workpiece = list(workpiece)
     results = np.zeros((len(workpiece), 9))  # subset of work, number of result columns (A0, A1, ...)
@@ -91,6 +90,8 @@ def run_experiment(workpiece):
         simulator.render()
         cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
                                                  solution.A0, solution.A1)
+        #chsimpy.utils.show_mem_usage(multiprocessing.current_process().name+': ')
+
         results[work_id] = (solution.A0,
                             solution.A1,
                             solution.tau0,
