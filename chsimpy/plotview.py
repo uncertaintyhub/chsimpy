@@ -13,6 +13,7 @@ class PlotView:
         """Viewer for plotting simulation data"""
         self.N = N
         self.bins = 15
+        tmp_plt_imode = plt.isinteractive()
         # Turn interactive plotting off
         plt.ioff()
         self.fig, axs = plt.subplots(3, 2, figsize=(10, 9),
@@ -47,7 +48,7 @@ class PlotView:
         self.E2line, = self.ax_E2line.plot([], [])
         self.E2lineV = None
         self.E2lineText = None
-        if chsimpy.utils.is_notebook():
+        if tmp_plt_imode:
             plt.ion()
 
     def set_Umap(self, U, threshold, title):
@@ -159,5 +160,5 @@ class PlotView:
     def render_to(self, fname='diagrams.png'):
         self.fig.savefig(fname, pad_inches=0.5, dpi=100)  # should be called before any plt.show() command
 
-    def close(self):
+    def __del__(self):
         plt.close(self.fig)
