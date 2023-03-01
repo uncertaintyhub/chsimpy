@@ -18,6 +18,9 @@ except ImportError:
 
 from chsimpy import Simulator, Parameters, CLIParser
 
+import matplotlib
+# https://matplotlib.org/stable/users/faq/howto_faq.html#work-with-threads
+matplotlib.use('Agg')
 # multiprocessing start, see example here https://github.com/alphatwirl/atpbar/issues/21#issuecomment-766468695
 multiprocessing.set_start_method('fork', force=True)
 
