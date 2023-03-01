@@ -57,10 +57,10 @@ class ExperimentCLIParser:
         exp_params.skip_test = self.cliparser.args.skip_test
         exp_params.runs = self.cliparser.args.runs
         if exp_params.runs < 1:
-            print('Runs must be at least 1.')
+            print('ERROR: Runs must be at least 1.')
             exit(1)
         if 'gui' in params.render_target:
-            print('GUI visualization is disabled when running experiments.')
+            print('WARNING: GUI visualization is disabled when running experiments.')
             params.render_target = params.render_target.replace('gui', '')
         exp_params.multiprocessing = self.cliparser.args.multiprocessing
         return exp_params, params

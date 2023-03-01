@@ -56,14 +56,18 @@ class BenchmarkCLIParser:
         if self.cliparser.args.warmup_ntmax is not None:
             bmark_params.warmup_ntmax = self.cliparser.args.warmup_ntmax
             if bmark_params.warmup_ntmax > params.ntmax:
-                print('Warmup ntmax must be less or equal than ntmax')
+                print('ERROR: Warmup ntmax must be less or equal than ntmax')
                 exit(1)
         else:
             bmark_params.warmup_ntmax = params.ntmax
 
         if bmark_params.runs < 1:
-            print('Runs must be at least 1.')
+            print('ERROR: Runs must be at least 1.')
             exit(1)
+        if 'gui' in params.render_target or 'png' in params.render_target:
+            print('Visualization is disabled when running benchmarks.')
+            params.render_target = params.render_target.replace('gui', '')
+            params.render_target = params.render_target.replace('png', '')
         return bmark_params, params
 
 
@@ -73,23 +77,25 @@ def validation_test():
     params.ntmax = 100
     params.seed = 2023
     params.render_target = 'none'
-    params.dump_id = 'benchmark-validation'
     params.generator = 'lcg'  # to be comparable with matlab
+    params.kappa_base = 30
+    params.adaptive_time = False
+    params.dump_id = 'benchmark-validation'
+    U_init = 0.875 + 0.01 * chsimpy.mport.matlab_lcg_sample(params.N, params.N, params.seed)
+    simulator = Simulator(params=params, U_init=U_init)
 
-    controller = Simulator(params)
-    # dump_id = simulator.get_current_id_for_dump()
-    solution = controller.solve()
+    solution = simulator.solve()
     U_python = solution.U
     # chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')
     U_matlab = chsimpy.utils.csv_load_matrix('../validation/U-matlab-lcg-N512n100.csv')
     valid = np.allclose(U_matlab, U_python)
-    mse = (np.square(U_matlab-U_python)).mean(axis=None)
-    print('MSE is: ', mse)
+    #mse = (np.square(U_matlab-U_python)).mean(axis=None)
+    #print('MSE is: ', mse)
     if valid:
-        print("Matrix U is correct")
+        print("Initial test: SUCCESS")
         return True
     else:
-        print("Matrix U is NOT correct")
+        print("Initial test: FAIL")
         return False
 
 
@@ -133,7 +139,7 @@ if __name__ == '__main__':
         ts_runs = time_repetitions(simulator=simulator,
                                    ntmax=params.ntmax,
                                    repetitions=bmark_params.runs)
-        print(f"Benchmark ({bmark_params.runs} repetitions, ntmax={params.ntmax}):")
+        print(f"Benchmark ({bmark_params.runs} repetitions, ntmax={params.ntmax}, time_max={params.time_max}):")
         print(f" run/single: {ts_runs} sec")
         print(f" run/sum:  {sum(ts_runs)} sec")
 
