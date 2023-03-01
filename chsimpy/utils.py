@@ -9,6 +9,9 @@ import sympy as sym
 import pandas as pd
 import sys
 from IPython import get_ipython
+import os
+import psutil
+
 from . import _version
 
 
@@ -198,3 +201,9 @@ def vars_to_list(obj):
 def csv_dump_list(fname, obj):
     with open(fname, 'w') as f:
         f.writelines(obj)
+
+
+def show_mem_usage(text=''):
+    process = psutil.Process(os.getpid())
+    print(f"{text}{process.memory_info().rss / 1048576}MiB")
+    sys.stdout.flush()
