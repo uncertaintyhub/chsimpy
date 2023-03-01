@@ -157,7 +157,7 @@ class Solution:
             params_equal = self.params.is_scalarwise_equal_with(other.params)
             sd = dict(sorted(self.__dict__.items()))
             od = dict(sorted(other.__dict__.items()))
-            entities_to_remove = ('U', 'hat_U', 'params',
+            entities_to_remove = ('U', 'hat_U', 'params', 'delt',
                                   'timedata', 'CHeig', 'Seig',
                                   'E', 'E2', 'SA', 'domtime', 'PS', 'Ra', 'L2', 'it_range')
             [sd.pop(k, None) for k in entities_to_remove]

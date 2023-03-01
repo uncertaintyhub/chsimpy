@@ -98,7 +98,7 @@ class Parameters:
 
     def is_scalarwise_equal_with(self, other):
         if isinstance(other, Parameters):
-            entities_to_remove = ('func_A0', 'func_A1')
+            entities_to_remove = ('func_A0', 'func_A1', '_kappa_base', 'kappa_base', 'version')
             sd = self.__dict__.copy()
             od = other.__dict__.copy()
             [sd.pop(k, None) for k in entities_to_remove]
