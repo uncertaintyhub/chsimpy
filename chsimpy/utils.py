@@ -4,6 +4,7 @@ import ruamel.yaml
 import time
 from datetime import datetime
 import psutil
+import resource
 import platform
 import sympy as sym
 import pandas as pd
@@ -203,7 +204,11 @@ def csv_dump_list(fname, obj):
         f.writelines(obj)
 
 
-def show_mem_usage(text=''):
+def get_mem_usage():
     process = psutil.Process(os.getpid())
-    print(f"{text}{process.memory_info().rss / 1048576}MiB")
-    sys.stdout.flush()
+    return f"{process.memory_info().rss / 1048576:.2f}MiB"
+
+
+def get_mem_usage_all():
+    kib = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss + resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+    return f"{kib/1024:0.2f}MiB"

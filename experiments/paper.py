@@ -3,10 +3,8 @@ import numpy as np
 import pandas as pd
 import pathlib
 import sys
-import multiprocessing
-import atpbar as pb
-import itertools
-import more_itertools
+import multiprocessing as mp
+from tqdm import tqdm
 
 try:
     import chsimpy
@@ -21,8 +19,7 @@ from chsimpy import Simulator, CLIParser
 import matplotlib
 # https://matplotlib.org/stable/users/faq/howto_faq.html#work-with-threads
 matplotlib.use('Agg')
-# multiprocessing start, see example here https://github.com/alphatwirl/atpbar/issues/21#issuecomment-766468695
-multiprocessing.set_start_method('fork', force=True)
+
 init_params = None  # global as multiprocessing pool cannot pickle Parameters because of lambda
 rand_values = None  # global ndarray of random numbers, for multi-process access
 
@@ -33,7 +30,7 @@ class ExperimentParams:
         self.runs = 2
         self.jitter_Arellow = 0.995
         self.jitter_Arelhigh = 1.005
-        self.multiprocessing = False
+        self.processes = -1
 
 
 # parsing command-line-interface arguments
@@ -47,9 +44,10 @@ class ExperimentCLIParser:
         self.cliparser.parser.add_argument('-S', '--skip-test',
                                            action='store_true',
                                            help='Skip initial tests and validation [TODO].')
-        self.cliparser.parser.add_argument('-M', '--multiprocessing',
-                                           action='store_true',
-                                           help='Experiments are distributed to cores to run in parallel')
+        self.cliparser.parser.add_argument('-P', '--processes',
+                                           default=-1,
+                                           type=int,
+                                           help='Runs are distributed to P processes to run in parallel (-1 = auto)')
 
     def get_parameters(self):
         params = self.cliparser.get_parameters()
@@ -62,51 +60,46 @@ class ExperimentCLIParser:
         if 'gui' in params.render_target:
             print('WARNING: GUI visualization is disabled when running experiments.')
             params.render_target = params.render_target.replace('gui', '')
-        exp_params.multiprocessing = self.cliparser.args.multiprocessing
+        exp_params.processes = self.cliparser.args.processes
         return exp_params, params
 
 
-def run_experiment(workpiece):
-    workpiece = list(workpiece)
-    results = np.zeros((len(workpiece), 9))  # subset of work, number of result columns (A0, A1, ...)
-    for work_id, run_id in enumerate(pb.atpbar(workpiece, name=multiprocessing.current_process().name)):
-        # prepare params for actual run
-        params = init_params.deepcopy()
-        params.seed = init_params.seed
-        params.dump_id = f"{init_params.dump_id}-run{run_id}"
+def run_experiment(run_id):
+    # prepare params for actual run
+    params = init_params.deepcopy()
+    params.seed = init_params.seed
+    params.dump_id = f"{init_params.dump_id}-run{run_id}"
 
-        fac_A0 = rand_values[run_id, 0]
-        fac_A1 = rand_values[run_id, 1]
-        # U[rel_low, rel_high) * A(temperature)
-        params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * fac_A0
-        params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * fac_A1
+    fac_A0 = rand_values[run_id, 0]
+    fac_A1 = rand_values[run_id, 1]
+    # U[rel_low, rel_high) * A(temperature)
+    params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * fac_A0
+    params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * fac_A1
 
-        # sim simulator
-        simulator = Simulator(params)
-        # solve
-        solution = simulator.solve()
+    # sim simulator
+    simulator = Simulator(params)
+    # solve
+    solution = simulator.solve()
 
-        simulator.dump_solution(dump_id=params.dump_id, members='U, E, E2, SA')
-        simulator.render()
-        cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
-                                                 solution.A0, solution.A1)
-        #chsimpy.utils.show_mem_usage(multiprocessing.current_process().name+': ')
+    simulator.dump_solution(dump_id=params.dump_id, members='U, E, E2, SA')
+    simulator.render()
+    cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
+                                             solution.A0, solution.A1)
 
-        results[work_id] = (solution.A0,
-                            solution.A1,
-                            solution.tau0,
-                            cgap[0],  # c_A
-                            cgap[1],  # c_B
-                            np.argmax(solution.E2),  # tsep
-                            run_id,  # run number
-                            fac_A0,
-                            fac_A1
-                            )
-    return results
+    return (solution.A0,
+            solution.A1,
+            solution.tau0,
+            cgap[0],  # c_A
+            cgap[1],  # c_B
+            np.argmax(solution.E2),  # tsep
+            run_id,  # run number
+            fac_A0,
+            fac_A1
+            )
 
 
 if __name__ == '__main__':
-
+    mp.freeze_support()  # for Windows support
     exp_cliparser = ExperimentCLIParser()
     exp_cliparser.cliparser.print_info()
     exp_params, init_params = exp_cliparser.get_parameters()
@@ -126,22 +119,21 @@ if __name__ == '__main__':
     rand_values[exp_params.runs:, 1] = rtemp[1]  # random factors for A1
 
     # for multiprocessing
+    nprocs = 1
+    if exp_params.processes == -1:
+        nprocs = chsimpy.utils.get_number_physical_cores()
+        nprocs = min(exp_params.runs, nprocs)  # e.g. one run only needs one core
+    elif exp_params.processes > 1:
+        nprocs = exp_params.processes
+
     items = range(2*exp_params.runs)
-    if exp_params.multiprocessing:
-        ncores = chsimpy.utils.get_number_physical_cores()
-        ncores = min(exp_params.runs, ncores)  # e.g. one run only needs one core
-    else:
-        ncores = 1
-    workloads = more_itertools.divide(ncores, items)
-    reporter = pb.find_reporter()
-
-    # distribute work on ncores
-    with multiprocessing.Pool(ncores, pb.register_reporter, [reporter]) as p:
-        results = p.map(run_experiment, workloads)
-        pb.flush()
-
-    # merge list of lists
-    results = list(itertools.chain(*results))
+    results = []
+    with mp.Pool(processes=nprocs) as pool, tqdm(pool.imap_unordered(run_experiment, items), total=len(items)) as pbar:
+        pbar.set_postfix({'Mem': chsimpy.utils.get_mem_usage_all()})
+        for x in pbar:
+            pbar.set_postfix({'Mem': chsimpy.utils.get_mem_usage_all()})
+            results.append(x)
+            pbar.refresh()
 
     cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'id', 'fac_A0', 'fac_A1']
     df_results = pd.DataFrame(results, columns=cols)
@@ -157,3 +149,5 @@ if __name__ == '__main__':
     print(f"  experiment-{init_params.dump_id}-raw.csv")
     print(f"  {{solution-{init_params.dump_id}-run***.yaml}}")
     print(f"  {{solution-{init_params.dump_id}-run***.*.csv[.bz2]}}")
+    if 'png' in init_params.render_target:
+        print(f"  {{solution-{init_params.dump_id}-run***.png}}")
