@@ -26,7 +26,7 @@ class CLIParser:
                             help='Maximum number of simulation steps (stops earlier when energy falls)')
         parser.add_argument('-p',
                             '--parameter-file',
-                            help='Input yaml file with parameter values [TODO]')  # TODO:
+                            help='Input yaml file with parameter values (overwrites CLI parameters)')
         parser.add_argument('-d',
                             '--dump-id',
                             help='Dump data, filenames have an id like "solution-ID.yaml" '
@@ -81,7 +81,6 @@ class CLIParser:
     def get_parameters(self):
         self.args = self.parser.parse_args()
         params = parameters.Parameters()
-        # TODO: read values from file
 
         params.render_target = self.args.render_target
         params.ntmax = self.args.ntmax
@@ -96,6 +95,10 @@ class CLIParser:
         params.time_max = self.args.time_max
         params.generator = self.args.generator
         params.jitter = self.args.jitter
+
+        if self.args.parameter_file is not None:
+            params.load_from_yaml(self.args.parameter_file)
+
         return params
 
     def print_info(self):

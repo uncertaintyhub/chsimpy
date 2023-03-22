@@ -67,11 +67,8 @@ def yaml_load(fname):
     # yaml = ruamel.yaml.YAML(typ='safe')
     yaml.constructor.add_constructor(u'!ndarray', yaml_constr_ndarray)
     instance = None
-    try:
-        with open(fname, 'r') as f:
-            instance = yaml.load(f)
-    except ruamel.yaml.YAMLError as e:
-        print("Failed to yaml_load: " + str(e))
+    with open(fname, 'r') as f:
+        instance = yaml.load(f)
     return instance
 
 
