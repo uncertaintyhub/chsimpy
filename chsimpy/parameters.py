@@ -32,8 +32,8 @@ class Parameters:
         self.R = 0.0083144626181532   # universal gas constant
         self.N_A = 6.02214076e+23  # and with the Avogadro constant
 
-        self._kappa_base = 30.0
-        self.kappa = self._kappa_base / 105.1939
+        self.__kappa_base = 30.0
+        self.kappa = self.__kappa_base / 105.1939
         self.delt = 1e-11
         self.delt_max = 9e-11
         self.M = 2e-11  # mobility factor
@@ -59,16 +59,16 @@ class Parameters:
 
     @property
     def kappa_base(self):
-        return self._kappa_base
+        return self.__kappa_base
 
     @kappa_base.setter
     def kappa_base(self, value):
-        self._kappa_base = value
+        self.__kappa_base = value
         self.kappa = value / 105.1939
 
     @kappa_base.deleter
     def kappa_base(self):
-        del self._kappa_base
+        del self.__kappa_base
 
     @classmethod
     def to_yaml(cls, representer, node):
@@ -92,13 +92,27 @@ class Parameters:
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 
+    def load_from_yaml(self, fname):
+        iparams = utils.yaml_load(fname)
+        for x in dir(iparams):
+            if x.startswith('_'):
+                continue
+            if hasattr(self, x) and x != 'kappa':
+                if x == 'kappa_base':
+                    iv = iparams.__dict__['kappa_base']
+                else:
+                    iv = getattr(iparams, x)
+                if callable(iv):
+                    continue
+                setattr(self, x, iv)
+
     def yaml_dump_scalars(self, fname):
         with open(fname, 'w') as f:
             yaml.dump(self, f)
 
     def is_scalarwise_equal_with(self, other):
         if isinstance(other, Parameters):
-            entities_to_remove = ('func_A0', 'func_A1', '_kappa_base', 'kappa_base', 'version')
+            entities_to_remove = ('func_A0', 'func_A1', '__kappa_base', 'kappa_base', 'version')
             sd = self.__dict__.copy()
             od = other.__dict__.copy()
             [sd.pop(k, None) for k in entities_to_remove]
