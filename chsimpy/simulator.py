@@ -18,17 +18,60 @@ class Simulator:
         else:
             self.params = params
         self.solver = solver.Solver(params, U_init)
+        self.steps_total = 0
+        self.solution_dump_id = None
         # only allocate PlotView if required
         if 'gui' in self.params.render_target or 'png' in self.params.render_target:
             self.view = plotview.PlotView(self.params.N)
         else:
             self.view = None
+            self.params.update_every = None  # no target where update can be applied to
 
     @threading.wrap(limits=1, user_api='blas')
-    def solve(self, nsteps=None):
-        return self.solver.solve(nsteps)
+    def solve(self):
+        # no interactive plotting
+        self.solution_dump_id = utils.get_current_id_for_dump(self.params.dump_id)
+        if self.steps_total == 0:
+            self.solver.prepare()
+        if self.params.update_every is None:
+            return self.solver.solve_or_resume()
+        #
+        #
+        if self.view is not None:
+            self.view.prepare()
+        # interactive plotting
+        self.view.imode_on()
+        self.view.show()
+        part = 0
+        steps_end = self.params.ntmax
+        if self.params.time_max is not None and self.params.time_max > 0:
+            steps_end = utils.get_int_max_value()
+        dsteps = min(steps_end, self.params.update_every)
+        assert (dsteps > 0)
+        while (
+                (self.steps_total + dsteps) <= steps_end
+                and
+                (self.solver.solution.stop_reason == 'None' or self.params.full_sim is True)
+        ):
+            self.solver.solve_or_resume(dsteps)
+            self._update_view()
+            self.view.draw()
+            if 'png' in self.params.render_target:
+                fname = f"anim-{self.solution_dump_id}.{part:05d}.png"
+                self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
+            self.steps_total += dsteps
+            part += 1
+            diff = self.params.ntmax - self.steps_total
+            if 0 < diff < dsteps:
+                dsteps = diff
 
-    def _render(self):
+        self.view.finish()
+        if self.solver.solution.tau0 == 0:
+            self.solver.solution.tau0 = self.solver.solution.computed_steps-1
+            self.solver.solution.t0 = self.solver.time_passed
+        return self.solver.solution
+
+    def _update_view(self):
         view = self.view
         params = self.params
         solution = self.solver.solution
@@ -55,7 +98,6 @@ class Simulator:
                            title='Total Energy',
                            computed_steps=solution.computed_steps)
 
-
         view.set_SAlines(domtime=solution.domtime,
                          SA=solution.SA,
                          title=f"Area of high silica (U <> {params.threshold})",
@@ -75,12 +117,9 @@ class Simulator:
     # TODO: too much logic hidden w.r.t. dump_id, should be more like dump_with_auto_id and dump_with_custom_id
     # TODO: dump and render_target parsing? (yaml, csv, ..)
     # TODO: provide own functions for filename generating code
-    def dump_solution(self, dump_id, members=None):
-        if dump_id is None or dump_id == '' or dump_id.lower() == 'none':
-            return
-        fname_sol = 'solution-'+dump_id
+    def dump_solution(self, members=None):
+        fname_sol = 'solution-'+self.solution_dump_id
         solution = self.solver.solution
-
         solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
         if members is None:
             return fname_sol
@@ -99,21 +138,15 @@ class Simulator:
         return fname_sol
 
     def render(self):
-        current_dump_id = utils.get_current_id_for_dump(self.params.dump_id)
+        if self.view is None:
+            return
         render_target = self.params.render_target
-        # invalid dump id ?
-        if (current_dump_id is not None
-                and current_dump_id != ''
-                and current_dump_id.lower() != 'none'):
-            if 'gui' in render_target or 'png' in render_target:
-                self._render()
-            if 'png' in render_target:
-                fname = 'diagrams-'+current_dump_id+'.png'
-                self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
-            if 'gui' in render_target:
-                self.view.show()
-        else: # invalid dump id, only gui is now possible
-            # GUI render
-            if 'gui' in render_target:
-                self._render()
-                self.view.show()
+        self.view.imode_off()
+        if 'gui' in render_target or 'png' in render_target:
+            self._update_view()
+        if 'png' in render_target:
+            fname = 'final-'+self.solution_dump_id+'.png'
+            self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
+        if 'gui' in render_target:
+            self.view.show()
+        self.view.imode_default()

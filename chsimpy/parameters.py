@@ -53,6 +53,7 @@ class Parameters:
         self.generator = 'uniform'
         self.adaptive_time = False
         self.jitter = None
+        self.update_every = 100  # update and renders every 100 steps
 
         self.func_A0 = lambda temp: utils.A0(temp)
         self.func_A1 = lambda temp: utils.A1(temp)

@@ -73,6 +73,9 @@ class CLIParser:
         parser.add_argument('-j', '--jitter',
                             type=float,
                             help='Adds noise based on -g in every step by provided factor [0, 0.1) (much slower)')
+        parser.add_argument('--update-every',
+                            type=int,
+                            help='Every n simulation steps data is plotted or rendered (>=2) (slowdown).')
         parser.add_argument('--version',
                             action='version',
                             version=f"%(prog)s {parameters.Parameters.version}")
@@ -95,6 +98,10 @@ class CLIParser:
         params.time_max = self.args.time_max
         params.generator = self.args.generator
         params.jitter = self.args.jitter
+        params.update_every = self.args.update_every
+        if params.update_every is not None and params.update_every < 2:
+            params.update_every = 2
+            print('--update-every should be >=2')
 
         if self.args.parameter_file is not None:
             params.load_from_yaml(self.args.parameter_file)

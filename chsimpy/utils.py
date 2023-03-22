@@ -3,7 +3,6 @@ import difflib
 import ruamel.yaml
 import time
 from datetime import datetime
-import psutil
 import resource
 import platform
 import sympy as sym
@@ -12,6 +11,7 @@ import sys
 from IPython import get_ipython
 import os
 import psutil
+import matplotlib.pyplot as plt
 
 from . import _version
 
@@ -105,7 +105,7 @@ def get_current_localtime():
 
 
 def get_current_id_for_dump(dump_id):
-    if dump_id == 'auto' or dump_id is None:
+    if dump_id == 'auto' or dump_id is None or dump_id == '' or dump_id.lower() == 'none':
         return datetime.now().strftime('%d%m%Y-%H%M%S')
     else:
         return dump_id
@@ -209,3 +209,16 @@ def get_mem_usage():
 def get_mem_usage_all():
     kib = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss + resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
     return f"{kib/1024:0.2f}MiB"
+
+
+def pause_without_show(interval):
+    # https://stackoverflow.com/questions/45729092/make-interactive-matplotlib-window-not-pop-to-front-on-each-update-windows-7/45734500#45734500
+    manager = plt._pylab_helpers.Gcf.get_active()
+    if manager is not None:
+        canvas = manager.canvas
+        if canvas.figure.stale:
+            canvas.draw_idle()
+            # plt.show(block=False)
+        canvas.start_event_loop(interval)
+    else:
+        time.sleep(interval)

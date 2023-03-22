@@ -17,9 +17,10 @@ class PlotView:
         """Viewer for plotting simulation data"""
         self.N = N
         self.bins = 15
-        tmp_plt_imode = plt.isinteractive()
-        # Turn interactive plotting off
-        plt.ioff()
+        self._blit = not utils.is_notebook()
+        self.axbackgrounds = None
+        self.imode_defaulted = plt.isinteractive()
+        plt.ioff()  # do not show initial plots
         self.fig, axs = plt.subplots(3, 2, figsize=(10, 9),
                                      layout=None,
                                      gridspec_kw={'wspace': 0.3,
@@ -40,6 +41,7 @@ class PlotView:
 
         self.Umap = self.ax_Umap.imshow(np.zeros((N, N)), cmap="plasma", aspect="equal")
         self.Uline, = self.ax_Uline.plot(np.arange(0, N), np.zeros(N))
+        self.ax_Uline.set_ylim(0.75, 1.0)
         self.Eline, = self.ax_Eline.plot([], [])
         self.ElineDelt, = self.ax2_Eline.plot([], [], color='gray')
 
@@ -47,12 +49,14 @@ class PlotView:
             self.ax_SAlines.plot([], [])[0],
             self.ax_SAlines.plot([], [])[0]
         ]
+        self.ax_SAlines.set_ylim(0, 1.0)
         self.SAlinesV = None
-
+        self.Uhist = None
         self.E2line, = self.ax_E2line.plot([], [])
         self.E2lineV = None
         self.E2lineText = None
-        if tmp_plt_imode:
+        self.ax2_Eline.get_yaxis().set_visible(False)
+        if self.imode_defaulted:
             plt.ion()
 
     def set_Umap(self, U, threshold, title):
@@ -73,7 +77,6 @@ class PlotView:
         if U is None:
             return
         self.Uline.set_ydata(U[int(self.N / 2)+1, :])
-        self.ax_Uline.set_ylim(0.75, 1.0)
         self.ax_Uline.grid(True)
         self.ax_Uline.set_ylabel('Concentration')
 
@@ -104,8 +107,10 @@ class PlotView:
         self.ax2_Eline.set_xlabel('Step')
         self.ax2_Eline.set_ylabel('delt (gray)')
         self.ax2_Eline.set_xlim(0, computed_steps)
-        self.ax2_Eline.set_ylim(np.nanmin(delt[0:computed_steps]),
-                                np.nanmax(delt[0:computed_steps]))
+        dmin = np.nanmin(delt[0:computed_steps])
+        dmax = np.nanmax(delt[0:computed_steps])
+        if dmax-dmin > 1e-20:
+            self.ax2_Eline.set_ylim(dmin, dmax)
 
     def set_SAlines(self, domtime, SA, title, computed_steps, x2, t0):
         if SA is None or domtime is None:
@@ -113,7 +118,6 @@ class PlotView:
         self.SAlines[0].set_data((domtime[1:computed_steps], SA[1:computed_steps]))
         self.SAlines[1].set_data((domtime[1:computed_steps], 1-SA[1:computed_steps]))
         self.ax_SAlines.set_xlim(0, x2)
-        self.ax_SAlines.set_ylim(0, 1)
         if t0 > 0:
             if self.SAlinesV is not None:
                 self.SAlinesV.remove()
@@ -151,15 +155,97 @@ class PlotView:
         Ureal = np.real(U)
         self.ax_Uhist.cla()
         # ravel gives 1D view on data
-        sns.histplot(data=Ureal.ravel(), stat='probability', ax=self.ax_Uhist, bins=self.bins)
+        self.Uhist = sns.histplot(data=Ureal.ravel(), stat='probability', ax=self.ax_Uhist, bins=self.bins)
         self.ax_Uhist.set_title(title)
         self.ax_Uhist.set_xlabel('Concentration')
 
-    def show(self):
-        if utils.is_notebook():
-            IPython.display.display(self.fig)
+    def imode_on(self):
+        plt.ion()
+
+    def imode_off(self):
+        plt.ioff()
+
+    def imode_default(self):
+        if self.imode_defaulted:
+            self.imode_on()
         else:
-            plt.show()
+            self.imode_off()
+
+    def prepare(self):
+        self.ax_E2line.get_xaxis().set_visible(False)
+        self.ax_E2line.get_yaxis().set_visible(False)
+        self.ax_Eline.get_xaxis().set_visible(False)
+        self.ax_Eline.get_yaxis().set_visible(False)
+        self.ax2_Eline.get_yaxis().set_visible(False)
+        self.ax_Uhist.get_xaxis().set_visible(False)
+        self.ax_Uhist.get_yaxis().set_visible(False)
+        self.ax_SAlines.get_xaxis().set_visible(False)
+        # see https://stackoverflow.com/questions/40126176/fast-live-plotting-in-matplotlib-pyplot
+        # see https://matplotlib.org/stable/tutorials/advanced/blitting.html
+        self.fig.canvas.draw()  # note that the first draw comes before setting data
+        if self._blit:
+            # cache the background
+            self.axbackgrounds = [
+                self.fig.canvas.copy_from_bbox(self.ax_Eline.bbox),
+                self.fig.canvas.copy_from_bbox(self.ax2_Eline.bbox),
+                self.fig.canvas.copy_from_bbox(self.ax_Uhist.bbox),
+                self.fig.canvas.copy_from_bbox(self.ax_Uline.bbox),
+                self.fig.canvas.copy_from_bbox(self.ax_Umap.bbox),
+                self.fig.canvas.copy_from_bbox(self.ax_SAlines.bbox),
+                self.fig.canvas.copy_from_bbox(self.ax_E2line.bbox)
+            ]
+            plt.show(block=False)
+
+    def finish(self):
+        self.ax_E2line.get_xaxis().set_visible(True)
+        self.ax_E2line.get_yaxis().set_visible(True)
+        self.ax_Eline.get_xaxis().set_visible(True)
+        self.ax_Eline.get_yaxis().set_visible(True)
+        self.ax2_Eline.get_yaxis().set_visible(True)
+        self.ax_Uhist.get_xaxis().set_visible(True)
+        self.ax_Uhist.get_yaxis().set_visible(True)
+        self.ax_SAlines.get_xaxis().set_visible(True)
+
+    def show(self, block=False):
+        if utils.is_notebook():
+            self.fig.canvas.toolbar_visible = False
+            self.fig.canvas.header_visible = False
+            plt.show(block=block)
+        else:
+            plt.show(block=block)
+            utils.pause_without_show(1e-6)
+
+    def draw(self):
+        if self._blit is True:
+            # restore background
+            for cached_ax in self.axbackgrounds:
+                self.fig.canvas.restore_region(cached_ax)
+
+            # redraw just the points
+            self.ax_Eline.draw_artist(self.Eline)
+            self.ax2_Eline.draw_artist(self.ElineDelt)
+            self.ax_Uhist.draw_artist(self.Uhist)
+            self.ax_Uline.draw_artist(self.Uline)
+            self.ax_Umap.draw_artist(self.Umap)
+            self.ax_SAlines.draw_artist(self.SAlines[0])
+            self.ax_SAlines.draw_artist(self.SAlines[1])
+            self.ax_E2line.draw_artist(self.E2line)
+            self.ax_E2line.draw_artist(self.E2lineText)
+
+            # fill in the axes rectangle
+            self.fig.canvas.blit(self.ax_Eline.bbox)
+            self.fig.canvas.blit(self.ax2_Eline.bbox)
+            self.fig.canvas.blit(self.ax_Uhist.bbox)
+            self.fig.canvas.blit(self.ax_Uline.bbox)
+            self.fig.canvas.blit(self.ax_Umap.bbox)
+            self.fig.canvas.blit(self.ax_SAlines.bbox)
+            self.fig.canvas.blit(self.ax_E2line.bbox)
+        else:
+            if utils.is_notebook():
+                self.fig.canvas.draw()
+            else:
+                utils.pause_without_show(0.001)
+        self.fig.canvas.flush_events()
 
     def render_to(self, fname='diagrams.png'):
         self.fig.savefig(fname, pad_inches=0.5, dpi=100)  # should be called before any plt.show() command
