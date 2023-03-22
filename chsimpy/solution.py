@@ -52,68 +52,11 @@ class Solution:
         self.computed_steps = 0
         self.stop_reason = 'None'  # why the sim stopped
 
-    @property
-    def it_range(self):
-        if self.timedata is None:
-            return None
+    def __getattr__(self, name: str):
+        if hasattr(self.timedata, name):
+            return getattr(self.timedata, name)
         else:
-            return self.timedata.it_range
-
-    @property
-    def E(self):
-        if self.timedata is None:
-            return None
-        else:
-            return self.timedata.E
-
-    @property
-    def E2(self):
-        if self.timedata is None:
-            return None
-        else:
-            return self.timedata.E2
-
-    @property
-    def SA(self):
-        if self.timedata is None:
-            return None
-        else:
-            return self.timedata.SA
-
-    @property
-    def domtime(self):
-        if self.timedata is None:
-            return None
-        else:
-            return self.timedata.domtime
-
-    @property
-    def Ra(self):
-        if self.timedata is None:
-            return None
-        else:
-            return self.timedata.Ra
-
-    @property
-    def L2(self):
-        if self.timedata is None:
-            return None
-        else:
-            return self.timedata.L2
-
-    @property
-    def PS(self):
-        if self.timedata is None:
-            return None
-        else:
-            return self.timedata.PS
-
-    @property
-    def delt(self):
-        if self.timedata is None:
-            return None
-        else:
-            return self.timedata.delt
+            raise AttributeError("No such attribute: " + name)
 
     @classmethod
     def to_yaml(cls, representer, node):
@@ -142,14 +85,7 @@ class Solution:
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['U']
-        del state['hat_U']
         del state['timedata']
-        del state['CHeig']
-        del state['Seig']
-        del state['Ra']
-        del state['L2']
-        del state['PS']
-        del state['it_range']
         return state
 
     def is_scalarwise_equal_with(self, other):
@@ -157,9 +93,7 @@ class Solution:
             params_equal = self.params.is_scalarwise_equal_with(other.params)
             sd = dict(sorted(self.__dict__.items()))
             od = dict(sorted(other.__dict__.items()))
-            entities_to_remove = ('U', 'hat_U', 'params', 'delt',
-                                  'timedata', 'CHeig', 'Seig',
-                                  'E', 'E2', 'SA', 'domtime', 'PS', 'Ra', 'L2', 'it_range')
+            entities_to_remove = ('U', 'params', 'timedata')
             [sd.pop(k, None) for k in entities_to_remove]
             [od.pop(k, None) for k in entities_to_remove]
             return params_equal and sd == od
