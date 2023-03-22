@@ -105,7 +105,6 @@ class CLIParser:
 
         if self.args.parameter_file is not None:
             params.load_from_yaml(self.args.parameter_file)
-
         return params
 
     def print_info(self):
