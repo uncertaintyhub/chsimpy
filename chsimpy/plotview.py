@@ -2,10 +2,14 @@ import IPython.display
 import numpy as np
 
 from matplotlib import pyplot as plt
-import seaborn as sns
 from matplotlib import colors
+import matplotlib
+import seaborn as sns
 
-import chsimpy.utils
+from chsimpy import utils
+
+if utils.is_notebook() is False:
+    matplotlib.use("Qt5Agg")  # much faster GUI response time
 
 
 class PlotView:
@@ -152,7 +156,7 @@ class PlotView:
         self.ax_Uhist.set_xlabel('Concentration')
 
     def show(self):
-        if chsimpy.utils.is_notebook():
+        if utils.is_notebook():
             IPython.display.display(self.fig)
         else:
             plt.show()
