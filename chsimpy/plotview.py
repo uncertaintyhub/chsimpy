@@ -165,4 +165,5 @@ class PlotView:
         self.fig.savefig(fname, pad_inches=0.5, dpi=100)  # should be called before any plt.show() command
 
     def __del__(self):
-        plt.close(self.fig)
+        if plt is not None and not utils.is_notebook():
+            plt.close(self.fig)
