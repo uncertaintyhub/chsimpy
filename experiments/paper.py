@@ -154,5 +154,5 @@ if __name__ == '__main__':
     print(f"  experiment-{init_params.file_id}-raw.csv")
     print(f"  {{solution-{init_params.file_id}-run***.yaml}}")
     print(f"  {{solution-{init_params.file_id}-run***.*.csv[.bz2]}}")
-    if 'png' in init_params.render_target:
+    if init_params.png:
         print(f"  {{solution-{init_params.file_id}-run***.png}}")
