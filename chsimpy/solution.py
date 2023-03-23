@@ -53,7 +53,7 @@ class Solution:
         self.stop_reason = 'None'  # why the sim stopped
 
     def __getattr__(self, name: str):
-        if name in ('E','E2','SA','domtime','Ra','L2','PS','delt'):
+        if name in ('E','E2','SA','domtime','Ra','L2','PS','delt','it_range'):
             if hasattr(self, 'timedata') and self.timedata is not None and hasattr(self.timedata, name):
                 return getattr(self.timedata, name)
         raise AttributeError("No such attribute: " + name)
