@@ -20,17 +20,16 @@ if __name__ == '__main__':
     parser.print_info()
     params = parser.get_parameters()
     simulator = chsimpy.simulator.Simulator(params)
-    print(str(params).replace(',','\n'))
+    print(str(params).replace(", '", "\n '"))
 
     solution = simulator.solve()
     simulator.render()
+    simulator.export()
     print(f"computed_steps = {solution.computed_steps}, "
           f"t0 = {solution.t0:g} s ({chsimpy.utils.sec_to_min_if(solution.t0)}), "
           f"stop reason = {solution.stop_reason}")
-
-    if 'yaml' in params.render_target or params.export_csv:
-        simulator.dump_solution(params.export_csv)
-        print(f"Dump ID = {simulator.solution_dump_id}")
-    if 'gui' in params.render_target:
+    if simulator.export_requested():
+        print(f"File ID = {simulator.solution_dump_id}")
+    if simulator.gui_requested():
         simulator.view.show(block=True)
     parser.parser.exit()

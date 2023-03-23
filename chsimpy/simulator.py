@@ -1,4 +1,4 @@
-from threadpoolctl import ThreadpoolController, threadpool_limits
+from threadpoolctl import ThreadpoolController
 import numpy as np
 
 from . import parameters
@@ -21,7 +21,7 @@ class Simulator:
         self.steps_total = 0
         self.solution_dump_id = None
         # only allocate PlotView if required
-        if 'gui' in self.params.render_target or 'png' in self.params.render_target:
+        if self.gui_required():
             self.view = plotview.PlotView(self.params.N)
         else:
             self.view = None
@@ -30,18 +30,23 @@ class Simulator:
     @threading.wrap(limits=1, user_api='blas')
     def solve(self):
         # no interactive plotting
-        self.solution_dump_id = utils.get_current_id_for_dump(self.params.dump_id)
+        self.solution_dump_id = utils.get_current_id_for_dump(self.params.file_id)
         if self.steps_total == 0:
             self.solver.prepare()
         if self.params.update_every is None:
-            return self.solver.solve_or_resume()
+            return self.solver.solve_or_resume(self.params.ntmax)  # RETURN here, no live-plotting wanted
         #
+        # live plotting
         #
-        if self.view is not None:
-            self.view.prepare()
-        # interactive plotting
-        self.view.imode_on()
-        self.view.show()
+        if self.gui_required():
+            self.view.prepare(show=self.gui_requested())
+        if self.gui_requested():
+            # interactive plotting
+            self.view.imode_on()
+            self.view.show()
+        else:
+            self.view.imode_off()
+
         part = 0
         steps_end = self.params.ntmax
         if self.params.time_max is not None and self.params.time_max > 0:
@@ -56,7 +61,7 @@ class Simulator:
             self.solver.solve_or_resume(dsteps)
             self._update_view()
             self.view.draw()
-            if 'png' in self.params.render_target:
+            if self.params.png_anim:
                 fname = f"anim-{self.solution_dump_id}.{part:05d}.png"
                 self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
             self.steps_total += dsteps
@@ -114,39 +119,47 @@ class Simulator:
 
         view.set_Uhist(solution.U, "Solution Histogram")
 
-    # TODO: too much logic hidden w.r.t. dump_id, should be more like dump_with_auto_id and dump_with_custom_id
-    # TODO: dump and render_target parsing? (yaml, csv, ..)
-    # TODO: provide own functions for filename generating code
-    def dump_solution(self, members=None):
+    def export(self):
         fname_sol = 'solution-'+self.solution_dump_id
         solution = self.solver.solution
-        solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
-        if members is None:
-            return fname_sol
-        if self.params.compress_csv:
-            fending = 'csv.bz2'
-        else:
-            fending = 'csv'
-        members_array = members.replace(' ', '').split(',')
-        for member in members_array:
-            varray = None
-            if hasattr(solution, member):
-                varray = getattr(solution, member)
-            if isinstance(varray, np.ndarray):
-                fname = f"{fname_sol}.{member}.{fending}"
-                utils.csv_dump_matrix(varray, fname=fname)
+        csv_matrices = self.params.csv_matrices
+
+        if self.params.yaml:
+            solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
+
+        if self.params.csv and csv_matrices is not None and csv_matrices != '' and csv_matrices.lower() != 'none':
+            if self.params.compress_csv:
+                fext = 'csv.bz2'
+            else:
+                fext = 'csv'
+            members_array = csv_matrices.replace(' ', '').split(',')
+            for member in members_array:
+                varray = None
+                if hasattr(solution, member):
+                    varray = getattr(solution, member)
+                if isinstance(varray, np.ndarray):
+                    fname = f"{fname_sol}.{member}.{fext}"
+                    utils.csv_dump_matrix(varray, fname=fname)
         return fname_sol
 
     def render(self):
         if self.view is None:
             return
-        render_target = self.params.render_target
         self.view.imode_off()
-        if 'gui' in render_target or 'png' in render_target:
+        if self.gui_required():
             self._update_view()
-        if 'png' in render_target:
+        if self.params.png:
             fname = 'final-'+self.solution_dump_id+'.png'
             self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
-        if 'gui' in render_target:
+        if self.gui_requested():
             self.view.show()
         self.view.imode_default()
+
+    def export_requested(self):
+        return self.params.csv or self.params.yaml or self.params.png or self.params.png_anim
+
+    def gui_requested(self):
+        return self.params.no_gui is False
+
+    def gui_required(self):
+        return self.params.png or self.params.png_anim or self.gui_requested()

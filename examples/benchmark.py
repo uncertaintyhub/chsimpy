@@ -53,6 +53,7 @@ class BenchmarkCLIParser:
         bmark_params.skip_test = self.cliparser.args.skip_test
         bmark_params.runs = self.cliparser.args.runs
         bmark_params.warmups = self.cliparser.args.warmups
+        params.no_gui = True
         if self.cliparser.args.warmup_ntmax is not None:
             bmark_params.warmup_ntmax = self.cliparser.args.warmup_ntmax
             if bmark_params.warmup_ntmax > params.ntmax:
@@ -62,12 +63,9 @@ class BenchmarkCLIParser:
             bmark_params.warmup_ntmax = params.ntmax
 
         if bmark_params.runs < 1:
-            print('ERROR: Runs must be at least 1.')
-            exit(1)
-        if 'gui' in params.render_target or 'png' in params.render_target:
-            print('Visualization is disabled when running benchmarks.')
-            params.render_target = params.render_target.replace('gui', '')
-            params.render_target = params.render_target.replace('png', '')
+            self.cliparser.parser.error('ERROR: --runs must be at least 1.')
+        if params.png or params.png_anim:
+            self.cliparser.parser.error('Visualization must be disabled when running benchmarks.')
         return bmark_params, params
 
 
@@ -76,11 +74,11 @@ def validation_test():
     params.N = 512
     params.ntmax = 100
     params.seed = 2023
-    params.render_target = 'none'
+    params.no_gui = True
     params.generator = 'lcg'  # to be comparable with matlab
     params.kappa_base = 30
     params.adaptive_time = False
-    params.dump_id = 'benchmark-validation'
+    params.file_id = 'benchmark-validation'
     U_init = 0.875 + 0.01 * chsimpy.mport.matlab_lcg_sample(params.N, params.N, params.seed)
     simulator = Simulator(params=params, U_init=U_init)
 
@@ -102,8 +100,10 @@ def validation_test():
 def time_repetitions(simulator, ntmax, repetitions):
     tv_run = np.zeros(repetitions)
     for i in range(repetitions):
+        simulator.params.ntmax = ntmax
+        simulator.solver.prepare()
         t1 = time.time()
-        simulator.solve(ntmax)
+        simulator.solve()
         tv_run[i] = time.time() - t1
     return tv_run
 
@@ -115,7 +115,6 @@ if __name__ == '__main__':
     bmark_params, params = bmark_cliparser.get_parameters()
 
     # get current time
-    dump_id = chsimpy.utils.get_current_id_for_dump(params.dump_id)
     sysinfo_list = chsimpy.utils.get_system_info()
     bmark_params_list = chsimpy.utils.vars_to_list(bmark_params)
 
@@ -145,13 +144,15 @@ if __name__ == '__main__':
 
     time_total = time.time()-t1
     print(f"Benchmark Total: {time_total} sec")
-
-    with open(f"benchmark-{dump_id}.csv", 'w') as f:
+    file_id = simulator.solution_dump_id
+    with open(f"benchmark-{file_id}.csv", 'w') as f:
         f.write("\n".join(sysinfo_list + bmark_params_list))
+        f.write("\n")
         f.write(f"warmup,{ts_warmup}\n")
         f.write(f"runs,{ts_runs}\n")
         f.write(f"total,{time_total}\n")
     print('Output files:')
-    print(f"  results and meta data: benchmark-{dump_id}.csv")
-    fname_sol = simulator.dump_solution(dump_id)
-    print(f"  solution & parameters: {fname_sol}.csv")
+    print(f"  results and meta data: benchmark-{file_id}.csv")
+    simulator.export()
+    if simulator.export_requested():
+        print(f"  solution & parameters: {file_id}.csv")

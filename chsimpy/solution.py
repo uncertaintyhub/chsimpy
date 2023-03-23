@@ -53,10 +53,10 @@ class Solution:
         self.stop_reason = 'None'  # why the sim stopped
 
     def __getattr__(self, name: str):
-        if hasattr(self.timedata, name):
-            return getattr(self.timedata, name)
-        else:
-            raise AttributeError("No such attribute: " + name)
+        if name in ('E','E2','SA','domtime','Ra','L2','PS','delt'):
+            if hasattr(self, 'timedata') and self.timedata is not None and hasattr(self.timedata, name):
+                return getattr(self.timedata, name)
+        raise AttributeError("No such attribute: " + name)
 
     @classmethod
     def to_yaml(cls, representer, node):
@@ -86,6 +86,8 @@ class Solution:
         state = self.__dict__.copy()
         del state['U']
         del state['timedata']
+        del state['CHeig']
+        del state['Seig']
         return state
 
     def is_scalarwise_equal_with(self, other):
@@ -93,7 +95,7 @@ class Solution:
             params_equal = self.params.is_scalarwise_equal_with(other.params)
             sd = dict(sorted(self.__dict__.items()))
             od = dict(sorted(other.__dict__.items()))
-            entities_to_remove = ('U', 'params', 'timedata')
+            entities_to_remove = ('U', 'params', 'timedata', 'CHeig', 'Seig')
             [sd.pop(k, None) for k in entities_to_remove]
             [od.pop(k, None) for k in entities_to_remove]
             return params_equal and sd == od

@@ -27,30 +27,32 @@ class CLIParser:
         parser.add_argument('-p',
                             '--parameter-file',
                             help='Input yaml file with parameter values (overwrites CLI parameters)')
-        parser.add_argument('-d',
-                            '--dump-id',
-                            help='Dump data, filenames have an id like "solution-ID.yaml" '
-                                 '("auto" creates a timestamp, "none" does not dump YAML files). '
-                                 'Existing files will be overwritten.')
-        parser.add_argument('-r',
-                            '--render-target',
-                            default='gui',
-                            choices=['gui',
-                                     'png',
-                                     'yaml',
-                                     'gui+yaml',
-                                     'png+yaml',
-                                     'gui+png',
-                                     'gui+png+yaml',
-                                     'none'],
-                            help='How simulation result is processed. Files use ID from --dump-id. "gui": plots via GUI. '
-                                 '"png": plots to PNG files. "yaml": data to YAML files. "none": results are not processed.')
+        parser.add_argument('-f', '--file-id',
+                            default='auto',
+                            help='Filenames have an id like "solution-<ID>.yaml" '
+                                 '("auto" creates a timestamp). '
+                                 'Existing files will be OVERWRITTEN!')
+        parser.add_argument('--no-gui',
+                            action='store_true',
+                            help='Do not show plot window (if --png or --png-anim.')
+        parser.add_argument('--png',
+                            action='store_true',
+                            help='Export solution plot to PNG image file (see --file-id).')
+        parser.add_argument('--png-anim',
+                            action='store_true',
+                            help='Export live plotting to series of PNGs (--update-every required) (see --file-id).')
+        parser.add_argument('--yaml',
+                            action='store_true',
+                            help='Export parameters to yaml file (see --file-id).')
+        parser.add_argument('--csv',
+                            action='store_true',
+                            help='Export solution matrices to csv file (see --file-id).')
+        parser.add_argument('--csv-matrices',
+                            help='Solution matrix names to be exported to csv (e.g. ...="U,E2") (requires --csv)')
         parser.add_argument('-s', '--seed',
                             default=2023,
                             type=int,
                             help='Start seed for random number generators')
-        parser.add_argument('-x', '--export-csv',
-                            help='Dump vector/matrices to csv by their names in Solution (U, E, E2, ...)')
         parser.add_argument('-z', '--full-sim',
                             action='store_true',
                             help='Do not stop simulation early (ignores when energy finally falls)')
@@ -85,23 +87,30 @@ class CLIParser:
         self.args = self.parser.parse_args()
         params = parameters.Parameters()
 
-        params.render_target = self.args.render_target
         params.ntmax = self.args.ntmax
         params.N = self.args.N
-        params.dump_id = self.args.dump_id
+        params.file_id = self.args.file_id
         params.seed = self.args.seed
-        params.export_csv = self.args.export_csv
         params.full_sim = self.args.full_sim
         params.kappa_base = self.args.kappa_base
         params.compress_csv = self.args.compress_csv
+        params.csv = self.args.csv
+        params.csv_matrices = self.args.csv_matrices
+        params.png = self.args.png
+        params.png_anim = self.args.png_anim
+        params.yaml = self.args.yaml
+        params.no_gui = self.args.no_gui
         params.adaptive_time = self.args.adaptive_time
         params.time_max = self.args.time_max
         params.generator = self.args.generator
         params.jitter = self.args.jitter
         params.update_every = self.args.update_every
         if params.update_every is not None and params.update_every < 2:
-            params.update_every = 2
-            print('--update-every should be >=2')
+            self.parser.error('--update-every should be >=2')
+        if params.png_anim and params.update_every is None:
+            self.parser.error("--png-anim requires --update-every.")
+        if params.csv_matrices and (params.csv is None or params.csv is False):
+            self.parser.error("--csv-matrices requires --csv.")
 
         if self.args.parameter_file is not None:
             params.load_from_yaml(self.args.parameter_file)

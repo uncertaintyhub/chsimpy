@@ -41,9 +41,13 @@ class Parameters:
         self.threshold = 0.9  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls
 
-        self.render_target = 'gui'  # e.g. image file diagrams are rendered to
-        self.dump_id = 'auto'  # id for filenames (solution, parameters)
-        self.export_csv = None
+        self.csv = False
+        self.csv_matrices = 'U,E2'
+        self.png = False
+        self.png_anim = False
+        self.yaml = False
+        self.no_gui = False
+        self.file_id = 'auto'  # id for filenames (solution, parameters)
         self.full_sim = False
         self.compress_csv = False
         self.time_max = None  # time in minutes to simulate (ignores ntmax)
@@ -113,7 +117,7 @@ class Parameters:
 
     def is_scalarwise_equal_with(self, other):
         if isinstance(other, Parameters):
-            entities_to_remove = ('func_A0', 'func_A1', '__kappa_base', 'kappa_base', 'version')
+            entities_to_remove = ('func_A0', 'func_A1', '_Parameters__kappa_base', 'kappa_base', 'version')
             sd = self.__dict__.copy()
             od = other.__dict__.copy()
             [sd.pop(k, None) for k in entities_to_remove]
@@ -138,4 +142,4 @@ class Parameters:
         entities_to_remove = ('func_A0', 'func_A1')
         sd = self.__dict__.copy()
         [sd.pop(k, None) for k in entities_to_remove]
-        return str(sd)
+        return str(dict(sorted(sd.items())))

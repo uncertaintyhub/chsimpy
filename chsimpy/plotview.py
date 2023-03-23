@@ -171,7 +171,7 @@ class PlotView:
         else:
             self.imode_off()
 
-    def prepare(self):
+    def prepare(self, show=True):
         self.ax_E2line.get_xaxis().set_visible(False)
         self.ax_E2line.get_yaxis().set_visible(False)
         self.ax_Eline.get_xaxis().set_visible(False)
@@ -194,7 +194,8 @@ class PlotView:
                 self.fig.canvas.copy_from_bbox(self.ax_SAlines.bbox),
                 self.fig.canvas.copy_from_bbox(self.ax_E2line.bbox)
             ]
-            plt.show(block=False)
+            if show:
+                plt.show(block=False)
 
     def finish(self):
         self.ax_E2line.get_xaxis().set_visible(True)

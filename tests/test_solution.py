@@ -44,7 +44,7 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         params.N = 512
         params.ntmax = 100
         params.seed = 2023
-        params.render_target = 'none'
+        params.no_gui = True
         params.generator = 'lcg'  # to be comparable with matlab
         params.kappa_base = 30
         params.adaptive_time = False

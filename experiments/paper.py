@@ -54,12 +54,17 @@ class ExperimentCLIParser:
         exp_params = ExperimentParams()
         exp_params.skip_test = self.cliparser.args.skip_test
         exp_params.runs = self.cliparser.args.runs
+        params.no_gui = True
+        params.csv = True
+        params.yaml = True
+        if self.cliparser.args.csv_matrices is None:
+            params.csv_matrices = 'U, E, E2, SA'
+        else:
+            params.csv_matrices = self.cliparser.args.csv_matrices
         if exp_params.runs < 1:
-            print('ERROR: Runs must be at least 1.')
-            exit(1)
-        if 'gui' in params.render_target:
-            print('WARNING: GUI visualization is disabled when running experiments.')
-            params.render_target = params.render_target.replace('gui', '')
+            self.cliparser.parser.error('ERROR: --runs must be at least 1.')
+        if params.png_anim:
+            self.cliparser.parser.error('ERROR: --png-anim is not allowed.')
         exp_params.processes = self.cliparser.args.processes
         return exp_params, params
 
@@ -68,7 +73,7 @@ def run_experiment(run_id):
     # prepare params for actual run
     params = init_params.deepcopy()
     params.seed = init_params.seed
-    params.dump_id = f"{init_params.dump_id}-run{run_id}"
+    params.file_id = f"{init_params.file_id}-run{run_id}"
 
     fac_A0 = rand_values[run_id, 0]
     fac_A1 = rand_values[run_id, 1]
@@ -81,7 +86,7 @@ def run_experiment(run_id):
     # solve
     solution = simulator.solve()
 
-    simulator.dump_solution(dump_id=params.dump_id, members='U, E, E2, SA')
+    simulator.export()
     simulator.render()
     cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
                                              solution.A0, solution.A1)
@@ -105,10 +110,10 @@ if __name__ == '__main__':
     exp_params, init_params = exp_cliparser.get_parameters()
 
     # get sysinfo and current time and dump it to experiment-metadata csv file
-    init_params.dump_id = chsimpy.utils.get_current_id_for_dump(init_params.dump_id)
+    init_params.file_id = chsimpy.utils.get_current_id_for_dump(init_params.file_id)
     sysinfo_list = chsimpy.utils.get_system_info()
     exp_params_list = chsimpy.utils.vars_to_list(exp_params)
-    chsimpy.utils.csv_dump_list(f"experiment-{init_params.dump_id}-metadata.csv",
+    chsimpy.utils.csv_dump_list(f"experiment-{init_params.file_id}-metadata.csv",
                                 "\n".join(sysinfo_list + exp_params_list))
 
     # generate random numbers for multi-processed runs
@@ -138,16 +143,16 @@ if __name__ == '__main__':
     cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'id', 'fac_A0', 'fac_A1']
     df_results = pd.DataFrame(results, columns=cols)
     df_results[['tau0', 'id']] = df_results[['tau0', 'id']].astype(int)
-    df_results.to_csv(f"experiment-{init_params.dump_id}-raw.csv")
+    df_results.to_csv(f"experiment-{init_params.file_id}-raw.csv")
     df_agg = df_results.loc[:, df_results.columns != 'id'].describe()
     df_agg.loc['cv'] = df_agg.loc['std'] / df_agg.loc['mean']
     print(df_agg.T)
-    df_agg.T.to_csv(f"experiment-{init_params.dump_id}-agg.csv")
+    df_agg.T.to_csv(f"experiment-{init_params.file_id}-agg.csv")
     print('Output files:')
-    print(f"  experiment-{init_params.dump_id}-metadata.csv")
-    print(f"  experiment-{init_params.dump_id}-agg.csv")
-    print(f"  experiment-{init_params.dump_id}-raw.csv")
-    print(f"  {{solution-{init_params.dump_id}-run***.yaml}}")
-    print(f"  {{solution-{init_params.dump_id}-run***.*.csv[.bz2]}}")
+    print(f"  experiment-{init_params.file_id}-metadata.csv")
+    print(f"  experiment-{init_params.file_id}-agg.csv")
+    print(f"  experiment-{init_params.file_id}-raw.csv")
+    print(f"  {{solution-{init_params.file_id}-run***.yaml}}")
+    print(f"  {{solution-{init_params.file_id}-run***.*.csv[.bz2]}}")
     if 'png' in init_params.render_target:
-        print(f"  {{solution-{init_params.dump_id}-run***.png}}")
+        print(f"  {{solution-{init_params.file_id}-run***.png}}")
