@@ -3,6 +3,7 @@ import numpy as np
 
 from . import parameters
 from . import plotview
+from . import mapview
 from . import solver
 from . import utils
 
@@ -22,7 +23,10 @@ class Simulator:
         self.solution_dump_id = None
         # only allocate PlotView if required
         if self.gui_required():
-            self.view = plotview.PlotView(self.params.N)
+            if self.params.no_diagrams:
+                self.view = mapview.MapView(self.params.N)
+            else:
+                self.view = plotview.PlotView(self.params.N)
         else:
             self.view = None
             self.params.update_every = None  # no target where update can be applied to
@@ -88,7 +92,10 @@ class Simulator:
                       threshold=params.threshold,
                       title=f"U <> {params.threshold}, total time = {utils.sec_to_min_if(time_total)}, "
                             f"steps = {solution.computed_steps}")
-
+        if self.params.no_diagrams:
+            return  # RETURN as mapview only uses U and only renders Umap
+        #
+        #
         view.set_Uline(U=solution.U, title='Slice at U(N/2,:)')
 
         if self.params.adaptive_time:

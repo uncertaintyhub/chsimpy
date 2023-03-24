@@ -78,6 +78,9 @@ class CLIParser:
         parser.add_argument('--update-every',
                             type=int,
                             help='Every n simulation steps data is plotted or rendered (>=2) (slowdown).')
+        parser.add_argument('--no-diagrams',
+                            action='store_true',
+                            help='No diagrams or axes, it only renders the image map of U.')
         parser.add_argument('--version',
                             action='version',
                             version=f"%(prog)s {parameters.Parameters.version}")
@@ -105,6 +108,7 @@ class CLIParser:
         params.generator = self.args.generator
         params.jitter = self.args.jitter
         params.update_every = self.args.update_every
+        params.no_diagrams = self.args.no_diagrams
         if params.update_every is not None and params.update_every < 2:
             self.parser.error('--update-every should be >=2')
         if params.png_anim and params.update_every is None:
