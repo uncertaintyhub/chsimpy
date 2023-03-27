@@ -77,7 +77,7 @@ class Solution:
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 
-    def yaml_dump_scalars(self, fname):
+    def yaml_export_scalars(self, fname):
         with open(fname, 'w') as f:
             yaml.dump(self, f)
 

@@ -17,7 +17,7 @@ except ImportError:
     # sys.path.remove(str(_parentdir))
 
 
-from chsimpy import Simulator, Parameters, CLIParser
+from chsimpy import Simulator, Parameters, CLIParser, utils
 
 
 class BenchmarkParams:
@@ -85,7 +85,7 @@ def validation_test():
     solution = simulator.solve()
     U_python = solution.U
     # chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')
-    U_matlab = chsimpy.utils.csv_load_matrix('../validation/U-matlab-lcg-N512n100.csv')
+    U_matlab = chsimpy.utils.csv_import_matrix('../validation/U-matlab-lcg-N512n100.csv')
     valid = np.allclose(U_matlab, U_python)
     #mse = (np.square(U_matlab-U_python)).mean(axis=None)
     #print('MSE is: ', mse)
@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
     time_total = time.time()-t1
     print(f"Benchmark Total: {time_total} sec")
-    file_id = simulator.solution_dump_id
+    file_id = simulator.solution_file_id
     with open(f"benchmark-{file_id}.csv", 'w') as f:
         f.write("\n".join(sysinfo_list + bmark_params_list))
         f.write("\n")

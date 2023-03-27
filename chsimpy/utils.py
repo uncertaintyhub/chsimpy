@@ -72,14 +72,14 @@ def yaml_load(fname):
     return instance
 
 
-def csv_dump_matrix(V, fname):
+def csv_export_matrix(V, fname):
     if fname.endswith('bz2'):
         pd.DataFrame(V).to_csv(fname, index=False, header=None, sep=',', compression='bz2')
     else:
         np.savetxt(fname, V, delimiter=',', fmt='%s')
 
 
-def csv_load_matrix(fname):
+def csv_import_matrix(fname):
     if fname.endswith('bz2'):
         return pd.read_csv(fname, sep=',', header=None, compression='bz2').values
     else:
@@ -104,11 +104,11 @@ def get_current_localtime():
     return time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime())
 
 
-def get_current_id_for_dump(dump_id):
-    if dump_id == 'auto' or dump_id is None or dump_id == '' or dump_id.lower() == 'none':
+def get_or_create_file_id(file_id):
+    if file_id == 'auto' or file_id is None or file_id == '' or file_id.lower() == 'none':
         return datetime.now().strftime('%d%m%Y-%H%M%S')
     else:
-        return dump_id
+        return file_id
 
 
 def get_number_physical_cores():
@@ -196,7 +196,7 @@ def vars_to_list(obj):
     return attribs
 
 
-def csv_dump_list(fname, obj):
+def csv_export_list(fname, obj):
     with open(fname, 'w') as f:
         f.writelines(obj)
 

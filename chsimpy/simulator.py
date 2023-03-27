@@ -20,7 +20,7 @@ class Simulator:
             self.params = params
         self.solver = solver.Solver(params, U_init)
         self.steps_total = 0
-        self.solution_dump_id = None
+        self.solution_file_id = None
         # only allocate PlotView if required
         if self.gui_required():
             if self.params.no_diagrams:
@@ -34,7 +34,7 @@ class Simulator:
     @threading.wrap(limits=1, user_api='blas')
     def solve(self):
         # no interactive plotting
-        self.solution_dump_id = utils.get_current_id_for_dump(self.params.file_id)
+        self.solution_file_id = utils.get_or_create_file_id(self.params.file_id)
         if self.steps_total == 0:
             self.solver.prepare()
         if self.params.update_every is None:
@@ -66,7 +66,7 @@ class Simulator:
             self._update_view()
             self.view.draw()
             if self.params.png_anim:
-                fname = f"anim-{self.solution_dump_id}.{part:05d}.png"
+                fname = f"anim-{self.solution_file_id}.{part:05d}.png"
                 self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
             self.steps_total += dsteps
             part += 1
@@ -127,12 +127,12 @@ class Simulator:
         view.set_Uhist(solution.U, "Solution Histogram")
 
     def export(self):
-        fname_sol = 'solution-'+self.solution_dump_id
+        fname_sol = 'solution-'+self.solution_file_id
         solution = self.solver.solution
         csv_matrices = self.params.csv_matrices
 
         if self.params.yaml:
-            solution.yaml_dump_scalars(fname=fname_sol+'.yaml')
+            solution.yaml_export_scalars(fname=fname_sol + '.yaml')
 
         if self.params.csv and csv_matrices is not None and csv_matrices != '' and csv_matrices.lower() != 'none':
             if self.params.compress_csv:
@@ -146,7 +146,7 @@ class Simulator:
                     varray = getattr(solution, member)
                 if isinstance(varray, np.ndarray):
                     fname = f"{fname_sol}.{member}.{fext}"
-                    utils.csv_dump_matrix(varray, fname=fname)
+                    utils.csv_export_matrix(varray, fname=fname)
         return fname_sol
 
     def render(self):
@@ -156,7 +156,7 @@ class Simulator:
         if self.gui_required():
             self._update_view()
         if self.params.png:
-            fname = 'final-'+self.solution_dump_id+'.png'
+            fname = 'final-'+self.solution_file_id+'.png'
             self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
         if self.gui_requested():
             self.view.show()

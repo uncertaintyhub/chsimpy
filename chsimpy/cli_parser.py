@@ -65,7 +65,7 @@ class CLIParser:
                             help='Generator for initial random deviations in concentration')
         parser.add_argument('-C', '--compress-csv',
                             action='store_true',
-                            help='Compress csv dumps with bz2')
+                            help='Compress csv files with bz2')
         parser.add_argument('-a', '--adaptive-time',
                             action='store_true',
                             help='Use adaptive-time stepping')
@@ -117,7 +117,7 @@ class CLIParser:
             self.parser.error("--csv-matrices requires --csv.")
 
         if self.args.parameter_file is not None:
-            params.load_from_yaml(self.args.parameter_file)
+            params.yaml_import_scalars(self.args.parameter_file)
         return params
 
     def print_info(self):

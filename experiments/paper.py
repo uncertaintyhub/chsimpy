@@ -14,7 +14,7 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-from chsimpy import Simulator, CLIParser
+from chsimpy import Simulator, CLIParser, utils
 
 import matplotlib
 # https://matplotlib.org/stable/users/faq/howto_faq.html#work-with-threads
@@ -96,7 +96,7 @@ def run_experiment(run_id):
             solution.tau0,
             cgap[0],  # c_A
             cgap[1],  # c_B
-            np.argmax(solution.E2),  # tsep
+            np.argmax(solution.E2),  # tsep TODO: into timescale
             run_id,  # run number
             fac_A0,
             fac_A1
@@ -108,12 +108,14 @@ if __name__ == '__main__':
     exp_cliparser = ExperimentCLIParser()
     exp_cliparser.cliparser.print_info()
     exp_params, init_params = exp_cliparser.get_parameters()
+    # print parameters
+    print(str(init_params).replace(", '", "\n '"))
 
     # get sysinfo and current time and dump it to experiment-metadata csv file
-    init_params.file_id = chsimpy.utils.get_current_id_for_dump(init_params.file_id)
+    init_params.file_id = chsimpy.utils.get_or_create_file_id(init_params.file_id)
     sysinfo_list = chsimpy.utils.get_system_info()
     exp_params_list = chsimpy.utils.vars_to_list(exp_params)
-    chsimpy.utils.csv_dump_list(f"experiment-{init_params.file_id}-metadata.csv",
+    chsimpy.utils.csv_export_list(f"experiment-{init_params.file_id}-metadata.csv",
                                 "\n".join(sysinfo_list + exp_params_list))
 
     # generate random numbers for multi-processed runs

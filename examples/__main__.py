@@ -12,7 +12,7 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-from chsimpy import CLIParser, Simulator
+from chsimpy import CLIParser, Simulator, utils
 
 
 if __name__ == '__main__':
@@ -29,7 +29,7 @@ if __name__ == '__main__':
           f"t0 = {solution.t0:g} s ({chsimpy.utils.sec_to_min_if(solution.t0)}), "
           f"stop reason = {solution.stop_reason}")
     if simulator.export_requested():
-        print(f"File ID = {simulator.solution_dump_id}")
+        print(f"File ID = {simulator.solution_file_id}")
     if simulator.gui_requested():
         simulator.view.show(block=True)
     parser.parser.exit()

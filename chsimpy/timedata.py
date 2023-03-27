@@ -1,7 +1,5 @@
 import numpy as np
 
-from . import utils
-
 
 class TimeData:
     def __init__(self):

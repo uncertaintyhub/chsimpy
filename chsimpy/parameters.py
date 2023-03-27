@@ -98,7 +98,7 @@ class Parameters:
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 
-    def load_from_yaml(self, fname):
+    def yaml_import_scalars(self, fname):
         iparams = utils.yaml_load(fname)
         for x in dir(iparams):
             if x.startswith('_'):
@@ -112,7 +112,7 @@ class Parameters:
                     continue
                 setattr(self, x, iv)
 
-    def yaml_dump_scalars(self, fname):
+    def yaml_export_scalars(self, fname):
         with open(fname, 'w') as f:
             yaml.dump(self, f)
 
