@@ -31,6 +31,7 @@ class ExperimentParams:
         self.jitter_Arellow = 0.995
         self.jitter_Arelhigh = 1.005
         self.processes = -1
+        self.independent = False
 
 
 # parsing command-line-interface arguments
@@ -48,12 +49,16 @@ class ExperimentCLIParser:
                                            default=-1,
                                            type=int,
                                            help='Runs are distributed to P processes to run in parallel (-1 = auto)')
+        self.cliparser.parser.add_argument('--independent',
+                                           action='store_true',
+                                           help='Independent A0, A1 runs (varying A0 and A1 runs separately.')
 
     def get_parameters(self):
         params = self.cliparser.get_parameters()
         exp_params = ExperimentParams()
         exp_params.skip_test = self.cliparser.args.skip_test
         exp_params.runs = self.cliparser.args.runs
+        exp_params.independent = self.cliparser.args.independent
         params.no_gui = True
         params.csv = True
         params.yaml = True
@@ -121,9 +126,14 @@ if __name__ == '__main__':
     # generate random numbers for multi-processed runs
     rng = np.random.default_rng(init_params.seed)
     rtemp = rng.uniform(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, size=(2, exp_params.runs))
-    rand_values = np.ones((2*exp_params.runs, 2*exp_params.runs))  # first time A0 varies, second time A1
-    rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
-    rand_values[exp_params.runs:, 1] = rtemp[1]  # random factors for A1
+    if exp_params.independent:
+        rand_values = np.ones((2*exp_params.runs, 2*exp_params.runs))  # first time A0 varies, second time A1
+        rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
+        rand_values[exp_params.runs:, 1] = rtemp[1]  # random factors for A1
+    else:
+        rand_values = np.ones((exp_params.runs, exp_params.runs))  # A0 and A1 varies at the same time
+        rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
+        rand_values[:exp_params.runs, 1] = rtemp[1]  # random factors for A1
 
     # for multiprocessing
     nprocs = 1
@@ -133,7 +143,7 @@ if __name__ == '__main__':
     elif exp_params.processes > 1:
         nprocs = exp_params.processes
 
-    items = range(2*exp_params.runs)
+    items = range(rand_values.shape[0])
     results = []
     with mp.Pool(processes=nprocs) as pool, tqdm(pool.imap_unordered(run_experiment, items), total=len(items)) as pbar:
         pbar.set_postfix({'Mem': chsimpy.utils.get_mem_usage_all()})
