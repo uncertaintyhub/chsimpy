@@ -70,9 +70,11 @@ class Simulator:
                 self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
             self.steps_total += dsteps
             part += 1
-            diff = self.params.ntmax - self.steps_total
+            diff = steps_end - self.steps_total
             if 0 < diff < dsteps:
                 dsteps = diff
+            elif diff < 0:
+                raise Exception(f"Something went wrong.")  # diff is negative. steps_end or ntmax is too low
 
         self.view.finish()
         if self.solver.solution.tau0 == 0:
