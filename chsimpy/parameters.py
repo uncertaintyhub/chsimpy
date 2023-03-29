@@ -41,8 +41,7 @@ class Parameters:
         self.threshold = 0.9  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls
 
-        self.csv = False
-        self.csv_matrices = 'U,E2'
+        self.export_csv = None  # e.g. 'U,E2'
         self.png = False
         self.png_anim = False
         self.yaml = False

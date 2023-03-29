@@ -60,12 +60,11 @@ class ExperimentCLIParser:
         exp_params.runs = self.cliparser.args.runs
         exp_params.independent = self.cliparser.args.independent
         params.no_gui = True
-        params.csv = True
         params.yaml = True
-        if self.cliparser.args.csv_matrices is None:
-            params.csv_matrices = 'U, E, E2, SA'
+        if self.cliparser.args.export_csv is None:
+            params.export_csv = 'U, E, E2, SA'
         else:
-            params.csv_matrices = self.cliparser.args.csv_matrices
+            params.export_csv = self.cliparser.args.export_csv
         if exp_params.runs < 1:
             self.cliparser.parser.error('ERROR: --runs must be at least 1.')
         if params.png_anim:

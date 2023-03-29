@@ -129,17 +129,17 @@ class Simulator:
     def export(self):
         fname_sol = 'solution-'+self.solution_file_id
         solution = self.solver.solution
-        csv_matrices = self.params.csv_matrices
+        export_csv = self.params.export_csv
 
         if self.params.yaml:
             solution.yaml_export_scalars(fname=fname_sol + '.yaml')
 
-        if self.params.csv and csv_matrices is not None and csv_matrices != '' and csv_matrices.lower() != 'none':
+        if export_csv is not None:
             if self.params.compress_csv:
                 fext = 'csv.bz2'
             else:
                 fext = 'csv'
-            members_array = csv_matrices.replace(' ', '').split(',')
+            members_array = export_csv.replace(' ', '').split(',')
             for member in members_array:
                 varray = None
                 if hasattr(solution, member):
@@ -163,7 +163,7 @@ class Simulator:
         self.view.imode_default()
 
     def export_requested(self):
-        return self.params.csv or self.params.yaml or self.params.png or self.params.png_anim
+        return self.params.export_csv is not None or self.params.yaml or self.params.png or self.params.png_anim
 
     def gui_requested(self):
         return self.params.no_gui is False

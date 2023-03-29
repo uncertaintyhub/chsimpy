@@ -44,11 +44,8 @@ class CLIParser:
         parser.add_argument('--yaml',
                             action='store_true',
                             help='Export parameters to yaml file (see --file-id).')
-        parser.add_argument('--csv',
-                            action='store_true',
-                            help='Export solution matrices to csv file (see --file-id).')
         parser.add_argument('--export-csv',
-                            help='Solution matrix names to be exported to csv (e.g. ...="U,E2") (requires --csv)')
+                            help='Solution matrix names to be exported to csv (e.g. ...="U,E2")')
         parser.add_argument('-s', '--seed',
                             default=2023,
                             type=int,
@@ -100,8 +97,7 @@ class CLIParser:
         params.full_sim = self.args.full_sim
         params.kappa_base = self.args.kappa_base
         params.compress_csv = self.args.compress_csv
-        params.csv = self.args.csv
-        params.csv_matrices = self.args.export_csv
+        params.export_csv = self.args.export_csv
         params.png = self.args.png
         params.png_anim = self.args.png_anim
         params.yaml = self.args.yaml
@@ -122,8 +118,10 @@ class CLIParser:
             self.parser.error('--update-every should be >=2')
         if params.png_anim and params.update_every is None:
             self.parser.error("--png-anim requires --update-every.")
-        if params.csv_matrices and (params.csv is None or params.csv is False):
-            self.parser.error("--csv-matrices requires --csv.")
+        if params.export_csv == '' or params.export_csv.lower() == 'none':
+            self.parser.error("--export-csv does not contain valid entries.")
+        if params.compress_csv and params.export_csv is None:
+            self.parser.error("--compress-csv has no effect (no --export-csv given).")
 
         if self.args.parameter_file is not None:
             params.yaml_import_scalars(self.args.parameter_file)
