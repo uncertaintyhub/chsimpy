@@ -47,7 +47,7 @@ class CLIParser:
         parser.add_argument('--csv',
                             action='store_true',
                             help='Export solution matrices to csv file (see --file-id).')
-        parser.add_argument('--csv-matrices',
+        parser.add_argument('--export-csv',
                             help='Solution matrix names to be exported to csv (e.g. ...="U,E2") (requires --csv)')
         parser.add_argument('-s', '--seed',
                             default=2023,
@@ -101,7 +101,7 @@ class CLIParser:
         params.kappa_base = self.args.kappa_base
         params.compress_csv = self.args.compress_csv
         params.csv = self.args.csv
-        params.csv_matrices = self.args.csv_matrices
+        params.csv_matrices = self.args.export_csv
         params.png = self.args.png
         params.png_anim = self.args.png_anim
         params.yaml = self.args.yaml
