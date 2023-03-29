@@ -118,7 +118,7 @@ class CLIParser:
             self.parser.error('--update-every should be >=2')
         if params.png_anim and params.update_every is None:
             self.parser.error("--png-anim requires --update-every.")
-        if params.export_csv == '' or params.export_csv.lower() == 'none':
+        if params.export_csv is not None and (params.export_csv == '' or params.export_csv.lower() == 'none'):
             self.parser.error("--export-csv does not contain valid entries.")
         if params.compress_csv and params.export_csv is None:
             self.parser.error("--compress-csv has no effect (no --export-csv given).")
