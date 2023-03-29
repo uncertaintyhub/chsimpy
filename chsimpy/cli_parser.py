@@ -81,6 +81,9 @@ class CLIParser:
         parser.add_argument('--no-diagrams',
                             action='store_true',
                             help='No diagrams or axes, it only renders the image map of U.')
+        parser.add_argument('--cinit',
+                            type=float,
+                            help='Initial U mean value (also referred to as c_0 in initial composition mix) (0.85 <= c_0 <= 0.95)')
         parser.add_argument('--version',
                             action='version',
                             version=f"%(prog)s {parameters.Parameters.version}")
@@ -109,6 +112,12 @@ class CLIParser:
         params.jitter = self.args.jitter
         params.update_every = self.args.update_every
         params.no_diagrams = self.args.no_diagrams
+        params.XXX = self.args.cinit
+        if 0.85 <= self.args.cinit <= 0.95:
+            params.XXX = self.args.cinit
+        else:
+            self.parser.error('0.85 <= cinit <= 0.95')
+
         if params.update_every is not None and params.update_every < 2:
             self.parser.error('--update-every should be >=2')
         if params.png_anim and params.update_every is None:
