@@ -49,7 +49,7 @@ class TestDumpParameters(unittest.TestCase):
         p1 = Parameters()
         p1.func_A0 = lambda temp: 1+2*temp  # is ignored as it is non-scalar
         p1.yaml_export_scalars(fname)
-        p2 = chsimpy.utils.yaml_load(fname)
+        p2 = chsimpy.utils.yaml_import(fname)
         self.assertTrue(p1.is_scalarwise_equal_with(p2))
         if os.path.isfile(fname):
             os.remove(fname)
@@ -64,7 +64,7 @@ class TestDumpParameters(unittest.TestCase):
         p1 = Parameters()
         p1.N = 512
         p1.yaml_export_scalars(fname)
-        p2 = chsimpy.utils.yaml_load(fname)
+        p2 = chsimpy.utils.yaml_import(fname)
         p1.N = 256
         self.assertTrue(p1 != p2 and p2.N == 512 and p1.N == 256)
         if os.path.isfile(fname):
@@ -84,7 +84,7 @@ class TestDumpSolution(unittest.TestCase):
         params = Parameters()
         s1 = Solution(params)
         s1.yaml_export_scalars(fname)
-        s2 = chsimpy.utils.yaml_load(fname)
+        s2 = chsimpy.utils.yaml_import(fname)
         self.assertTrue(s1.is_scalarwise_equal_with(s2))
         if os.path.isfile(fname):
             os.remove(fname)

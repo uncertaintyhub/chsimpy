@@ -98,7 +98,7 @@ class Parameters:
         return representer.represent_mapping(tag, attribs)
 
     def yaml_import_scalars(self, fname):
-        iparams = utils.yaml_load(fname)
+        iparams = utils.yaml_import(fname)
         for x in dir(iparams):
             if x.startswith('_'):
                 continue

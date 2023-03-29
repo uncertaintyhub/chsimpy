@@ -63,7 +63,7 @@ def yaml_constr_ndarray(constructor, node):
 yaml = ruamel.yaml.YAML(typ='safe')
 
 
-def yaml_load(fname):
+def yaml_import(fname):
     # yaml = ruamel.yaml.YAML(typ='safe')
     yaml.constructor.add_constructor(u'!ndarray', yaml_constr_ndarray)
     instance = None
