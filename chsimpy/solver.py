@@ -103,9 +103,9 @@ class Solver:
         Du2 = DUx ** 2 + DUy ** 2
 
         Uinv = 1 - U
-        E2 = 0.5 * eps2 * np.mean(Du2)
+        E2 = 0.5 * eps2 * self.params.L**2 * np.mean(Du2)
         # Compute energy etc....
-        E = np.mean(
+        E = self.params.L**2 * np.mean(
             # Energie
             Amr * np.real(
                 RT * (U * (np.log(U) - B) + Uinv * np.log(Uinv))
@@ -216,8 +216,8 @@ class Solver:
 
             Du2 = DUx ** 2 + DUy ** 2
             Uinv = 1 - U
-            E2 = 0.5 * eps2 * np.mean(Du2)
-            E = np.mean(
+            E2 = 0.5 * eps2 * self.params.L**2 * np.mean(Du2)
+            E = self.params.L**2 * np.mean(
                 # Energie
                 Amr * np.real(
                     RT * (U * (np.log(U) - B) + Uinv * np.log(Uinv))
