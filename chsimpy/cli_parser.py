@@ -80,7 +80,16 @@ class CLIParser:
                             help='No diagrams or axes, it only renders the image map of U.')
         parser.add_argument('--cinit',
                             type=float,
+                            default=0.875,
                             help='Initial U mean value (also referred to as c_0 in initial composition mix) (0.85 <= c_0 <= 0.95)')
+        parser.add_argument('--dt',
+                            type=float,
+                            default=1e-11,
+                            help='Time delta of simulation.')
+        parser.add_argument('--threshold',
+                            type=float,
+                            default=0.875,
+                            help='Threshold value to determine c_A and c_B (should match --cinit).')
         parser.add_argument('--version',
                             action='version',
                             version=f"%(prog)s {parameters.Parameters.version}")
@@ -108,11 +117,18 @@ class CLIParser:
         params.jitter = self.args.jitter
         params.update_every = self.args.update_every
         params.no_diagrams = self.args.no_diagrams
-        params.XXX = self.args.cinit
         if 0.85 <= self.args.cinit <= 0.95:
             params.XXX = self.args.cinit
         else:
             self.parser.error('0.85 <= cinit <= 0.95')
+        if 0.85 <= self.args.threshold <= 0.95:
+            params.threshold = self.args.threshold
+        else:
+            self.parser.error('0.85 <= threshold <= 0.95')
+        if 1e-12 <= self.args.dt <= 1e-10:
+            params.delt = self.args.dt
+        else:
+            self.parser.error('1e-12 <= dt <= 1e-10')
 
         if params.update_every is not None and params.update_every < 2:
             self.parser.error('--update-every should be >=2')
