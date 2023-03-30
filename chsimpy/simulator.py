@@ -61,6 +61,8 @@ class Simulator:
                 (self.steps_total + dsteps) <= steps_end
                 and
                 (self.solver.solution.stop_reason == 'None' or self.params.full_sim is True)
+                and
+                (self.solver.solution.stop_reason != 'time-limit')
         ):
             self.solver.solve_or_resume(dsteps)
             self._update_view()
