@@ -23,13 +23,13 @@ class Parameters:
         self.seed = 2023
         self.N = 512
         self.L = 2
-        self.XXX = 0.89  # mean value in initial composition mix U
+        self.XXX = 0.875  # mean value in initial composition mix U
         self.temp = 650 + 273.15  # temperature (in Kelvin)
         # chemical tuning parameter for the Gibbs free energy from R. Charles,
         #   Activities in Li2O-, Na2O, and K2O-SiO2 Solutions, J. Am. Ceram. Soc. 50 (12) (1967) 631–641.
         self.B = 12.86
 
-        self.R = 0.0083144626181532   # universal gas constant
+        self.R = 0.0083144626181532   # universal gas constant [kJ/mol]
         self.N_A = 6.02214076e+23  # and with the Avogadro constant
 
         self.__kappa_base = 30.0
@@ -38,7 +38,7 @@ class Parameters:
         self.delt_max = 9e-11
         self.M = 2e-11  # mobility factor
 
-        self.threshold = 0.9  # value determines component A and B in U (U <> threshold)
+        self.threshold = 0.875  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls
 
         self.export_csv = None  # e.g. 'U,E2'
