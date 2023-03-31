@@ -94,13 +94,17 @@ def run_experiment(run_id):
     simulator.render()
     cgap = chsimpy.utils.get_miscibility_gap(params.R, params.temp, params.B,
                                              solution.A0, solution.A1)
-
+    sa, sb = chsimpy.utils.get_roots_of_EPP(params.R, params.temp, solution.A0, solution.A1)
+    itargmax = np.argmax(solution.E2)
+    targmax = solution.timedata.domtime[itargmax]**3  # time passed at step itargmax
     return (solution.A0,
             solution.A1,
             solution.tau0,
             cgap[0],  # c_A
             cgap[1],  # c_B
-            np.argmax(solution.E2),  # tsep TODO: into timescale
+            sa,  # s_A
+            sb,  # s_B
+            itargmax * targmax,
             run_id,  # run number
             fac_A0,
             fac_A1
@@ -151,7 +155,7 @@ if __name__ == '__main__':
             results.append(x)
             pbar.refresh()
 
-    cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'tsep', 'id', 'fac_A0', 'fac_A1']
+    cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'sa', 'sb', 'tsep', 'id', 'fac_A0', 'fac_A1']
     df_results = pd.DataFrame(results, columns=cols)
     df_results[['tau0', 'id']] = df_results[['tau0', 'id']].astype(int)
     df_results.to_csv(f"experiment-{init_params.file_id}-raw.csv")

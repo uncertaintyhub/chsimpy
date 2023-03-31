@@ -158,6 +158,15 @@ def get_miscibility_gap(R, T, B, A0, A1, xlower=0.7, xupper=0.9999, prec=7):
     return sym.nsolve((eq1, eq2), (x1, x2), (xlower, xupper), prec=prec)
 
 
+def get_roots_of_EPP(R, T, A0, A1):
+    x = sym.Symbol('x', real=True, positive=True)
+    c = x
+    EPP = (-2*A0*c**2+2*A0*c+12*A1*c**3 - 18*A1*c**2+6*A1*c-R*T)/(c**2-c)
+    #return sym.nsolve(EPP, (xlower, xupper), prec=prec, solver='bisect')
+    roots = sym.solveset(EPP, x, domain=sym.Interval(0, 1))
+    return list(roots)
+
+
 # https://stackoverflow.com/a/39662359
 def is_notebook() -> bool:
     try:

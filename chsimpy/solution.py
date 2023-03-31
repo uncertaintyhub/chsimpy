@@ -24,7 +24,7 @@ class Solution:
         self.timedata = None
 
         # # we compute the molar area (cf. molar volume above (line 72))
-        self.Am = (25.13 * 1e6) ** (2/3) * self.params.N_A ** (-1/3)
+        self.Am = (25.13 * 1e6) ** (2/3) * self.params.N_A ** (-1/3) #  (micrometer^2/mol)
         self.eps2 = self.params.kappa ** 2
         self.D = -3.474 * 1e-4 * np.exp(-272.4 / (self.params.R * self.params.temp)) * 1e12
 
