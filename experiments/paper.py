@@ -96,15 +96,16 @@ def run_experiment(run_id):
                                              solution.A0, solution.A1)
     sa, sb = chsimpy.utils.get_roots_of_EPP(params.R, params.temp, solution.A0, solution.A1)
     itargmax = np.argmax(solution.E2)
-    targmax = solution.timedata.domtime[itargmax]**3  # time passed at step itargmax
+    # targmax = solution.timedata.domtime[itargmax]**3  # time passed at step itargmax # FIXME:
     return (solution.A0,
             solution.A1,
-            solution.tau0,
             cgap[0],  # c_A
             cgap[1],  # c_B
             sa,  # s_A
             sb,  # s_B
-            itargmax * targmax,
+            solution.tau0,
+            solution.t0,
+            itargmax,  # tsep in iterations
             run_id,  # run number
             fac_A0,
             fac_A1
@@ -120,7 +121,8 @@ if __name__ == '__main__':
     print(str(init_params).replace(", '", "\n '"))
 
     # get sysinfo and current time and dump it to experiment-metadata csv file
-    init_params.file_id = chsimpy.utils.get_or_create_file_id(init_params.file_id)
+    if init_params.file_id is None or init_params.file_id == 'auto':
+        init_params.file_id = chsimpy.utils.get_or_create_file_id(init_params.file_id)
     sysinfo_list = chsimpy.utils.get_system_info()
     exp_params_list = chsimpy.utils.vars_to_list(exp_params)
     chsimpy.utils.csv_export_list(f"experiment-{init_params.file_id}-metadata.csv",
@@ -155,7 +157,7 @@ if __name__ == '__main__':
             results.append(x)
             pbar.refresh()
 
-    cols = ['A0', 'A1', 'tau0', 'ca', 'cb', 'sa', 'sb', 'tsep', 'id', 'fac_A0', 'fac_A1']
+    cols = ['A0', 'A1', 'ca', 'cb', 'sa', 'sb', 'tau0', 't0', 'tsep', 'id', 'fac_A0', 'fac_A1']
     df_results = pd.DataFrame(results, columns=cols)
     df_results[['tau0', 'id']] = df_results[['tau0', 'id']].astype(int)
     df_results.to_csv(f"experiment-{init_params.file_id}-raw.csv")
