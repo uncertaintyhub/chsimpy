@@ -32,7 +32,7 @@ class MapView:
                                      clear=True)
         self.ax_Umap = axs
 
-        self.Umap = self.ax_Umap.imshow(np.zeros((N, N)), cmap="plasma", aspect="equal")
+        self.Umap = self.ax_Umap.imshow(np.zeros((N, N)), cmap="plasma", aspect="equal", vmin=0.75, vmax=1.0)
         self.ax_Umap.axis('off')
         if self.imode_defaulted:
             plt.ion()
@@ -42,11 +42,10 @@ class MapView:
         if U is None:
             return
         # colormap for Umap
-        cmap = colors.ListedColormap(['orange', 'yellow'])
-        boundaries = [0.0, threshold, 1]
-        norm = colors.BoundaryNorm(boundaries, cmap.N, clip=True)
+        cmap = colors.LinearSegmentedColormap.from_list('mylist', ['orange', 'yellow'], N=25)
         self.Umap.set_cmap(cmap)
-        self.Umap.set_norm(norm)
+        self.Umap.set_clim(vmin=np.min(U), vmax=np.max(U))
+        # self.Umap.set_norm(norm)
         Ureal = np.real(U)
         self.Umap.set_data(Ureal)
 
