@@ -63,8 +63,10 @@ class ExperimentCLIParser:
         params.yaml = True
         if self.cliparser.args.export_csv is None:
             params.export_csv = 'U, E, E2, SA'
+            params.compress_csv = True
         else:
             params.export_csv = self.cliparser.args.export_csv
+            params.compress_csv = self.cliparser.args.compress_csv
         if exp_params.runs < 1:
             self.cliparser.parser.error('ERROR: --runs must be at least 1.')
         if params.png_anim:
