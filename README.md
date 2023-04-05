@@ -1,94 +1,143 @@
 # chsimpy
 
-TODO
-
-...
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.hrz.tu-chemnitz.de/uncertainty/chsimpy.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.hrz.tu-chemnitz.de/uncertainty/chsimpy/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+chsimpy is a python3 simulation code to solve the Cahn–Hilliard equation for phase separation of Na2O-SiO2 glasses under uncertainty.
+It provides an optional non-interactive graphical interface, which also can update its results during the simulation to see its progress.
+Parameters can be changed via command-line interface (CLI) or jupyter notebook.
+Most of the data can also be exported for post-processing and reproducibility.
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+
+Currently there is no automated installation routine, just clone from github and install the required python packages:
+
+```bash
+git clone https://github.com/uncertaintyhub/chsimpy.git
+cd chsimpy
+pip install -r requirements.txt  # edit if version requirements are too tight
+```
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Go to the chsimpy examples folder and run the code via python:
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+```bash
+# git clone https://github.com/uncertaintyhub/chsimpy.git
+# cd chsimpy
+cd examples
+python . -h
+```
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+The help provides information on the command-line interface (CLI) arguments:
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+```bash
+usage: chsimpy [-h] [-N N] [-n NTMAX] [-p PARAMETER_FILE] [-f FILE_ID] [--no-gui] [--png] [--png-anim] [--yaml] [--export-csv EXPORT_CSV] [-s SEED] [-z] [-K KAPPA_BASE]
+               [-g {uniform,perlin,sobol,lcg}] [-C] [-a] [-t TIME_MAX] [-j JITTER] [--update-every UPDATE_EVERY] [--no-diagrams] [--cinit CINIT] [--dt DT] [--threshold THRESHOLD]
+               [--version]
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+Simulation of Phase Separation in Na2O-SiO2 Glasses under Uncertainty (solving the Cahn–Hilliard (CH) equation)
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+options:
+  -h, --help            show this help message and exit
+  -N N                  Number of pixels in one domain (NxN) (default: 512)
+  -n NTMAX, --ntmax NTMAX
+                        Maximum number of simulation steps (stops earlier when energy falls) (default: 1000000)
+  -p PARAMETER_FILE, --parameter-file PARAMETER_FILE
+                        Input yaml file with parameter values (overwrites CLI parameters) (default: None)
+  -f FILE_ID, --file-id FILE_ID
+                        Filenames have an id like "solution-<ID>.yaml" ("auto" creates a timestamp). Existing files will be OVERWRITTEN! (default: auto)
+  --no-gui              Do not show plot window (if --png or --png-anim. (default: False)
+  --png                 Export solution plot to PNG image file (see --file-id). (default: False)
+  --png-anim            Export live plotting to series of PNGs (--update-every required) (see --file-id). (default: False)
+  --yaml                Export parameters to yaml file (see --file-id). (default: False)
+  --export-csv EXPORT_CSV
+                        Solution matrix names to be exported to csv (e.g. ...="U,E2") (default: None)
+  -s SEED, --seed SEED  Start seed for random number generators (default: 2023)
+  -z, --full-sim        Do not stop simulation early (ignores when energy finally falls) (default: False)
+  -K KAPPA_BASE, --kappa-base KAPPA_BASE
+                        Value for kappa = K/105.1939 (default: 30)
+  -g {uniform,perlin,sobol,lcg}, --generator {uniform,perlin,sobol,lcg}
+                        Generator for initial random deviations in concentration (default: None)
+  -C, --compress-csv    Compress csv files with bz2 (default: False)
+  -a, --adaptive-time   Use adaptive-time stepping (default: False)
+  -t TIME_MAX, --time-max TIME_MAX
+                        Maximal time in minutes to simulate (ignores ntmax) (default: None)
+  -j JITTER, --jitter JITTER
+                        Adds noise based on -g in every step by provided factor [0, 0.1) (much slower) (default: None)
+  --update-every UPDATE_EVERY
+                        Every n simulation steps data is plotted or rendered (>=2) (slowdown). (default: None)
+  --no-diagrams         No diagrams or axes, it only renders the image map of U. (default: False)
+  --cinit CINIT         Initial U mean value (also referred to as c_0 in initial composition mix) (0.85 <= c_0 <= 0.95) (default: 0.875)
+  --dt DT               Time delta of simulation. (default: 1e-11)
+  --threshold THRESHOLD
+                        Threshold value to determine c_A and c_B (should match --cinit). (default: 0.875)
+  --version             show program's version number and exit
+```
 
-## License
-For open source projects, say how it is licensed.
+## Notebooks
+
+Install jupyter on your system. Perhaps further packages are required:
+
+```bash
+pip install PyQt5 ipympl
+```
+
+Run in chsimpy folder:
+
+```bash
+# in /chsimpy
+jupyter notebook
+# notebook files can be found in examples/
+```
+
+## Experiments
+
+An example for running parameter experiments can be found in `experiments/`.
+It uses multi-processing to execute multiple simulation at once with varying parameters (A0, A1 in our case).
+The random numbers are controlled by the seed which is defined by the iteration number, so the outcome does not depend on the parallelization.
+The CLI is extended by additional arguments.
+
+```bash
+cd experiments/
+python paper.py -h
+```
+The help text includes the main help from above and additionally:
+```bash
+# ...
+# main help from above
+# ...
+  -R RUNS, --runs RUNS  Number of Monte-Carlo runs (default: 3)
+  -S, --skip-test       Skip initial tests and validation [TODO]. (default: False)
+  -P PROCESSES, --processes PROCESSES
+                        Runs are distributed to P processes to run in parallel (-1 = auto) (default: -1)
+  --independent         Independent A0, A1 runs (varying A0 and A1 runs separately. (default: False)
+```
+
+## Tests
+
+Only very basic tests can be found in `tests/`. One test runs a simulation for a certain parameter set. The result is compared against the result of a pre-run non-official Matlab simulation, where this python is based on. The validation dataset can be found in `validation/`.
+
+The tests can be run via python:
+
+```bash
+python -m unittest test.py
+python -m unittest test_solution.py
+```
+
+## Benchmark
+
+In `examples/` one can run benchmarks of the simulation code via python (for more arguments see help via `--help`):
+
+```bash
+python benchmark.py -N 512 -n 100 -R 3  # 512x512 domain, 100 steps, 3 runs
+```
+
+## Plots
+
+The simulation results can be displayed as a single image of the concentration or by a set of diagrams.
+
+![Simulation plot](picture.png)
+
+
 
 ## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+
+The project is currently under development. Feel free to open issues or pull-requests to contribute.
