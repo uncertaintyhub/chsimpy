@@ -134,7 +134,8 @@ python benchmark.py -N 512 -n 100 -R 3  # 512x512 domain, 100 steps, 3 runs
 
 The simulation results can be displayed as a single image of the concentration or by a set of diagrams.
 
-![Simulation plot](picture.png)
+![Simulation result image](picture.png)
+![Simulation result diagrams](picture-diags.png)
 
 
 
