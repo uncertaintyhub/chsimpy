@@ -23,12 +23,12 @@ Go to the chsimpy examples folder and run the code via python:
 # git clone https://github.com/uncertaintyhub/chsimpy.git
 # cd chsimpy
 cd examples
-python . -h
+python . -h # help
 ```
 
 The help provides information on the command-line interface (CLI) arguments:
 
-```bash
+```
 usage: chsimpy [-h] [-N N] [-n NTMAX] [-p PARAMETER_FILE] [-f FILE_ID] [--no-gui] [--png] [--png-anim] [--yaml] [--export-csv EXPORT_CSV] [-s SEED] [-z] [-K KAPPA_BASE]
                [-g {uniform,perlin,sobol,lcg}] [-C] [-a] [-t TIME_MAX] [-j JITTER] [--update-every UPDATE_EVERY] [--no-diagrams] [--cinit CINIT] [--dt DT] [--threshold THRESHOLD]
                [--version]
@@ -97,7 +97,7 @@ The CLI is extended by additional arguments.
 
 ```bash
 cd experiments/
-python paper.py -h
+python paper.py -h # help
 ```
 The help text includes the main help from above and additionally:
 ```bash
