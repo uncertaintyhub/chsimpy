@@ -22,6 +22,7 @@ matplotlib.use('Agg')
 
 init_params = None  # global as multiprocessing pool cannot pickle Parameters because of lambda
 rand_values = None  # global ndarray of random numbers, for multi-process access
+U_init = None
 
 
 class ExperimentParams:
@@ -88,7 +89,7 @@ def run_experiment(run_id):
     params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * fac_A1
 
     # sim simulator
-    simulator = Simulator(params)
+    simulator = Simulator(params, U_init)  # U_init is global, set in __main__
     # solve
     solution = simulator.solve()
 
@@ -132,6 +133,9 @@ if __name__ == '__main__':
 
     # generate random numbers for multi-processed runs
     rng = np.random.default_rng(init_params.seed)
+    # first create U_init (global), so we have always the same U_init in all runs
+    U_init = init_params.XXX + (init_params.XXX * 0.01 * (rng.random((init_params.N, init_params.N)) - 0.5))
+    # now create the random numbers for A0 and A1
     rtemp = rng.uniform(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, size=(2, exp_params.runs))
     if exp_params.independent:
         rand_values = np.ones((2*exp_params.runs, 2*exp_params.runs))  # first time A0 varies, second time A1
