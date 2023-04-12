@@ -90,6 +90,8 @@ class CLIParser:
                             type=float,
                             default=0.875,
                             help='Threshold value to determine c_A and c_B (should match --cinit).')
+        parser.add_argument('--Uinit-file',
+                            help='Initial U matrix file (csv or numpy bz2 format).')
         parser.add_argument('--version',
                             action='version',
                             version=f"%(prog)s {parameters.Parameters.version}")
@@ -117,6 +119,7 @@ class CLIParser:
         params.jitter = self.args.jitter
         params.update_every = self.args.update_every
         params.no_diagrams = self.args.no_diagrams
+        params.Uinit_file = self.args.Uinit_file
         if 0.85 <= self.args.cinit <= 0.95:
             params.XXX = self.args.cinit
         else:

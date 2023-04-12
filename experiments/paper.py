@@ -23,6 +23,7 @@ matplotlib.use('Agg')
 init_params = None  # global as multiprocessing pool cannot pickle Parameters because of lambda
 rand_values = None  # global ndarray of random numbers, for multi-process access
 U_init = None
+A_list = None  # list of A0, A1 values if --A-file is used
 
 
 class ExperimentParams:
@@ -33,6 +34,7 @@ class ExperimentParams:
         self.jitter_Arelhigh = 1.005
         self.processes = -1
         self.independent = False
+        self.A_file = None
 
 
 # parsing command-line-interface arguments
@@ -53,6 +55,8 @@ class ExperimentCLIParser:
         self.cliparser.parser.add_argument('--independent',
                                            action='store_true',
                                            help='Independent A0, A1 runs (varying A0 and A1 runs separately.')
+        self.cliparser.parser.add_argument('--A-file',
+                                           help='File with A0,A1 values (row by row)')
 
     def get_parameters(self):
         params = self.cliparser.get_parameters()
@@ -60,6 +64,7 @@ class ExperimentCLIParser:
         exp_params.skip_test = self.cliparser.args.skip_test
         exp_params.runs = self.cliparser.args.runs
         exp_params.independent = self.cliparser.args.independent
+        exp_params.A_file = self.cliparser.args.A_file
         params.no_gui = True
         params.yaml = True
         if self.cliparser.args.export_csv is None:
@@ -82,11 +87,17 @@ def run_experiment(run_id):
     params.seed = init_params.seed
     params.file_id = f"{init_params.file_id}-run{run_id}"
 
-    fac_A0 = rand_values[run_id, 0]
-    fac_A1 = rand_values[run_id, 1]
-    # U[rel_low, rel_high) * A(temperature)
-    params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * fac_A0
-    params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * fac_A1
+    if A_list is None:
+        fac_A0 = rand_values[run_id, 0]
+        fac_A1 = rand_values[run_id, 1]
+        # U[rel_low, rel_high) * A(temperature)
+        params.func_A0 = lambda temp: chsimpy.utils.A0(temp) * fac_A0
+        params.func_A1 = lambda temp: chsimpy.utils.A1(temp) * fac_A1
+    else:
+        params.func_A0 = lambda temp: A_list[run_id][0]
+        params.func_A1 = lambda temp: A_list[run_id][1]
+        fac_A0 = None
+        fac_A1 = None
 
     # sim simulator
     simulator = Simulator(params, U_init)  # U_init is global, set in __main__
@@ -131,20 +142,26 @@ if __name__ == '__main__':
     chsimpy.utils.csv_export_list(f"experiment-{init_params.file_id}-metadata.csv",
                                 "\n".join(sysinfo_list + exp_params_list))
 
-    # generate random numbers for multi-processed runs
+    # random number generator
     rng = np.random.default_rng(init_params.seed)
-    # first create U_init (global), so we have always the same U_init in all runs
-    U_init = init_params.XXX + (init_params.XXX * 0.01 * (rng.random((init_params.N, init_params.N)) - 0.5))
-    # now create the random numbers for A0 and A1
-    rtemp = rng.uniform(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, size=(2, exp_params.runs))
-    if exp_params.independent:
-        rand_values = np.ones((2*exp_params.runs, 2*exp_params.runs))  # first time A0 varies, second time A1
-        rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
-        rand_values[exp_params.runs:, 1] = rtemp[1]  # random factors for A1
+    if init_params.Uinit_file is None:
+        # first create U_init (global), so we have always the same U_init in all runs
+        U_init = init_params.XXX + (init_params.XXX * 0.01 * (rng.random((init_params.N, init_params.N)) - 0.5))
     else:
-        rand_values = np.ones((exp_params.runs, exp_params.runs))  # A0 and A1 varies at the same time
-        rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
-        rand_values[:exp_params.runs, 1] = rtemp[1]  # random factors for A1
+        U_init = utils.csv_import_matrix(init_params.Uinit_file)
+    if exp_params.A_file is None:
+        # now create the random numbers for A0 and A1
+        rtemp = rng.uniform(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, size=(2, exp_params.runs))
+        if exp_params.independent:
+            rand_values = np.ones((2*exp_params.runs, 2*exp_params.runs))  # first time A0 varies, second time A1
+            rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
+            rand_values[exp_params.runs:, 1] = rtemp[1]  # random factors for A1
+        else:
+            rand_values = np.ones((exp_params.runs, exp_params.runs))  # A0 and A1 varies at the same time
+            rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
+            rand_values[:exp_params.runs, 1] = rtemp[1]  # random factors for A1
+    else:
+        A_list = utils.csv_import_matrix(exp_params.A_file)
 
     # for multiprocessing
     nprocs = 1
@@ -154,7 +171,9 @@ if __name__ == '__main__':
     elif exp_params.processes > 1:
         nprocs = exp_params.processes
 
-    items = range(rand_values.shape[0])
+    nr_items = rand_values.shape[0] if A_list is None else A_list.shape[0]
+    nr_items = min(exp_params.runs, nr_items)
+    items = range(nr_items)
     results = []
     with mp.Pool(processes=nprocs) as pool, tqdm(pool.imap_unordered(run_experiment, items), total=len(items)) as pbar:
         pbar.set_postfix({'Mem': chsimpy.utils.get_mem_usage_all()})

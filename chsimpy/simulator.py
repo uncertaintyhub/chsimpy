@@ -18,6 +18,8 @@ class Simulator:
             self.params = parameters.Parameters()
         else:
             self.params = params
+        if U_init is None and params.Uinit_file is not None:
+            U_init = utils.csv_import_matrix(params.Uinit_file)
         self.solver = solver.Solver(params, U_init)
         self.steps_total = 0
         self.solution_file_id = None
