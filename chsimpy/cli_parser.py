@@ -90,6 +90,15 @@ class CLIParser:
                             type=float,
                             default=0.875,
                             help='Threshold value to determine c_A and c_B (should match --cinit).')
+        parser.add_argument('--temperature',
+                            type=float,
+                            help='Temperature in Kelvin')
+        parser.add_argument('--A0',
+                            type=float,
+                            help='A0 value (ignores temperature)')
+        parser.add_argument('--A1',
+                            type=float,
+                            help='A1 value (ignores temperature)')
         parser.add_argument('--Uinit-file',
                             help='Initial U matrix file (csv or numpy bz2 format).')
         parser.add_argument('--version',
@@ -132,6 +141,8 @@ class CLIParser:
             params.delt = self.args.dt
         else:
             self.parser.error('1e-12 <= dt <= 1e-10')
+        if self.args.temperature is not None:
+            params.temp = self.args.temperature
 
         if params.update_every is not None and params.update_every < 2:
             self.parser.error('--update-every should be >=2')
@@ -144,6 +155,10 @@ class CLIParser:
 
         if self.args.parameter_file is not None:
             params.yaml_import_scalars(self.args.parameter_file)
+        if self.args.A0 is not None:
+            params.func_A0 = lambda T: self.args.A0
+        if self.args.A1 is not None:
+            params.func_A1 = lambda T: self.args.A1
         return params
 
     def print_info(self):
