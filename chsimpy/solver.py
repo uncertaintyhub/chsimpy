@@ -243,7 +243,7 @@ class Solver:
             self.solution.computed_steps += 1
 
             if not self.skip_check and self.solution.timedata.energy_falls(self.solution.computed_steps-1):
-                self.solution.tau0 = self.solution.computed_steps-1
+                self.solution.tau0 = self.solution.computed_steps
                 self.solution.t0 = self.time_passed
                 if not self.params.full_sim:
                     self.solution.stop_reason = 'energy'
