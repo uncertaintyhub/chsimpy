@@ -35,6 +35,7 @@ class ExperimentParams:
         self.processes = -1
         self.independent = False
         self.A_file = None
+        self.A_grid = False
 
 
 # parsing command-line-interface arguments
@@ -56,7 +57,10 @@ class ExperimentCLIParser:
                                            action='store_true',
                                            help='Independent A0, A1 runs (varying A0 and A1 runs separately.')
         self.cliparser.parser.add_argument('--A-file',
-                                           help='File with A0,A1 values (row by row)')
+                                           help='File with A0,A1 values (pairs row by row)')
+        self.cliparser.parser.add_argument('--A-grid',
+                                           action='store_true',
+                                           help='Using evenly distributed grid points in A0 x A1 domain (sqrt(runs) x sqrt(runs))')
 
     def get_parameters(self):
         params = self.cliparser.get_parameters()
@@ -65,6 +69,7 @@ class ExperimentCLIParser:
         exp_params.runs = self.cliparser.args.runs
         exp_params.independent = self.cliparser.args.independent
         exp_params.A_file = self.cliparser.args.A_file
+        exp_params.A_grid = self.cliparser.args.A_grid
         params.no_gui = True
         params.yaml = True
         if self.cliparser.args.export_csv is None:
@@ -138,9 +143,6 @@ if __name__ == '__main__':
     if init_params.file_id is None or init_params.file_id == 'auto':
         init_params.file_id = chsimpy.utils.get_or_create_file_id(init_params.file_id)
     sysinfo_list = chsimpy.utils.get_system_info()
-    exp_params_list = chsimpy.utils.vars_to_list(exp_params)
-    chsimpy.utils.csv_export_list(f"experiment-{init_params.file_id}-metadata.csv",
-                                "\n".join(sysinfo_list + exp_params_list))
 
     # random number generator
     rng = np.random.default_rng(init_params.seed)
@@ -149,8 +151,29 @@ if __name__ == '__main__':
         U_init = init_params.XXX + (init_params.XXX * 0.01 * (rng.random((init_params.N, init_params.N)) - 0.5))
     else:
         U_init = utils.csv_import_matrix(init_params.Uinit_file)
-    if exp_params.A_file is None:
-        # now create the random numbers for A0 and A1
+
+    if exp_params.A_file is not None:
+        A_list = utils.csv_import_matrix(exp_params.A_file)
+    elif exp_params.A_grid:
+        # create grid points for A0 and A1
+        nx = int(np.floor(np.sqrt(exp_params.runs)))
+        exp_params.runs = nx*nx
+        xvec = np.linspace(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, nx)  # factors
+        if exp_params.independent:
+            rand_values = np.ones((2*nx, 2*nx))
+            rand_values[:nx, 0] = xvec
+            rand_values[nx:, 1] = xvec
+        else:
+            points = []
+            for v in xvec:
+                for w in xvec:
+                    points.append([v, w])
+            rtemp = pd.DataFrame(points)
+            rand_values = np.ones((exp_params.runs, exp_params.runs))  # A0 and A1 varies at the same time
+            rand_values[:exp_params.runs, 0] = rtemp[0].values  # random factors for A0
+            rand_values[:exp_params.runs, 1] = rtemp[1].values  # random factors for A1
+    else:
+        # create random numbers for A0 and A1
         rtemp = rng.uniform(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, size=(2, exp_params.runs))
         if exp_params.independent:
             rand_values = np.ones((2*exp_params.runs, 2*exp_params.runs))  # first time A0 varies, second time A1
@@ -160,10 +183,12 @@ if __name__ == '__main__':
             rand_values = np.ones((exp_params.runs, exp_params.runs))  # A0 and A1 varies at the same time
             rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
             rand_values[:exp_params.runs, 1] = rtemp[1]  # random factors for A1
-    else:
-        A_list = utils.csv_import_matrix(exp_params.A_file)
 
-    # for multiprocessing
+    # store metadata
+    exp_params_list = chsimpy.utils.vars_to_list(exp_params)
+    chsimpy.utils.csv_export_list(f"experiment-{init_params.file_id}-metadata.csv",
+                                  "\n".join(sysinfo_list + exp_params_list))
+    # prepare for multiprocessing
     nprocs = 1
     if exp_params.processes == -1:
         nprocs = chsimpy.utils.get_number_physical_cores()
