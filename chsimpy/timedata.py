@@ -54,10 +54,10 @@ class TimeData:
         Always False if 'it<100 or sum(E2[-50:-25]) < sum(E2[-25:])'.
         Else if 'E2[it] < E2[it-1] && E2[it] > E2[0]' then it returns True.
         """
-        if it < 100:  # don't check energy during first iterations (arbitrary chosen)
-            return False
-        s1 = np.sum(self.E2[-50:-25])
-        s2 = np.sum(self.E2[-25:])
-        if s1 < s2:
-            return False
+        # if it < 100:  # don't check energy during first iterations (arbitrary chosen)
+        #     return False
+        # s1 = np.sum(self.E2[-50:-25])
+        # s2 = np.sum(self.E2[-25:])
+        # if s1 < s2:
+        #     return False
         return self.E2[it-1] > self.E2[it] > self.E2[0]
