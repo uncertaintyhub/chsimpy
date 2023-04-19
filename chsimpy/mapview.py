@@ -15,7 +15,6 @@ class MapView:
     def __init__(self, N):
         """Viewer for plotting simulation data"""
         self.N = N
-        self.bins = 15
         self._blit = not utils.is_notebook()
         self.axbackgrounds = None
         self.imode_defaulted = plt.isinteractive()
