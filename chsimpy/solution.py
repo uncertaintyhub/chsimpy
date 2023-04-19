@@ -24,9 +24,9 @@ class Solution:
         self.timedata = None
 
         # # we compute the molar area (cf. molar volume above (line 72))
-        self.Am = (25.13 * 1e6) ** (2/3) * self.params.N_A ** (-1/3) #  (micrometer^2/mol)
-        self.eps2 = self.params.kappa ** 2
-        self.D = -3.474 * 1e-4 * np.exp(-272.4 / (self.params.R * self.params.temp)) * 1e12
+        self.Am = (25.13 * 1e6) ** (2/3) * self.params.N_A ** (-1/3) #  (µm^2/mol)
+        self.eps2 = self.params.kappa ** 2  # interaction parameter
+        self.D = -3.474 * 1e-4 * np.exp(-272.4 / (self.params.R * self.params.temp)) * 1e12  # diffusion, [µm^2 / s]
 
         # discretizations
         self.delx = self.params.L / (N - 1)
@@ -40,8 +40,8 @@ class Solution:
         self.RT = params.R * params.temp
         self.BRT = params.B * params.R * params.temp
         self.Amr = 1 / self.Am
-        self.A0 = params.func_A0(params.temp)
-        self.A1 = params.func_A1(params.temp)
+        self.A0 = params.func_A0(params.temp)  # [kJ / mol]
+        self.A1 = params.func_A1(params.temp)  # [kJ / mol]
         self.time_fac = (1 / (params.M * params.kappa)) * params.delt
 
         self.restime = 0

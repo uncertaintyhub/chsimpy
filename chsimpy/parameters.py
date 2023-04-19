@@ -21,22 +21,22 @@ class Parameters:
     def __init__(self):
         """Initial Simulation parameters"""
         self.seed = 2023
-        self.N = 512
-        self.L = 2
-        self.XXX = 0.875  # mean value in initial composition mix U
-        self.temp = 650 + 273.15  # temperature (in Kelvin)
+        self.N = 512  # [pixels]
+        self.L = 2  # [µm]
+        self.XXX = 0.875  # mean value in initial composition mix U [mole fraction]
+        self.temp = 650 + 273.15  # temperature in [K]
         # chemical tuning parameter for the Gibbs free energy from R. Charles,
         #   Activities in Li2O-, Na2O, and K2O-SiO2 Solutions, J. Am. Ceram. Soc. 50 (12) (1967) 631–641.
-        self.B = 12.86
+        self.B = 12.86  # tuning parameter []
 
-        self.R = 0.0083144626181532   # universal gas constant [kJ/mol]
-        self.N_A = 6.02214076e+23  # and with the Avogadro constant
+        self.R = 0.0083144626181532   # universal gas constant [ kJ / (K * mol) = (energy/(temperature * mol)) ]
+        self.N_A = 6.02214076e+23  # and with the Avogadro constant [particles per mole]
 
         self.__kappa_base = 30.0
-        self.kappa = self.__kappa_base / 105.1939
+        self.kappa = self.__kappa_base / 105.1939  # [kJ / mol]
         self.delt = 1e-11
         self.delt_max = 9e-11
-        self.M = 2e-11  # mobility factor
+        self.M = 2e-11  # mobility factor [µm^2/(kJ * s)]
 
         self.threshold = 0.875  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls

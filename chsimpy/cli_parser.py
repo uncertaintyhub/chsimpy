@@ -28,41 +28,41 @@ class CLIParser:
         group.add_argument('-n', '--ntmax',
                             default=int(1e6),
                             type=int,
-                            help='Maximum number of simulation steps (stops earlier when energy falls)')
+                            help='Maximum number of simulation steps (might stop early, see --full-sim)')
         group.add_argument('-t', '--time-max',
                             type=float,
                             help='Maximal time in minutes to simulate (ignores ntmax)')
         group.add_argument('-z', '--full-sim',
                             action='store_true',
-                            help='Do not stop simulation early (ignores when energy finally falls)')
+                            help='Do not stop simulation early when energy falls')
         group.add_argument('-a', '--adaptive-time',
                             action='store_true',
                             help='Use adaptive-time stepping (approximation, experimental)')
         group.add_argument('--cinit',
                             type=float,
                             default=0.875,
-                            help='Initial mean mole fraction of silica.')
+                            help='Initial mean mole fraction of silica')
         group.add_argument('--threshold',
                             type=float,
                             default=0.875,
-                            help='Threshold value to determine c_A and c_B (should match --cinit).')
+                            help='Threshold mole fraction value to determine c_A and c_B (should match --cinit)')
         group.add_argument('--temperature',
                             type=float,
                             help='Temperature in Kelvin')
         group.add_argument('--A0',
                             type=float,
-                            help='A0 value (ignores temperature)')
+                            help='A0 value (ignores temperature) [kJ / mol]')
         group.add_argument('--A1',
                             type=float,
-                            help='A1 value (ignores temperature)')
+                            help='A1 value (ignores temperature) [kJ / mol]')
         group.add_argument('-K', '--kappa-base',
                             default=30,
                             type=int,
-                            help='Value for kappa = K/105.1939')
+                            help='Value for kappa = K/105.1939 [kappa = kJ/mol]')
         group.add_argument('--dt',
                             type=float,
                             default=1e-11,
-                            help='Time delta of simulation.')
+                            help='Time delta of simulation')
         group.add_argument('-g', '--generator',
                             choices=['uniform', 'perlin', 'sobol', 'lcg'],
                             help='Generator for initial random deviations in concentration')
