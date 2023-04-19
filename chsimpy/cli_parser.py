@@ -16,94 +16,100 @@ class CLIParser:
         )
         parser = self.parser
 
-        parser.add_argument('-N',
+        parser.add_argument('--version',
+                            action='version',
+                            version=f"%(prog)s {parameters.Parameters.version}")
+
+        group = parser.add_argument_group('Simulation')
+        group.add_argument('-N',
                             default=512,
                             type=int,
                             help='Number of pixels in one domain (NxN)')
-        parser.add_argument('-n', '--ntmax',
+        group.add_argument('-n', '--ntmax',
                             default=int(1e6),
                             type=int,
                             help='Maximum number of simulation steps (stops earlier when energy falls)')
-        parser.add_argument('-p',
+        group.add_argument('-t', '--time-max',
+                            type=float,
+                            help='Maximal time in minutes to simulate (ignores ntmax)')
+        group.add_argument('-z', '--full-sim',
+                            action='store_true',
+                            help='Do not stop simulation early (ignores when energy finally falls)')
+        group.add_argument('-a', '--adaptive-time',
+                            action='store_true',
+                            help='Use adaptive-time stepping (approximation, experimental)')
+        group.add_argument('--cinit',
+                            type=float,
+                            default=0.875,
+                            help='Initial mean mole fraction of silica.')
+        group.add_argument('--threshold',
+                            type=float,
+                            default=0.875,
+                            help='Threshold value to determine c_A and c_B (should match --cinit).')
+        group.add_argument('--temperature',
+                            type=float,
+                            help='Temperature in Kelvin')
+        group.add_argument('--A0',
+                            type=float,
+                            help='A0 value (ignores temperature)')
+        group.add_argument('--A1',
+                            type=float,
+                            help='A1 value (ignores temperature)')
+        group.add_argument('-K', '--kappa-base',
+                            default=30,
+                            type=int,
+                            help='Value for kappa = K/105.1939')
+        group.add_argument('--dt',
+                            type=float,
+                            default=1e-11,
+                            help='Time delta of simulation.')
+        group.add_argument('-g', '--generator',
+                            choices=['uniform', 'perlin', 'sobol', 'lcg'],
+                            help='Generator for initial random deviations in concentration')
+        group.add_argument('-s', '--seed',
+                            default=2023,
+                            type=int,
+                            help='Start seed for random number generators')
+        group.add_argument('-j', '--jitter',
+                            type=float,
+                            help='Adds noise based on -g in every step by provided factor [0, 0.1) (much slower)')
+
+        group = parser.add_argument_group('Input')
+        group.add_argument('-p',
                             '--parameter-file',
                             help='Input yaml file with parameter values (overwrites CLI parameters)')
-        parser.add_argument('-f', '--file-id',
+        group.add_argument('--Uinit-file',
+                            help='Initial U matrix file (csv or numpy bz2 format).')
+
+        group = parser.add_argument_group('Output')
+        group.add_argument('-f', '--file-id',
                             default='auto',
                             help='Filenames have an id like "solution-<ID>.yaml" '
                                  '("auto" creates a timestamp). '
                                  'Existing files will be OVERWRITTEN!')
-        parser.add_argument('--no-gui',
+        group.add_argument('--no-gui',
                             action='store_true',
                             help='Do not show plot window (if --png or --png-anim.')
-        parser.add_argument('--png',
+        group.add_argument('--png',
                             action='store_true',
                             help='Export solution plot to PNG image file (see --file-id).')
-        parser.add_argument('--png-anim',
+        group.add_argument('--png-anim',
                             action='store_true',
                             help='Export live plotting to series of PNGs (--update-every required) (see --file-id).')
-        parser.add_argument('--yaml',
+        group.add_argument('--yaml',
                             action='store_true',
                             help='Export parameters to yaml file (see --file-id).')
-        parser.add_argument('--export-csv',
+        group.add_argument('--export-csv',
                             help='Solution matrix names to be exported to csv (e.g. ...="U,E2")')
-        parser.add_argument('-s', '--seed',
-                            default=2023,
-                            type=int,
-                            help='Start seed for random number generators')
-        parser.add_argument('-z', '--full-sim',
-                            action='store_true',
-                            help='Do not stop simulation early (ignores when energy finally falls)')
-        parser.add_argument('-K', '--kappa-base',
-                            default=30,
-                            type=int,
-                            help='Value for kappa = K/105.1939')
-        parser.add_argument('-g', '--generator',
-                            choices=['uniform', 'perlin', 'sobol', 'lcg'],
-                            help='Generator for initial random deviations in concentration')
-        parser.add_argument('-C', '--compress-csv',
+        group.add_argument('-C', '--compress-csv',
                             action='store_true',
                             help='Compress csv files with bz2')
-        parser.add_argument('-a', '--adaptive-time',
-                            action='store_true',
-                            help='Use adaptive-time stepping')
-        parser.add_argument('-t', '--time-max',
-                            type=float,
-                            help='Maximal time in minutes to simulate (ignores ntmax)')
-        parser.add_argument('-j', '--jitter',
-                            type=float,
-                            help='Adds noise based on -g in every step by provided factor [0, 0.1) (much slower)')
-        parser.add_argument('--update-every',
+        group.add_argument('--update-every',
                             type=int,
                             help='Every n simulation steps data is plotted or rendered (>=2) (slowdown).')
-        parser.add_argument('--no-diagrams',
+        group.add_argument('--no-diagrams',
                             action='store_true',
                             help='No diagrams or axes, it only renders the image map of U.')
-        parser.add_argument('--cinit',
-                            type=float,
-                            default=0.875,
-                            help='Initial U mean value (also referred to as c_0 in initial composition mix) (0.85 <= c_0 <= 0.95)')
-        parser.add_argument('--dt',
-                            type=float,
-                            default=1e-11,
-                            help='Time delta of simulation.')
-        parser.add_argument('--threshold',
-                            type=float,
-                            default=0.875,
-                            help='Threshold value to determine c_A and c_B (should match --cinit).')
-        parser.add_argument('--temperature',
-                            type=float,
-                            help='Temperature in Kelvin')
-        parser.add_argument('--A0',
-                            type=float,
-                            help='A0 value (ignores temperature)')
-        parser.add_argument('--A1',
-                            type=float,
-                            help='A1 value (ignores temperature)')
-        parser.add_argument('--Uinit-file',
-                            help='Initial U matrix file (csv or numpy bz2 format).')
-        parser.add_argument('--version',
-                            action='version',
-                            version=f"%(prog)s {parameters.Parameters.version}")
         self.args = None
 
     def get_parameters(self):

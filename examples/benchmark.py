@@ -32,18 +32,19 @@ class BenchmarkParams:
 class BenchmarkCLIParser:
     def __init__(self):
         self.cliparser = CLIParser('chsimpy (benchmark.py)')
-        self.cliparser.parser.add_argument('-R', '--runs',
+        group = self.cliparser.parser.add_argument_group('Benchmark')
+        group.add_argument('-R', '--runs',
                                            default=3,
                                            type=int,
                                            help='Number of Monte-Carlo runs')
-        self.cliparser.parser.add_argument('-S', '--skip-test',
+        group.add_argument('-S', '--skip-test',
                                            action='store_true',
                                            help='Skip initial tests and validation [TODO].')
-        self.cliparser.parser.add_argument('-w', '--warmups',
+        group.add_argument('-w', '--warmups',
                                            default=1,
                                            type=int,
                                            help='Number of benchmark warmups')
-        self.cliparser.parser.add_argument('-W', '--warmup-ntmax',
+        group.add_argument('-W', '--warmup-ntmax',
                                            type=int,
                                            help='Number of simulation steps of a single benchmark warmup')
 

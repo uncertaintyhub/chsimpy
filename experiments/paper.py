@@ -42,23 +42,25 @@ class ExperimentParams:
 class ExperimentCLIParser:
     def __init__(self):
         self.cliparser = CLIParser('chsimpy (paper.py)')
-        self.cliparser.parser.add_argument('-R', '--runs',
+
+        group = self.cliparser.parser.add_argument_group('Experiment')
+        group.add_argument('-R', '--runs',
                                            default=3,
                                            type=int,
                                            help='Number of Monte-Carlo runs')
-        self.cliparser.parser.add_argument('-S', '--skip-test',
+        group.add_argument('-S', '--skip-test',
                                            action='store_true',
                                            help='Skip initial tests and validation [TODO].')
-        self.cliparser.parser.add_argument('-P', '--processes',
+        group.add_argument('-P', '--processes',
                                            default=-1,
                                            type=int,
                                            help='Runs are distributed to P processes to run in parallel (-1 = auto)')
-        self.cliparser.parser.add_argument('--independent',
+        group.add_argument('--independent',
                                            action='store_true',
                                            help='Independent A0, A1 runs (varying A0 and A1 runs separately.')
-        self.cliparser.parser.add_argument('--A-file',
+        group.add_argument('--A-file',
                                            help='File with A0,A1 values (pairs row by row)')
-        self.cliparser.parser.add_argument('--A-grid',
+        group.add_argument('--A-grid',
                                            action='store_true',
                                            help='Using evenly distributed grid points in A0 x A1 domain (sqrt(runs) x sqrt(runs))')
 
