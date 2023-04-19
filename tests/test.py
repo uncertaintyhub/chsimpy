@@ -13,7 +13,7 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-from chsimpy import Parameters, Solution, utils
+from chsimpy import Parameters, Solution, utils, mport
 
 
 class TestLCG(unittest.TestCase):
