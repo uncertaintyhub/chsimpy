@@ -47,8 +47,6 @@ class Solution:
         self.restime = 0
         self.tau0 = 0
         self.t0 = 0
-        self.it = 0
-        self.t = 0
         self.computed_steps = 0
         self.stop_reason = 'None'  # why the sim stopped
 
