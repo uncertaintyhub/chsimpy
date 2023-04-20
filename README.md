@@ -7,12 +7,23 @@ Most of the data can also be exported for post-processing and reproducibility.
 
 ## Installation
 
-Currently there is no automated installation routine, just clone from github and install the required python packages:
+Currently there is no automated installation routine, so just clone this github repository and install the required python packages.
+If there are version issues with already existing python packages, use [python virtual environments](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/) or the chsimpy docker container build method (see section [Docker / Jupyter](#docker--jupyter)).
 
 ```bash
 git clone https://github.com/uncertaintyhub/chsimpy.git
 cd chsimpy
 pip install -r requirements.txt  # edit if version requirements are too tight
+```
+
+### Installation in Python Virtual Environments
+
+```bash
+git clone https://github.com/uncertaintyhub/chsimpy.git
+conda create -n chsimpy_env python
+conda activate chsimpy_env
+conda install --file requirements.txt -c conda-forge
+python setup.py install
 ```
 
 ## Usage
@@ -163,7 +174,7 @@ http://127.0.0.1:8889/lab?token=xxx
 
 The jupyterlab GUI provides a file browser of the actual chsimpy directory. The example notebook files (`*.ipynb`) can be found in `examples/`.
 
-Of course, using the docker container is **not necessary**. If jupyter notebook and python modules are installed on the system (see root `/requirements.txt`), then just run `jupyter notebook` in the chsimpy directory to start the jupyter server and take the provided link.
+Of course, using the docker container is **not necessary**. If jupyter notebook and python packages are installed on the system (see root `/requirements.txt`), then just run `jupyter notebook` in the chsimpy directory to start the jupyter server and take the provided link.
 
 
 ## Plots
