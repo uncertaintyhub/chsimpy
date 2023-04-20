@@ -13,7 +13,7 @@ except ImportError:
     import chsimpy
     # sys.path.remove(str(_parentdir))
 
-from chsimpy import Parameters, Solution, Simulator
+from chsimpy import Parameters, Simulator, mport, utils
 
 
 class TestCompareMatlabSolutionU(unittest.TestCase):
@@ -39,7 +39,7 @@ class TestCompareMatlabSolutionU(unittest.TestCase):
         """
         Test if our python code produces same result as matlab (on matrix U)
         """
-        fname = '../validation/U-matlab-lcg-N512n100.csv.bz2'
+        fname = '../data/U-matlab-lcg-N512n100.csv.bz2'
         params = Parameters()
         params.N = 512
         params.ntmax = 100
