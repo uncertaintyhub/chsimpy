@@ -22,94 +22,94 @@ class CLIParser:
 
         group = parser.add_argument_group('Simulation')
         group.add_argument('-N',
-                            default=512,
-                            type=int,
-                            help='Number of pixels in one domain (NxN)')
+                           default=512,
+                           type=int,
+                           help='Number of pixels in one domain (NxN)')
         group.add_argument('-n', '--ntmax',
-                            default=int(1e6),
-                            type=int,
-                            help='Maximum number of simulation steps (might stop early, see --full-sim)')
+                           default=int(1e6),
+                           type=int,
+                           help='Maximum number of simulation steps (might stop early, see --full-sim)')
         group.add_argument('-t', '--time-max',
-                            type=float,
-                            help='Maximal time in minutes to simulate (ignores ntmax)')
+                           type=float,
+                           help='Maximal time in minutes to simulate (ignores ntmax)')
         group.add_argument('-z', '--full-sim',
-                            action='store_true',
-                            help='Do not stop simulation early when energy falls')
+                           action='store_true',
+                           help='Do not stop simulation early when energy falls')
         group.add_argument('-a', '--adaptive-time',
-                            action='store_true',
-                            help='Use adaptive-time stepping (approximation, experimental)')
+                           action='store_true',
+                           help='Use adaptive-time stepping (approximation, experimental)')
         group.add_argument('--cinit',
-                            type=float,
-                            default=0.875,
-                            help='Initial mean mole fraction of silica')
+                           type=float,
+                           default=0.875,
+                           help='Initial mean mole fraction of silica')
         group.add_argument('--threshold',
-                            type=float,
-                            default=0.875,
-                            help='Threshold mole fraction value to determine c_A and c_B (should match --cinit)')
+                           type=float,
+                           default=0.875,
+                           help='Threshold mole fraction value to determine c_A and c_B (should match --cinit)')
         group.add_argument('--temperature',
-                            type=float,
-                            help='Temperature in Kelvin')
+                           type=float,
+                           help='Temperature in Kelvin')
         group.add_argument('--A0',
-                            type=float,
-                            help='A0 value (ignores temperature) [kJ / mol]')
+                           type=float,
+                           help='A0 value (ignores temperature) [kJ / mol]')
         group.add_argument('--A1',
-                            type=float,
-                            help='A1 value (ignores temperature) [kJ / mol]')
+                           type=float,
+                           help='A1 value (ignores temperature) [kJ / mol]')
         group.add_argument('-K', '--kappa-base',
-                            default=30,
-                            type=int,
-                            help='Value for kappa = K/105.1939 [kappa = kJ/mol]')
+                           default=30,
+                           type=int,
+                           help='Value for kappa = K/105.1939 [kappa = kJ/mol]')
         group.add_argument('--dt',
-                            type=float,
-                            default=1e-11,
-                            help='Time delta of simulation')
+                           type=float,
+                           default=1e-11,
+                           help='Time delta of simulation')
         group.add_argument('-g', '--generator',
-                            choices=['uniform', 'perlin', 'sobol', 'lcg'],
-                            help='Generator for initial random deviations in concentration')
+                           choices=['uniform', 'perlin', 'sobol', 'lcg'],
+                           help='Generator for initial random deviations in concentration')
         group.add_argument('-s', '--seed',
-                            default=2023,
-                            type=int,
-                            help='Start seed for random number generators')
+                           default=2023,
+                           type=int,
+                           help='Start seed for random number generators')
         group.add_argument('-j', '--jitter',
-                            type=float,
-                            help='Adds noise based on -g in every step by provided factor [0, 0.1) (much slower)')
+                           type=float,
+                           help='Adds noise based on -g in every step by provided factor [0, 0.1) (much slower)')
 
         group = parser.add_argument_group('Input')
         group.add_argument('-p',
-                            '--parameter-file',
-                            help='Input yaml file with parameter values (overwrites CLI parameters)')
+                           '--parameter-file',
+                           help='Input yaml file with parameter values (overwrites CLI parameters)')
         group.add_argument('--Uinit-file',
-                            help='Initial U matrix file (csv or numpy bz2 format).')
+                           help='Initial U matrix file (csv or numpy bz2 format).')
 
         group = parser.add_argument_group('Output')
         group.add_argument('-f', '--file-id',
-                            default='auto',
-                            help='Filenames have an id like "solution-<ID>.yaml" '
-                                 '("auto" creates a timestamp). '
-                                 'Existing files will be OVERWRITTEN!')
+                           default='auto',
+                           help='Filenames have an id like "solution-<ID>.yaml" '
+                                '("auto" creates a timestamp). '
+                                'Existing files will be OVERWRITTEN!')
         group.add_argument('--no-gui',
-                            action='store_true',
-                            help='Do not show plot window (if --png or --png-anim.')
+                           action='store_true',
+                           help='Do not show plot window (if --png or --png-anim.')
         group.add_argument('--png',
-                            action='store_true',
-                            help='Export solution plot to PNG image file (see --file-id).')
+                           action='store_true',
+                           help='Export solution plot to PNG image file (see --file-id).')
         group.add_argument('--png-anim',
-                            action='store_true',
-                            help='Export live plotting to series of PNGs (--update-every required) (see --file-id).')
+                           action='store_true',
+                           help='Export live plotting to series of PNGs (--update-every required) (see --file-id).')
         group.add_argument('--yaml',
-                            action='store_true',
-                            help='Export parameters to yaml file (see --file-id).')
+                           action='store_true',
+                           help='Export parameters to yaml file (see --file-id).')
         group.add_argument('--export-csv',
-                            help='Solution matrix names to be exported to csv (e.g. ...="U,E2")')
+                           help='Solution matrix names to be exported to csv (e.g. ...="U,E2")')
         group.add_argument('-C', '--compress-csv',
-                            action='store_true',
-                            help='Compress csv files with bz2')
+                           action='store_true',
+                           help='Compress csv files with bz2')
         group.add_argument('--update-every',
-                            type=int,
-                            help='Every n simulation steps data is plotted or rendered (>=2) (slowdown).')
+                           type=int,
+                           help='Every n simulation steps data is plotted or rendered (>=2) (slowdown).')
         group.add_argument('--no-diagrams',
-                            action='store_true',
-                            help='No diagrams or axes, it only renders the image map of U.')
+                           action='store_true',
+                           help='No diagrams or axes, it only renders the image map of U.')
         self.args = None
 
     def get_parameters(self):

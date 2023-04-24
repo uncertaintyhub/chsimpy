@@ -45,24 +45,24 @@ class ExperimentCLIParser:
 
         group = self.cliparser.parser.add_argument_group('Experiment')
         group.add_argument('-R', '--runs',
-                                           default=3,
-                                           type=int,
-                                           help='Number of Monte-Carlo runs')
+                           default=3,
+                           type=int,
+                           help='Number of Monte-Carlo runs')
         group.add_argument('-S', '--skip-test',
-                                           action='store_true',
-                                           help='Skip initial tests and validation [TODO].')
+                           action='store_true',
+                           help='Skip initial tests and validation [TODO].')
         group.add_argument('-P', '--processes',
-                                           default=-1,
-                                           type=int,
-                                           help='Runs are distributed to P processes to run in parallel (-1 = auto)')
+                           default=-1,
+                           type=int,
+                           help='Runs are distributed to P processes to run in parallel (-1 = auto)')
         group.add_argument('--independent',
-                                           action='store_true',
-                                           help='Independent A0, A1 runs (varying A0 and A1 runs separately.')
+                           action='store_true',
+                           help='Independent A0, A1 runs (varying A0 and A1 runs separately.')
         group.add_argument('--A-file',
-                                           help='File with A0,A1 values (pairs row by row)')
+                           help='File with A0,A1 values (pairs row by row)')
         group.add_argument('--A-grid',
-                                           action='store_true',
-                                           help='Using evenly distributed grid points in A0 x A1 domain (sqrt(runs) x sqrt(runs))')
+                           action='store_true',
+                           help='Using evenly distributed grid points in A0 x A1 domain (sqrt(runs) x sqrt(runs))')
 
     def get_parameters(self):
         params = self.cliparser.get_parameters()
