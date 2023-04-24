@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import pandas as pd
+from scipy.stats import qmc
 import pathlib
 import sys
 import multiprocessing as mp
@@ -34,8 +35,8 @@ class ExperimentParams:
         self.jitter_Arelhigh = 1.005
         self.processes = -1
         self.independent = False
-        self.A_file = None
-        self.A_grid = False
+        self.A_source = 'uniform'
+        self.A_seed = 85972  # seed for RNG based A0, A1 generation
 
 
 # parsing command-line-interface arguments
@@ -57,12 +58,13 @@ class ExperimentCLIParser:
                            help='Runs are distributed to P processes to run in parallel (-1 = auto)')
         group.add_argument('--independent',
                            action='store_true',
-                           help='Independent A0, A1 runs (varying A0 and A1 runs separately.')
-        group.add_argument('--A-file',
-                           help='File with A0,A1 values (pairs row by row)')
-        group.add_argument('--A-grid',
-                           action='store_true',
-                           help='Using evenly distributed grid points in A0 x A1 domain (sqrt(runs) x sqrt(runs))')
+                           help='Independent A0, A1 runs, i.e. A0 and A1 do not vary at the same time')
+        group.add_argument('--A-source',
+                           default='uniform',
+                           help="= ['uniform', 'sobol', 'grid', '<filename>'] - "
+                                'Source for A0 x A1 numbers for the Monte-Carlo runs (uniform or sobol random numbers, '
+                                'evenly distributed grid points [sqrt(runs) x sqrt(runs)], '
+                                'location of text file with row-wise A0, A1 pairs)')
 
     def get_parameters(self):
         params = self.cliparser.get_parameters()
@@ -70,8 +72,7 @@ class ExperimentCLIParser:
         exp_params.skip_test = self.cliparser.args.skip_test
         exp_params.runs = self.cliparser.args.runs
         exp_params.independent = self.cliparser.args.independent
-        exp_params.A_file = self.cliparser.args.A_file
-        exp_params.A_grid = self.cliparser.args.A_grid
+        exp_params.A_source = self.cliparser.args.A_source
         params.no_gui = True
         params.yaml = True
         if self.cliparser.args.export_csv is None:
@@ -117,7 +118,6 @@ def run_experiment(run_id):
                                              solution.A0, solution.A1)
     sa, sb = chsimpy.utils.get_roots_of_EPP(params.R, params.temp, solution.A0, solution.A1)
     itargmax = np.argmax(solution.E2)
-    # targmax = solution.timedata.domtime[itargmax]**3  # time passed at step itargmax # FIXME:
     return (solution.A0,
             solution.A1,
             cgap[0],  # c_A
@@ -146,23 +146,42 @@ if __name__ == '__main__':
         init_params.file_id = chsimpy.utils.get_or_create_file_id(init_params.file_id)
     sysinfo_list = chsimpy.utils.get_system_info()
 
-    # random number generator
-    rng = np.random.default_rng(init_params.seed)
     if init_params.Uinit_file is None:
         # first create U_init (global), so we have always the same U_init in all runs
-        U_init = init_params.XXX + (init_params.XXX * 0.01 * (rng.random((init_params.N, init_params.N)) - 0.5))
+        U_init = None  #init_params.XXX + (init_params.XXX * 0.01 * (rng.random((init_params.N, init_params.N)) - 0.5))
     else:
         U_init = utils.csv_import_matrix(init_params.Uinit_file)
 
-    if exp_params.A_file is not None:
-        A_list = utils.csv_import_matrix(exp_params.A_file)
-    elif exp_params.A_grid:
+    if 'uniform' == exp_params.A_source or 'sobol' == exp_params.A_source:
+        rtemp = None
+        if exp_params.A_source == 'sobol':
+            qrng = qmc.Sobol(d=2, seed=exp_params.A_seed)  # 2D
+            m = int(np.ceil(np.log2(exp_params.runs)))
+            rtemp = qrng.random_base2(m)  # creates 2^m 2d numbers
+            rtemp = qmc.scale(rtemp, exp_params.jitter_Arellow, exp_params.jitter_Arelhigh)
+            rtemp = np.transpose(rtemp[:exp_params.runs])
+        else:  # uniform
+            rng = np.random.Generator(np.random.PCG64(exp_params.A_seed))
+            # create random numbers for A0 and A1
+            rtemp = rng.uniform(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, size=(exp_params.runs, 2))
+            rtemp = np.transpose(rtemp)
+
+        # uniform, sobol - independent: facA0=[*,*,*,1,1,1], facA1=[1,1,1,*,*,*] , * = random
+        if exp_params.independent:
+            rand_values = np.ones((2 * exp_params.runs, 2))  # first time A0 varies, second time A1
+            rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
+            rand_values[exp_params.runs:, 1] = rtemp[1]  # random factors for A1
+        else:
+            rand_values = np.ones((exp_params.runs, 2))  # A0 and A1 varies at the same time
+            rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
+            rand_values[:exp_params.runs, 1] = rtemp[1]  # random factors for A1
+    elif 'grid' == exp_params.A_source:
         # create grid points for A0 and A1
         nx = int(np.floor(np.sqrt(exp_params.runs)))
         exp_params.runs = nx*nx
         xvec = np.linspace(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, nx)  # factors
         if exp_params.independent:
-            rand_values = np.ones((2*nx, 2*nx))
+            rand_values = np.ones((2*nx, 2))
             rand_values[:nx, 0] = xvec
             rand_values[nx:, 1] = xvec
         else:
@@ -171,20 +190,11 @@ if __name__ == '__main__':
                 for w in xvec:
                     points.append([v, w])
             rtemp = pd.DataFrame(points)
-            rand_values = np.ones((exp_params.runs, exp_params.runs))  # A0 and A1 varies at the same time
+            rand_values = np.ones((exp_params.runs, 2))  # A0 and A1 varies at the same time
             rand_values[:exp_params.runs, 0] = rtemp[0].values  # random factors for A0
             rand_values[:exp_params.runs, 1] = rtemp[1].values  # random factors for A1
     else:
-        # create random numbers for A0 and A1
-        rtemp = rng.uniform(exp_params.jitter_Arellow, exp_params.jitter_Arelhigh, size=(2, exp_params.runs))
-        if exp_params.independent:
-            rand_values = np.ones((2*exp_params.runs, 2*exp_params.runs))  # first time A0 varies, second time A1
-            rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
-            rand_values[exp_params.runs:, 1] = rtemp[1]  # random factors for A1
-        else:
-            rand_values = np.ones((exp_params.runs, exp_params.runs))  # A0 and A1 varies at the same time
-            rand_values[:exp_params.runs, 0] = rtemp[0]  # random factors for A0
-            rand_values[:exp_params.runs, 1] = rtemp[1]  # random factors for A1
+        A_list = utils.csv_import_matrix(exp_params.A_source)
 
     # store metadata
     exp_params_list = chsimpy.utils.vars_to_list(exp_params)
@@ -199,7 +209,10 @@ if __name__ == '__main__':
         nprocs = exp_params.processes
 
     nr_items = rand_values.shape[0] if A_list is None else A_list.shape[0]
-    nr_items = min(exp_params.runs, nr_items)
+    if exp_params.independent and ('sobol' == exp_params.A_source or 'uniform' == exp_params.A_source):
+        nr_items = min(2*exp_params.runs, nr_items)
+    else:
+        nr_items = min(exp_params.runs, nr_items)
     items = range(nr_items)
     results = []
     with mp.Pool(processes=nprocs) as pool, tqdm(pool.imap_unordered(run_experiment, items), total=len(items)) as pbar:
