@@ -70,7 +70,7 @@ class Simulator:
             self._update_view()
             self.view.draw()
             if self.params.png_anim:
-                fname = f"anim-{self.solution_file_id}.{part:05d}.png"
+                fname = f"{self.solution_file_id}.{part:05d}.png"
                 self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
             self.steps_total += dsteps
             part += 1
@@ -133,7 +133,7 @@ class Simulator:
         view.set_Uhist(solution.U, "Solution Histogram")
 
     def export(self):
-        fname_sol = 'solution-'+self.solution_file_id
+        fname_sol = f"{self.solution_file_id}.solution"
         solution = self.solver.solution
         export_csv = self.params.export_csv
 
@@ -162,7 +162,7 @@ class Simulator:
         if self.gui_required():
             self._update_view()
         if self.params.png:
-            fname = 'final-'+self.solution_file_id+'.png'
+            fname = f"{self.solution_file_id}.png"
             self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
         if self.gui_requested():
             self.view.show()

@@ -84,7 +84,7 @@ class CLIParser:
         group = parser.add_argument_group('Output')
         group.add_argument('-f', '--file-id',
                            default='auto',
-                           help='Filenames have an id like "solution-<ID>.yaml" '
+                           help='Filenames have an id like "<ID>...yaml" '
                                 '("auto" creates a timestamp). '
                                 'Existing files will be OVERWRITTEN!')
         group.add_argument('--no-gui',

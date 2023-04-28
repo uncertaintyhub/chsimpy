@@ -17,7 +17,7 @@ except ImportError:
     # sys.path.remove(str(_parentdir))
 
 
-from chsimpy import Simulator, Parameters, CLIParser, utils
+from chsimpy import Simulator, Parameters, CLIParser, utils, mport
 
 
 class BenchmarkParams:
@@ -79,7 +79,7 @@ def validation_test():
     params.generator = 'lcg'  # to be comparable with matlab
     params.kappa_base = 30
     params.adaptive_time = False
-    params.file_id = 'benchmark-validation'
+    params.file_id = 'benchmark'
     U_init = 0.875 + 0.01 * chsimpy.mport.matlab_lcg_sample(params.N, params.N, params.seed)
     simulator = Simulator(params=params, U_init=U_init)
 
@@ -146,14 +146,14 @@ if __name__ == '__main__':
     time_total = time.time()-t1
     print(f"Benchmark Total: {time_total} sec")
     file_id = simulator.solution_file_id
-    with open(f"benchmark-{file_id}.csv", 'w') as f:
+    with open(f"{file_id}.csv", 'w') as f:
         f.write("\n".join(sysinfo_list + bmark_params_list))
         f.write("\n")
         f.write(f"warmup,{ts_warmup}\n")
         f.write(f"runs,{ts_runs}\n")
         f.write(f"total,{time_total}\n")
     print('Output files:')
-    print(f"  results and meta data: benchmark-{file_id}.csv")
+    print(f"  results and meta data: {file_id}.csv")
     simulator.export()
     if simulator.export_requested():
         print(f"  solution & parameters: {file_id}.csv")

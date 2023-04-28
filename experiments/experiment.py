@@ -141,14 +141,13 @@ if __name__ == '__main__':
     # print parameters
     print(str(init_params).replace(", '", "\n '"))
 
-    # get sysinfo and current time and dump it to experiment-metadata csv file
     if init_params.file_id is None or init_params.file_id == 'auto':
         init_params.file_id = chsimpy.utils.get_or_create_file_id(init_params.file_id)
+    # get sysinfo and current time
     sysinfo_list = chsimpy.utils.get_system_info()
 
     if init_params.Uinit_file is None:
-        # first create U_init (global), so we have always the same U_init in all runs
-        U_init = None  #init_params.XXX + (init_params.XXX * 0.01 * (rng.random((init_params.N, init_params.N)) - 0.5))
+        U_init = None
     else:
         U_init = utils.csv_import_matrix(init_params.Uinit_file)
 
@@ -198,7 +197,7 @@ if __name__ == '__main__':
 
     # store metadata
     exp_params_list = chsimpy.utils.vars_to_list(exp_params)
-    chsimpy.utils.csv_export_list(f"experiment-{init_params.file_id}-metadata.csv",
+    chsimpy.utils.csv_export_list(f"{init_params.file_id}-metadata.csv",
                                   "\n".join(sysinfo_list + exp_params_list))
     # prepare for multiprocessing
     nprocs = 1
@@ -225,16 +224,16 @@ if __name__ == '__main__':
     cols = ['A0', 'A1', 'ca', 'cb', 'sa', 'sb', 'tau0', 't0', 'tsep', 'id', 'fac_A0', 'fac_A1']
     df_results = pd.DataFrame(results, columns=cols)
     df_results[['tau0', 'id']] = df_results[['tau0', 'id']].astype(int)
-    df_results.to_csv(f"experiment-{init_params.file_id}-raw.csv")
+    df_results.to_csv(f"{init_params.file_id}-results.csv")
     df_agg = df_results.loc[:, df_results.columns != 'id'].describe()
     df_agg.loc['cv'] = df_agg.loc['std'] / df_agg.loc['mean']
     print(df_agg.T)
-    df_agg.T.to_csv(f"experiment-{init_params.file_id}-agg.csv")
+    df_agg.T.to_csv(f"{init_params.file_id}-results-agg.csv")
     print('Output files:')
-    print(f"  experiment-{init_params.file_id}-metadata.csv")
-    print(f"  experiment-{init_params.file_id}-agg.csv")
-    print(f"  experiment-{init_params.file_id}-raw.csv")
-    print(f"  {{solution-{init_params.file_id}-run***.yaml}}")
-    print(f"  {{solution-{init_params.file_id}-run***.*.csv[.bz2]}}")
+    print(f"  {init_params.file_id}-metadata.csv")
+    print(f"  {init_params.file_id}-results-agg.csv")
+    print(f"  {init_params.file_id}-results.csv")
+    print(f"  {{{init_params.file_id}-run***.solution.yaml}}")
+    print(f"  {{{init_params.file_id}-run***.solution.*.(csv|bz2)}}")
     if init_params.png:
-        print(f"  {{solution-{init_params.file_id}-run***.png}}")
+        print(f"  {{{init_params.file_id}-run***.png}}")
