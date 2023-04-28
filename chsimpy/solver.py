@@ -77,7 +77,7 @@ class Solver:
             self.create_rand = lambda n: generate_fractal_noise_2d((n, n), (8, 8), 5)
         else:
             # https://builtin.com/data-science/numpy-random-seed
-            rng = np.random.default_rng(params.seed)
+            rng = np.random.Generator(np.random.PCG64(params.seed))
             self.create_rand = lambda n: rng.random((n, n))
 
         if self.U_init is None:
