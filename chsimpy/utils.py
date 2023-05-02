@@ -130,7 +130,7 @@ def get_system_info():
         f"cpufreq_max, {cpufreq.max:.2f}",
         f"cpufreq_current, {cpufreq.current:.2f}",
         f"localtime, {get_current_localtime()}",
-        f"argv, {' '.join(sys.argv)}'",
+        f"argv, '{' '.join(sys.argv)}'",
         f"chsimpy-version, {_version.get_versions()['version']}"
     ]
     return sysinfo
