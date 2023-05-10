@@ -184,7 +184,16 @@ The simulation results can be displayed as a single image of the concentration o
 ![Simulation result image](picture.png)
 ![Simulation result diagrams](picture-diags.png)
 
+## Authors and Acknowledgements
 
+chsimpy is a team project with the current maintainers and developers [B. Sprungk](https://github.com/bsprungk) and [M. Werner](https://github.com/user2084).
+Special thanks to H. Hoellwarth, who wrote the core algorithm in Matlab and who also supported us during the migration to python.
+We would also like to thank S. Sander and S. Fuhrmann for her expert assistance in determining the material parameters.
+
+The algorithm is based on the paper: [Majid Ghiass, Mohammad Reza Moghbeli & Hossein Esfandian (2016)
+Numerical Simulation of Phase Separation Kinetic of Polymer Solutions Using the Spectral
+Discrete Cosine Transform Method, Journal of Macromolecular Science, Part B, 55:4, 411-425,
+DOI: 10.1080/00222348.2016.1153403](http://dx.doi.org/10.1080/00222348.2016.1153403)
 
 ## Project status
 
