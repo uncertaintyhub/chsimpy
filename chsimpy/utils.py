@@ -12,6 +12,7 @@ from IPython import get_ipython
 import os
 import psutil
 import matplotlib.pyplot as plt
+import importlib.util
 
 from . import _version
 
@@ -231,3 +232,8 @@ def pause_without_show(interval):
         canvas.start_event_loop(interval)
     else:
         time.sleep(interval)
+
+
+def module_exists(name):
+    mod_spec = importlib.util.find_spec(name)
+    return mod_spec is not None
