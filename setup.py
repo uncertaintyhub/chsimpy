@@ -29,6 +29,15 @@ setuptools.setup(
     ],
     python_requires='>=3.5',
     install_requires=requirements,
+    extras_requires={
+        'qt5': ['PyQt5'],
+        'interactive': [
+            'ipython~=8.0.0', 'bokeh~=2.4.3',
+            'jupyterlab~=3.6.0', 'jupyter-server~=2.1.0',
+            'jupyterlab-server~=2.19.0', 'ipykernel~=6.21.0',
+            'ipympl~=0.9.0'
+        ]
+    },
     entry_points={
         'console_scripts': [
             'chsimpy = chsimpy.__main__:main',
