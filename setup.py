@@ -1,5 +1,5 @@
 import setuptools
-import versioneer
+
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
@@ -11,8 +11,6 @@ with open('requirements.txt', 'r') as fh:
 
 setuptools.setup(
     name='chsimpy',
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
     author='uncertaintyhub',
     author_email='',
     description='Cahn–Hilliard Simulation of Phase Separation in Na2O-SiO2 Glasses',

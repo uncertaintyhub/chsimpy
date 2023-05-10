@@ -6,8 +6,7 @@ from .parameters import Parameters
 from .solution import Solution
 from .timedata import TimeData
 
-from . import _version
-__version__ = _version.get_versions()['version']
+from .version import __version__
 
 
 __all__ = ['CLIParser', 'PlotView', 'Solver', 'Simulator', 'Parameters', 'Solution', 'TimeData']

@@ -14,7 +14,7 @@ import psutil
 import matplotlib.pyplot as plt
 import importlib.util
 
-from . import _version
+from .version import __version__
 
 
 # Experimentelle Bestimmung der Koeffizenten einer
@@ -132,7 +132,7 @@ def get_system_info():
         f"cpufreq_current, {cpufreq.current:.2f}",
         f"localtime, {get_current_localtime()}",
         f"argv, '{' '.join(sys.argv)}'",
-        f"chsimpy-version, {_version.get_versions()['version']}"
+        f"chsimpy-version, {__version__}"
     ]
     return sysinfo
 
