@@ -7,7 +7,12 @@ Most of the data can also be exported for post-processing and reproducibility.
 
 ## Installation
 
-Currently there is no automated installation routine, so just clone this github repository and install the required python packages.
+To install just the chsimpy module and its CLI application:
+```bash
+pip install git+https://github.com/uncertaintyhub/chsimpy.git
+```
+
+For development clone this repository and install the requirements.
 If there are version issues with already existing python packages, use [python virtual environments](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/) or the chsimpy docker container build method (see section [Docker / Jupyter](#docker--jupyter)).
 
 ```bash
@@ -31,10 +36,12 @@ python setup.py install
 Go to the chsimpy examples folder and run the code via python:
 
 ```bash
+# if installed just run
+chsimpy --help
+# and for developers:
 # git clone https://github.com/uncertaintyhub/chsimpy.git
 # cd chsimpy
-cd examples
-python . -h # help
+python -m chsimpy --help
 ```
 
 The help provides information on the command-line interface (CLI) arguments:
