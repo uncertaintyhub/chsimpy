@@ -52,8 +52,13 @@ usage: chsimpy [-h] [--version] [-N N] [-n NTMAX] [-t TIME_MAX] [-z] [-a] [--cin
                [--export-csv EXPORT_CSV] [-C] [--update-every UPDATE_EVERY] [--no-diagrams]
 
 Simulation of Phase Separation in Na2O-SiO2 Glasses under Uncertainty (solving the Cahn–Hilliard (CH) equation)
+usage: chsimpy [-h] [--version] [-N N] [-n NTMAX] [-t TIME_MAX] [-z] [-a] [--cinit CINIT] [--threshold THRESHOLD] [--temperature TEMPERATURE] [--A0 A0] [--A1 A1] [-K KAPPA_BASE] [--dt DT]
+               [-g {uniform,perlin,sobol,lcg}] [-s SEED] [-j JITTER] [-p PARAMETER_FILE] [--Uinit-file UINIT_FILE] [-f FILE_ID] [--no-gui] [--png] [--png-anim] [--yaml]
+               [--export-csv EXPORT_CSV] [-C] [--update-every UPDATE_EVERY] [--no-diagrams]
 
-options:
+Simulation of Phase Separation in Na2O-SiO2 Glasses under Uncertainty (solving the Cahn–Hilliard (CH) equation)
+
+optional arguments:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
 
@@ -89,7 +94,7 @@ Input:
 
 Output:
   -f FILE_ID, --file-id FILE_ID
-                        Filenames have an id like "solution-<ID>.yaml" ("auto" creates a timestamp). Existing files will be OVERWRITTEN! (default: auto)
+                        Filenames have an id like "<ID>...yaml" ("auto" creates a timestamp). Existing files will be OVERWRITTEN! (default: auto)
   --no-gui              Do not show plot window (if --png or --png-anim. (default: False)
   --png                 Export solution plot to PNG image file (see --file-id). (default: False)
   --png-anim            Export live plotting to series of PNGs (--update-every required) (see --file-id). (default: False)
