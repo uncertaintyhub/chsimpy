@@ -28,7 +28,7 @@ setuptools.setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'chsimpy = chsimpy.chsimpy',
+            'chsimpy = chsimpy.__main__:main',
         ],
     },
     include_package_data=False,
