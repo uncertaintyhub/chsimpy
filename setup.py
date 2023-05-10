@@ -4,7 +4,10 @@ import versioneer
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 with open('requirements.txt', 'r') as fh:
-    requirements = fh.read().splitlines()
+    requirements = fh.read()
+    requirements = requirements.replace("git+https://github.com/pvigier/perlin-numpy",
+                                        "perlin-numpy @ git+https://github.com/pvigier/perlin-numpy")
+    requirements = requirements.splitlines()
 
 setuptools.setup(
     name='chsimpy',
