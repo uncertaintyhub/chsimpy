@@ -12,6 +12,13 @@ To install just the chsimpy module and its CLI application:
 pip install git+https://github.com/uncertaintyhub/chsimpy.git
 ```
 
+Additional requirements also can be selected with:
+```bash
+# 'interactive' installs jupyter packages
+# 'qt5' installs PyQt5 for faster GUI response times
+pip install "chsimpy[interactive, qt5] @ git+https://github.com/uncertaintyhub/chsimpy.git"
+```
+
 For development clone this repository and install the requirements.
 If there are version issues with already existing python packages, use [python virtual environments](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/) or the chsimpy docker container build method (see section [Docker / Jupyter](#docker--jupyter)).
 
@@ -115,6 +122,11 @@ Install jupyter on your system. Perhaps further packages are required:
 pip install PyQt5 ipympl
 ```
 
+When installing chsimpy, additional requirements also can be selected via:
+```
+pip install "chsimpy[interactive, qt5] @ git+https://github.com/uncertaintyhub/chsimpy.git"
+```
+
 Run in chsimpy folder:
 
 ```bash
@@ -125,13 +137,16 @@ jupyter notebook
 
 ## Experiments
 
-An example for running parameter experiments can be found in `experiments/`.
+A python script for running parameter experiments can be found in `experiments.py` or run with `chsimpy-experiment` after installation of chsimpy.
 It uses multi-processing to execute multiple simulation at once with varying parameters (A0, A1 in our case).
 The random numbers are controlled by the seed which is defined by the iteration number, so the outcome does not depend on the parallelization.
 The CLI is extended by additional arguments.
 
 ```bash
-cd experiments/
+# if chsimpy is installed
+chsimpy-experiment --help
+# OR: within repository
+cd chsimpy
 python experiment.py -h # help
 ```
 The help text includes the main help from above and additionally:
@@ -143,9 +158,9 @@ Experiment:
   -S, --skip-test       Skip initial tests and validation [TODO]. (default: False)
   -P PROCESSES, --processes PROCESSES
                         Runs are distributed to P processes to run in parallel (-1 = auto) (default: -1)
-  --independent         Independent A0, A1 runs (varying A0 and A1 runs separately. (default: False)
-  --A-file A_FILE       File with A0,A1 values (pairs row by row) (default: None)
-  --A-grid              Using evenly distributed grid points in A0 x A1 domain (sqrt(runs) x sqrt(runs)) (default: False)
+  --independent         Independent A0, A1 runs, i.e. A0 and A1 do not vary at the same time (default: False)
+  --A-source A_SOURCE   = ['uniform', 'sobol', 'grid', '<filename>'] - Source for A0 x A1 numbers for the Monte-Carlo runs (uniform or sobol random numbers, evenly distributed grid points
+                        [sqrt(runs) x sqrt(runs)], location of text file with row-wise A0, A1 pairs) (default: uniform)
 ```
 
 ## Tests
