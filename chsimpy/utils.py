@@ -8,13 +8,17 @@ import platform
 import sympy as sym
 import pandas as pd
 import sys
-from IPython import get_ipython
 import os
 import psutil
 import matplotlib.pyplot as plt
 import importlib.util
 
 from .version import __version__
+
+
+def module_exists(name):
+    mod_spec = importlib.util.find_spec(name)
+    return mod_spec is not None
 
 
 # Experimentelle Bestimmung der Koeffizenten einer
@@ -170,6 +174,11 @@ def get_roots_of_EPP(R, T, A0, A1):
 
 # https://stackoverflow.com/a/39662359
 def is_notebook() -> bool:
+    if module_exists('IPython'):
+        from IPython import get_ipython
+    else:
+        return False
+
     try:
         shell = get_ipython().__class__.__name__
         if shell == 'ZMQInteractiveShell':
@@ -233,7 +242,3 @@ def pause_without_show(interval):
     else:
         time.sleep(interval)
 
-
-def module_exists(name):
-    mod_spec = importlib.util.find_spec(name)
-    return mod_spec is not None

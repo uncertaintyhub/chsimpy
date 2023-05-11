@@ -9,7 +9,5 @@ pandas~=1.5.0
 tqdm~=4.64.0
 sympy~=1.11.1
 versioneer~=0.28
-git+https://github.com/pvigier/perlin-numpy@5e26837
+git+https://github.com/pvigier/perlin-numpy@5e26837db14042e51166eb6cad4c0df2c1907016
 threadpoolctl~=3.1.0
-ipython~=8.7.0
-ipympl~=0.9.0
