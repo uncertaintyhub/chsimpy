@@ -137,7 +137,7 @@ jupyter notebook
 
 ## Experiments
 
-A python script for running parameter experiments can be found in `experiments.py` or run with `chsimpy-experiment` after installation of chsimpy.
+A python script for running parameter experiments can be found in `experiments.py`. It also can be run with `chsimpy-experiment` after installation of chsimpy.
 It uses multi-processing to execute multiple simulation at once with varying parameters (A0, A1 in our case).
 The random numbers are controlled by the seed which is defined by the iteration number, so the outcome does not depend on the parallelization.
 The CLI is extended by additional arguments.
@@ -146,8 +146,7 @@ The CLI is extended by additional arguments.
 # if chsimpy is installed
 chsimpy-experiment --help
 # OR: within repository
-cd chsimpy
-python experiment.py -h # help
+python -m chsimpy.experiment -h
 ```
 The help text includes the main help from above and additionally:
 ```bash
