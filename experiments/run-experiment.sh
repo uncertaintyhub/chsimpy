@@ -1,5 +1,12 @@
-chsimpy='python ../chsimpy/experiment.py'
-#chsimpy='chsimpy-experiment'
+#!/bin/bash
+if ! command -v chsimpy-experiment &> /dev/null
+then
+  SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/../" &> /dev/null && pwd )
+  export PYTHONPATH="${SCRIPT_DIR}"
+  chsimpy='python -m chsimpy.experiment'
+else
+  chsimpy='chsimpy-experiment'
+fi
 procs=6
 runs=100
 exportcsv='E,E2,SA'
