@@ -39,6 +39,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'chsimpy = chsimpy.__main__:main',
+            'chsimpy-experiment = chsimpy.experiment:main',
         ],
     },
     include_package_data=False,

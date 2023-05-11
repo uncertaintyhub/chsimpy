@@ -1,3 +1,5 @@
+chsimpy='python ../chsimpy/experiment.py'
+#chsimpy='chsimpy-experiment'
 procs=6
 runs=100
 exportcsv='E,E2,SA'
@@ -14,9 +16,9 @@ for Asrc in $Asrcs; do
       options="--png --yaml -N 512 -s $seed -R $runs --A-source=$Asrc -S -P $procs --threshold=${c0} --cinit=${c0}"
       options="$options --export-csv=$exportcsv -C"
       # A0xA1
-      python experiment.py $options --file-id="${fname}"  > "${fname}.txt"
+      $chsimpy $options --file-id="${fname}"  > "${fname}.txt"
       # A0+A1
-      python experiment.py $options --file-id="${fname_ind}" --independent > "${fname_ind}.txt"
+      $chsimpy $options --file-id="${fname_ind}" --independent > "${fname_ind}.txt"
     done
   done
 done
