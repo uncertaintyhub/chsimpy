@@ -82,6 +82,7 @@ class ExperimentCLIParser:
 
 
 def run_experiment(run_id):
+    global init_params, rand_values, U_init, A_list
     # prepare params for actual run
     params = init_params.deepcopy()
     params.seed = init_params.seed
@@ -126,6 +127,7 @@ def run_experiment(run_id):
 
 
 def main():
+    global init_params, rand_values, U_init, A_list
     mp.freeze_support()  # for Windows support
     exp_cliparser = ExperimentCLIParser()
     exp_cliparser.cliparser.print_info()
