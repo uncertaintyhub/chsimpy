@@ -1,9 +1,10 @@
 # chsimpy
 
 chsimpy is a python3 simulation code to solve the Cahn–Hilliard equation for phase separation of Na2O-SiO2 glasses under uncertainty.
-It provides an optional non-interactive graphical interface, which also can update its results during the simulation to see its progress.
-Parameters can be changed via command-line interface (CLI) or jupyter notebook.
-Most of the data can also be exported for post-processing and reproducibility.
+It provides an optional non-interactive graphical interface (GUI) with an optional live view of the simulation progress.
+Parameters can be changed via command-line interface (CLI), input data or within a jupyter notebook.
+Data can also be exported for post-processing and reproducibility.
+Results and instructions for reproduction are provided in our [chsimpy-artifact github repository](https://github.com/uncertaintyhub/chsimpy-artifact).
 
 ## Installation
 
@@ -114,6 +115,11 @@ Output:
   --no-diagrams         No diagrams or axes, it only renders the image map of U. (default: False)
 ```
 
+## Input Parameters as File
+
+The example file `examples/example-parameters.yaml` demonstrates the use of a YAML configuration for simulation parameters.
+A0 and A1 are lambda functions and cannot be defined here, so you use `chsimpy --A0=... --A1=...` instead.
+
 ## Notebooks
 
 Install jupyter on your system. Perhaps further packages are required:
@@ -137,7 +143,7 @@ jupyter notebook
 
 ## Experiments
 
-A python script for running parameter experiments can be found in `experiments.py`. It also can be run with `chsimpy-experiment` after installation of chsimpy.
+A python script for running parameter experiments can be found in `chsimpy/experiments.py`. It also can be run with `chsimpy-experiment` after installation of chsimpy.
 It uses multi-processing to execute multiple simulation at once with varying parameters (A0, A1 in our case).
 The random numbers are controlled by the seed which is defined by the iteration number, so the outcome does not depend on the parallelization.
 The CLI is extended by additional arguments.
@@ -164,7 +170,7 @@ Experiment:
 
 ## Tests
 
-Only very basic tests can be found in `tests/`. It includes a small simulation, where the result is compared against the result of a pre-run non-public Matlab simulation. The validation dataset can be found in `validation/`. There is a script `tests/run-tests.sh` to run the tests and things like benchmark or GUI visualization (user has to close to continue tests script).
+Only very basic tests can be found in `tests/`. It includes a small simulation, where the result is compared against the result of a pre-run non-public Matlab simulation. The validation dataset can be found in `data/`. There is a script `tests/run-tests.sh` to run the tests and things like benchmark or GUI visualization (user has to close to continue tests script).
 
 ## Benchmark
 
