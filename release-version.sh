@@ -15,5 +15,7 @@ git add setup.py || exit 1
 git commit --amend --no-edit || exit 1
 git tag -a ${tag} -m "Release version ${tag}" || exit 1
 curr_branch=`git rev-parse --abbrev-ref HEAD`
-git checkout main && git merge ${curr_branch} --ff-only && git checkout ${curr_branch}
+if [ "${curr_branch}" != "main" ]; then
+  git checkout main && git merge ${curr_branch} --ff-only && git checkout ${curr_branch}
+fi
 echo "Done."
