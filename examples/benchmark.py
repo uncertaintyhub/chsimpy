@@ -86,7 +86,7 @@ def validation_test():
     solution = simulator.solve()
     U_python = solution.U
     # chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')
-    U_matlab = chsimpy.utils.csv_import_matrix('../validation/U-matlab-lcg-N512n100.csv')
+    U_matlab = chsimpy.utils.csv_import_matrix('../data/U-matlab-lcg-N512n100.csv.bz2')
     valid = np.allclose(U_matlab, U_python)
     #mse = (np.square(U_matlab-U_python)).mean(axis=None)
     #print('MSE is: ', mse)
