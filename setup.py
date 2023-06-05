@@ -12,7 +12,7 @@ with open('requirements.txt', 'r') as fh:
 setuptools.setup(
     name='chsimpy',
     author='uncertaintyhub',
-    version='1.3.1',
+    version='1.3.2',
     author_email='',
     description='Cahn–Hilliard Simulation of Phase Separation in Na2O-SiO2 Glasses',
     url='https://github.com/uncertaintyhub/chsimpy',
