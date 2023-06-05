@@ -5,7 +5,7 @@ from matplotlib import colors
 import matplotlib
 import seaborn as sns
 
-from chsimpy import utils
+from . import utils
 
 
 if utils.is_notebook() is False and utils.module_exists('PyQt5'):

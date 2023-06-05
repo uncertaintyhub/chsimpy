@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib import colors
 import matplotlib
 
-from chsimpy import utils
+from . import utils
 
 if utils.is_notebook() is False and utils.module_exists('PyQt5'):
     matplotlib.use("Qt5Agg")  # much faster GUI response time
@@ -32,6 +32,7 @@ class MapView:
 
         self.Umap = self.ax_Umap.imshow(np.zeros((N, N)), cmap="plasma", aspect="equal", vmin=0.75, vmax=1.0)
         self.ax_Umap.axis('off')
+        self.title = None
         if self.imode_defaulted:
             plt.ion()
 
@@ -46,6 +47,7 @@ class MapView:
         # self.Umap.set_norm(norm)
         Ureal = np.real(U)
         self.Umap.set_data(Ureal)
+        self.title = title
 
     def imode_on(self):
         plt.ion()
@@ -95,6 +97,8 @@ class MapView:
                 self.fig.canvas.draw()
             else:
                 utils.pause_without_show(0.001)
+        if utils.is_notebook() is False and self.title is not None:
+            self.fig.canvas.manager.set_window_title(self.title)
         self.fig.canvas.flush_events()
 
     def render_to(self, fname='map.png'):
