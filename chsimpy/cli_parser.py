@@ -48,6 +48,7 @@ class CLIParser:
                            help='Threshold mole fraction value to determine c_A and c_B (should match --cinit)')
         group.add_argument('--temperature',
                            type=float,
+                           default=923.15,
                            help='Temperature in Kelvin')
         group.add_argument('--A0',
                            type=float,
@@ -65,6 +66,7 @@ class CLIParser:
                            help='Time delta of simulation')
         group.add_argument('-g', '--generator',
                            choices=['uniform', 'perlin', 'sobol', 'lcg'],
+                           default='uniform',
                            help='Generator for initial random deviations in concentration')
         group.add_argument('-s', '--seed',
                            default=2023,
@@ -135,18 +137,9 @@ class CLIParser:
         params.update_every = self.args.update_every
         params.no_diagrams = self.args.no_diagrams
         params.Uinit_file = self.args.Uinit_file
-        if 0.85 <= self.args.cinit <= 0.95:
-            params.XXX = self.args.cinit
-        else:
-            self.parser.error('0.85 <= cinit <= 0.95')
-        if 0.85 <= self.args.threshold <= 0.95:
-            params.threshold = self.args.threshold
-        else:
-            self.parser.error('0.85 <= threshold <= 0.95')
-        if 1e-12 <= self.args.dt <= 1e-10:
-            params.delt = self.args.dt
-        else:
-            self.parser.error('1e-12 <= dt <= 1e-10')
+        params.XXX = self.get_if_range_ok(self.args.cinit, lower=0.85, upper=0.95, name='cinit')
+        params.threshold = self.get_if_range_ok(self.args.threshold, lower=0.85, upper=0.95, name='threshold')
+        params.delt = self.get_if_range_ok(self.args.dt, lower=1e-12, upper=1e-10, name='dt')
         if self.args.temperature is not None:
             params.temp = self.args.temperature
 
@@ -169,3 +162,10 @@ class CLIParser:
 
     def print_info(self):
         print(f"{self.parser.prog} {parameters.Parameters.version} ('--help' for command parameters)")
+
+    def get_if_range_ok(self, value, lower, upper, name=None):
+        if lower <= value <= upper:
+            return value
+        else:
+            name = 'value' if name is None else name
+            self.parser.error(f"{name} is out of the range [{lower},{upper}].")

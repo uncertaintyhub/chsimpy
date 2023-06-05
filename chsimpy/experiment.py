@@ -108,7 +108,7 @@ def run_experiment(run_id):
     simulator.export()
     simulator.render()
     cgap = utils.get_miscibility_gap(params.R, params.temp, params.B,
-                                             solution.A0, solution.A1)
+                                     solution.A0, solution.A1)
     sa, sb = utils.get_roots_of_EPP(params.R, params.temp, solution.A0, solution.A1)
     itargmax = np.argmax(solution.E2)
     return (solution.A0,
