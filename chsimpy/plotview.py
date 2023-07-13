@@ -50,6 +50,7 @@ class PlotView:
             self.ax_SAlines.plot([], [])[0]
         ]
         self.ax_SAlines.set_ylim(0, 1.0)
+        self.SAlegend = None
         self.SAlinesV = None
         self.Uhist = None
         self.E2line, = self.ax_E2line.plot([], [])
@@ -117,6 +118,11 @@ class PlotView:
             return
         self.SAlines[0].set_data((domtime[1:computed_steps], SA[1:computed_steps]))
         self.SAlines[1].set_data((domtime[1:computed_steps], 1-SA[1:computed_steps]))
+        self.SAlines[0].set_label('low-silica')
+        self.SAlines[1].set_label('silica-rich')
+        if self.SAlegend is not None:
+            self.SAlegend.remove()
+        self.SAlegend = self.ax_SAlines.legend()
         self.ax_SAlines.set_xlim(0, x2)
         if t0 > 0:
             if self.SAlinesV is not None:
