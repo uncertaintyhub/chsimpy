@@ -88,7 +88,7 @@ class Solver:
         # shortcuts (only for reading, values do not change)
         N = self.params.N
         delx = self.solution.delx
-        eps2 = self.solution.eps2
+        kappa = self.params.kappa
         Amr = self.solution.Amr
         RT = self.solution.RT
         B = self.params.B
@@ -103,7 +103,7 @@ class Solver:
         Du2 = DUx ** 2 + DUy ** 2
 
         Uinv = 1 - U
-        E2 = 0.5 * eps2 * self.params.L**2 * np.mean(Du2)
+        E2 = 0.5 * Amr * kappa * self.params.L**2 * np.mean(Du2)
         # Compute energy etc....
         E = self.params.L**2 * np.mean(
             # Energie
@@ -141,7 +141,7 @@ class Solver:
         assert(self._prepared is True)
         N = self.params.N
         delx = self.solution.delx
-        eps2 = self.solution.eps2
+        kappa = self.params.kappa
         Amr = self.solution.Amr
         RT = self.solution.RT
         B = self.params.B
@@ -216,7 +216,7 @@ class Solver:
 
             Du2 = DUx ** 2 + DUy ** 2
             Uinv = 1 - U
-            E2 = 0.5 * eps2 * self.params.L**2 * np.mean(Du2)
+            E2 = 0.5 * Amr * kappa * self.params.L**2 * np.mean(Du2)
             E = self.params.L**2 * np.mean(
                 # Energie
                 Amr * np.real(
