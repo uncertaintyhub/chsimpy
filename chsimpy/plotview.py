@@ -1,3 +1,4 @@
+from IPython.display import display
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -13,7 +14,7 @@ if utils.is_notebook() is False and utils.module_exists('PyQt5'):
 
 
 class PlotView:
-    def __init__(self, N):
+    def __init__(self, N, XXX):
         """Viewer for plotting simulation data"""
         self.N = N
         self.bins = 15
@@ -41,15 +42,16 @@ class PlotView:
 
         self.Umap = self.ax_Umap.imshow(np.zeros((N, N)), cmap="plasma", aspect="equal")
         self.Uline, = self.ax_Uline.plot(np.arange(0, N), np.zeros(N))
-        self.ax_Uline.set_ylim(0.75, 1.0)
+        self.ax_Uline.set_ylim(0.75, 1)  # TODO: comes from 0.01 initial deviation, maybe set a parameter
         self.Eline, = self.ax_Eline.plot([], [])
         self.ElineDelt, = self.ax2_Eline.plot([], [], color='gray')
+        #self.ax_Uhist.set_xlim(XXX-0.05, XXX+0.05)
 
         self.SAlines = [
             self.ax_SAlines.plot([], [])[0],
             self.ax_SAlines.plot([], [])[0]
         ]
-        self.ax_SAlines.set_ylim(0, 1.0)
+        self.ax_SAlines.set_ylim(0.4, 0.6)
         self.SAlegend = None
         self.SAlinesV = None
         self.Uhist = None
@@ -93,7 +95,7 @@ class PlotView:
                                np.nanmax(E[0:computed_steps]))
         self.ax_Eline.grid(True)
         self.ax_Eline.set_xlabel('Step')
-        self.ax_Eline.set_ylabel('Energy E')
+        self.ax_Eline.set_ylabel('Energy E [kJ]')
 
     def set_Eline_delt(self, E, it_range, delt, title, computed_steps):
         self.ax_Eline.set_title(title)
@@ -102,7 +104,7 @@ class PlotView:
         self.Eline.set_data((it_range[0:computed_steps], E[0:computed_steps]))
         self.ax_Eline.set_xlim(0, computed_steps)
         self.ax_Eline.set_ylim(np.nanmin(E[0:computed_steps]), np.nanmax(E[0:computed_steps]))
-        self.ax_Eline.set_ylabel('Energy E')
+        self.ax_Eline.set_ylabel('Energy E [kJ]')
         self.ElineDelt.set_data((it_range[0:computed_steps], delt[0:computed_steps]))
         self.ax2_Eline.get_yaxis().set_visible(True)
         self.ax2_Eline.set_xlabel('Step')
@@ -152,7 +154,7 @@ class PlotView:
         self.E2lineText = self.ax_E2line.text(tau0-0.05*computed_steps, 0.25*e2max,
                                               f"{t0:g} s @ {tau0} it", rotation=90)
         self.ax_E2line.set_xlabel('Step')
-        self.ax_E2line.set_ylabel('Surface Energy E2')
+        self.ax_E2line.set_ylabel('Surface Energy E2 [kJ]')
         self.ax_E2line.grid(True)
 
     def set_Uhist(self, U, title):
@@ -217,7 +219,10 @@ class PlotView:
         if utils.is_notebook():
             self.fig.canvas.toolbar_visible = False
             self.fig.canvas.header_visible = False
-            plt.show(block=block)
+            if block:
+                display(self.fig)
+            else:
+                plt.show(block=False)
         else:
             plt.show(block=block)
             utils.pause_without_show(1e-6)

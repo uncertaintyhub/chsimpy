@@ -32,13 +32,13 @@ class Parameters:
         self.R = 0.0083144626181532   # universal gas constant [ kJ / (K * mol) = (energy/(temperature * mol)) ]
         self.N_A = 6.02214076e+23  # and with the Avogadro constant [particles per mole]
 
-        self.__kappa_base = 30.0
-        self.kappa = self.__kappa_base / 105.1939  # [kJ / mol]
-        self.delt = 1e-11
-        self.delt_max = 9e-11
-        self.M = 2e-11  # mobility factor [µm^2/(kJ * s)]
+        self.__kappa_base = 0.0314434000476531 # 0.875 # 0.0376661840919272 # for 0.89
+        self.kappa = self.__kappa_base / 105.1939  # [kJ µm² / mol]
+        self.delt = 3e-8
+        self.delt_max = 9e-8
+        self.M = 1.71e-8  # mobility factor [µm^2/(kJ * s)]
 
-        self.threshold = 0.875  # value determines component A and B in U (U <> threshold)
+        self.threshold = self.XXX  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls
 
         self.export_csv = None  # e.g. 'U,E2'

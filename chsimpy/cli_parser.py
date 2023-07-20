@@ -57,12 +57,12 @@ class CLIParser:
                            type=float,
                            help='A1 value (ignores temperature) [kJ / mol]')
         group.add_argument('-K', '--kappa-base',
-                           default=30,
-                           type=int,
+                           default=0.0314434000476531,
+                           type=float,
                            help='Value for kappa = K/105.1939 [kappa = kJ/mol]')
         group.add_argument('--dt',
                            type=float,
-                           default=1e-11,
+                           default=3e-8,
                            help='Time delta of simulation')
         group.add_argument('-g', '--generator',
                            choices=['uniform', 'perlin', 'sobol', 'lcg'],
@@ -139,7 +139,7 @@ class CLIParser:
         params.Uinit_file = self.args.Uinit_file
         params.XXX = self.get_if_range_ok(self.args.cinit, lower=0.85, upper=0.95, name='cinit')
         params.threshold = self.get_if_range_ok(self.args.threshold, lower=0.85, upper=0.95, name='threshold')
-        params.delt = self.get_if_range_ok(self.args.dt, lower=1e-12, upper=1e-10, name='dt')
+        params.delt = self.get_if_range_ok(self.args.dt, lower=1e-12, upper=1e-6, name='dt')
         if self.args.temperature is not None:
             params.temp = self.args.temperature
 

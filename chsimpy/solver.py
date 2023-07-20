@@ -74,7 +74,7 @@ class Solver:
         elif params.generator == 'perlin':
             # https://github.com/pvigier/perlin-numpy
             np.random.seed(params.seed)
-            self.create_rand = lambda n: generate_fractal_noise_2d((n, n), (8, 8), 5)
+            self.create_rand = lambda n: 0.5*generate_fractal_noise_2d((n, n), (8, 8), 5)+0.5
         else:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.Generator(np.random.PCG64(params.seed))
@@ -105,9 +105,9 @@ class Solver:
         Uinv = 1 - U
         E2 = 0.5 * Amr * kappa * self.params.L**2 * np.mean(Du2)
         # Compute energy etc....
-        E = self.params.L**2 * np.mean(
+        E = Amr * self.params.L**2 * np.mean(
             # Energie
-            Amr * np.real(
+            np.real(
                 RT * (U * (np.log(U) - B) + Uinv * np.log(Uinv))
                 + (A0 + A1 * (Uinv - U)) * U * Uinv)) + E2
 
@@ -171,7 +171,7 @@ class Solver:
             # compute the shifted nonlinear term
             # (no convexity splitting!)
             # EnergieP
-            EnergieEut = Amr * np.real(
+            EnergieEut = np.real(
                 RT * np.log(U1Uinv)
                 - BRT + (A0 + A1 * U2inv) * U2inv
                 - 2 * A1 * U * Uinv)
@@ -195,7 +195,7 @@ class Solver:
                     delx2=self.solution.delx2)
 
             self.time_delta_sum += self.delt
-            self.time_passed = self.time_delta_sum / (self.params.M * self.params.kappa)
+            self.time_passed = self.time_delta_sum / (self.params.M)
             if time_limit is not None and self.time_passed > time_limit:
                 self.solution.stop_reason = 'time-limit'
                 break
@@ -217,9 +217,8 @@ class Solver:
             Du2 = DUx ** 2 + DUy ** 2
             Uinv = 1 - U
             E2 = 0.5 * Amr * kappa * self.params.L**2 * np.mean(Du2)
-            E = self.params.L**2 * np.mean(
-                # Energie
-                Amr * np.real(
+            E = Amr * self.params.L**2 * np.mean(
+                  np.real(
                     RT * (U * (np.log(U) - B) + Uinv * np.log(Uinv))
                     + (A0 + A1 * (Uinv - U)) * U * Uinv)) + E2
 

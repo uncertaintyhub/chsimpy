@@ -28,7 +28,7 @@ class Simulator:
             if self.params.no_diagrams:
                 self.view = mapview.MapView(self.params.N)
             else:
-                self.view = plotview.PlotView(self.params.N)
+                self.view = plotview.PlotView(self.params.N, self.params.XXX)
         else:
             self.view = None
             self.params.update_every = None  # no target where update can be applied to
@@ -165,7 +165,7 @@ class Simulator:
             fname = f"{self.solution_file_id}.png"
             self.view.render_to(fname)  # includes savefig, which should be called before any plt.show() command
         if self.gui_requested():
-            self.view.show()
+            self.view.show(block=utils.is_notebook())
         self.view.imode_default()
 
     def export_requested(self):

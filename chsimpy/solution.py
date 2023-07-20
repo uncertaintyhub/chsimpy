@@ -24,8 +24,7 @@ class Solution:
         self.timedata = None
 
         # # we compute the molar area (cf. molar volume above (line 72))
-        self.Am = (25.13 * 1e6) ** (2/3) * self.params.N_A ** (-1/3) #  (µm^2/mol)
-        self.D = -3.474 * 1e-4 * np.exp(-272.4 / (self.params.R * self.params.temp)) * 1e12  # diffusion, [µm^2 / s]
+        self.Am = (25.13 * 1e6 / self.params.N_A) ** (2/3) * self.params.N_A  # (µm^2/mol)
 
         # discretizations
         self.delx = self.params.L / (N - 1)
