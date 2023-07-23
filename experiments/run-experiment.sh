@@ -15,7 +15,7 @@ exportcsv='E,E2,SA'
 Asrcs='uniform'
 declare -a seeds=(2023)
 declare -a c0s=(0.89)
-kappabase=0.0314434000476531  # TODO: auto detect via chsimpy
+kappabase=0.0376661840919272  # TODO: auto detect via chsimpy
 
 for Asrc in $Asrcs; do
   for seed in "${seeds[@]}"; do
