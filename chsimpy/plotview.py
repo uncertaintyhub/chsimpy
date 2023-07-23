@@ -1,4 +1,3 @@
-from IPython.display import display
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -219,7 +218,8 @@ class PlotView:
         if utils.is_notebook():
             self.fig.canvas.toolbar_visible = False
             self.fig.canvas.header_visible = False
-            if block:
+            if block and utils.is_notebook():
+                from IPython.display import display
                 display(self.fig)
             else:
                 plt.show(block=False)
