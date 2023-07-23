@@ -19,7 +19,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=['chsimpy'],
-    package_dir={'chsimpy': 'chsimpy/'},
+    package_dir={'chsimpy': 'chsimpy'},
     package_data={'chsimpy': ['data/*']},
     classifiers=[
     'Programming Language :: Python :: 3',

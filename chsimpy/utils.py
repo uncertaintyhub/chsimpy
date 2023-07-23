@@ -3,7 +3,6 @@ import difflib
 import ruamel.yaml
 import time
 from datetime import datetime
-import resource
 import platform
 import sympy as sym
 import pandas as pd
@@ -226,8 +225,12 @@ def get_mem_usage():
 
 
 def get_mem_usage_all():
-    kib = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss + resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
-    return f"{kib/1024:0.2f}MiB"
+    if module_exists('resource'):
+        import resource
+        kib = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss + resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+        return f"{kib/1024:0.2f}MiB"
+    else:
+        return ""
 
 
 def pause_without_show(interval):
