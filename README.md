@@ -214,43 +214,8 @@ The simulation results can be displayed as a single image of the concentration o
 
 ## Formulas
 
-$$
-\newcommand{\kJmol}{{}{\textnormal{kJ}}{\textnormal{mol}^{-1}}}
-\newcommand{\JKmol}{{}{\textnormal{J}}{\textnormal{K}^{-1}\,\textnormal{mol}^{-1}}}
-\newcommand{\meter}{{}\ \textnormal{m}}
-\newcommand{\mikrometer}{{}\ \textnormal{$\mu$m}}
-\newcommand{\micrometer}{{}\ \textnormal{$\mu$m}}
-\newcommand{\seconds}{{}\ \textnormal{s}}
-\newcommand{\minutes}{{}\ \textnormal{min}}
-\newcommand{\gasconst}{\textnormal{R}}    % gas constant
-\newcommand{\Bconst}{\kappa_{\textnormal{B}}} % Boltzmann constant
-\newcommand{\kJ}{\textnormal{kJ}}
-\newcommand{\Kelvin}{{}\ \textnormal{K}}
-\newcommand{\mol}{{}\ \textnormal{mol}}
-\begin{eqnarray}
-N_A &=& 6.02214076\cdot10^{23} \quad \textnormal{(Avogadro constant)}\\
-V_{\textnormal{mol}} &=& 25.13\cdot10^6 \quad \left[\frac{\mikrometer^3}{\mol}\right] \\
-A_m &=& A_{\textnormal{mol}}\cdot N_A\\
-&=& \left(\frac{V_{\textnormal{mol}}}{N_A}\right)^{\frac{2}{3}} \cdot N_A \\
-&=& 7245115164729.647  \quad \left[\frac{\mikrometer^2}{\mol}\right] \\
-M &=&  1.238915 \cdot 10^5 \quad \left[\frac{\mikrometer^2}{\kJ\,\seconds}\right] \\
-\tilde{M} &=& \frac{M}{A_m} = 1.71\cdot10^{-8} \\
-\kappa &=& \frac{\mu(c,T) - \rho(c,T)}{(\partial c/\partial x)^2} \\
-&=& \frac{4.34 \cdot 10^{-15}}{(0.1602564 \cdot 64)^2} \approx 4.1257 \cdot 10^{-17} \quad \left[\kJ\right] \\
-%\delta c &=& |c_A - c_B| = 0.1602564 \\
-%\delta x &=& 1/64 \mikrometer \\
-\tilde{\kappa} &=& \kappa\cdot A_m = \tilde \kappa \approx2.989 \cdot 10^{-4}~[\kJ\mikrometer^2\mol^{-1}]\\
-A_0(T) & = &  186.0575-0.3654 \cdot T\quad \left[\frac{\kJ}{\mol}\right]\\
-A_1(T) & = &  43.7207-0.1401 \cdot T\quad \left[\frac{\kJ}{\mol}\right] \\
-E_2 &=& \frac{1}{2} \cdot \kappa \cdot L^2 \cdot \textnormal{mean}((\delta_{x,L} c)^2 + (\delta_{y,L}) c^2)\quad\textnormal{(Surface Energy)}\\
- &=& \frac{1}{2} \cdot [\kJ] \cdot [\mikrometer^2] \cdot [\mikrometer^{-2}] \\
-E &=& \frac{L^2}{A_m} \textnormal{mean}\left( \left( -A_{0} c^{2} + A_{0} c + 2 A_{1} c^{3} - 3 A_{1} c^{2} + A_{1} c - B R T c + R T c \log{\left(x \right)} - R T c \log{\left(1 - c \right)} + R T \log{\left(1 - c \right)} \right)\right)\\
-&+& E_2 \\
-&=& \frac{[\mikrometer^{2}]}{[\mikrometer^{2}\cdot\kJmol]} [\kJ\cdot\kJmol] + [\kJ]\\
-E_{\textnormal{Eut}} &=& \frac{L^2}{A_m}\left(R\cdot T\cdot \log\left(\frac{c}{1-c}\right)-B\cdot R\cdot T + \left(A_0+A_1\cdot(1-2c)\right)\cdot(1-2c) - 2\cdot A_1\cdot c \cdot(1-c)\right) \\
-&=& \left[\frac{\mikrometer^2}{\mikrometer^{2}\cdot\kJmol}\right] [\kJ\cdot \kJmol]
-\end{eqnarray}
-$$
+![Formulas image](formulas.png)
+
 
 ## Authors and Acknowledgements
 
