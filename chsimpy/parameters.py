@@ -20,6 +20,9 @@ class Parameters:
 
     def __init__(self):
         """Initial Simulation parameters"""
+
+        # TODO: kappa_tilde, M_tilde = M A_m, timefac, auto-detect kappa base
+
         self.seed = 2023
         self.N = 512  # [pixels]
         self.L = 2  # [µm]
