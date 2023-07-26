@@ -208,7 +208,6 @@ Of course, using the docker container is **not necessary**. If jupyter notebook 
 
 The simulation results can be displayed as a single image of the concentration or by a set of diagrams.
 
-![Simulation result image](picture.png)
 ![Simulation result diagrams](picture-diags.png)
 
 
