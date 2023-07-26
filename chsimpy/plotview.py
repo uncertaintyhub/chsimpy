@@ -93,7 +93,7 @@ class PlotView:
         self.ax_Eline.set_ylim(np.nanmin(E[0:computed_steps]),
                                np.nanmax(E[0:computed_steps]))
         self.ax_Eline.grid(True)
-        self.ax_Eline.set_xlabel('Step')
+        self.ax_Eline.set_xlabel('')
         self.ax_Eline.set_ylabel('Energy E [kJ]')
 
     def set_Eline_delt(self, E, it_range, delt, title, computed_steps):
