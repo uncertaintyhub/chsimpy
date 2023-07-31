@@ -8,45 +8,19 @@ Results and instructions for reproduction are provided in our [chsimpy-artifact 
 
 ## Installation
 
-To install just the chsimpy module and its CLI application:
-```bash
-pip install git+https://github.com/uncertaintyhub/chsimpy.git
-```
-
-Additional requirements also can be selected with:
-```bash
-# 'interactive' installs jupyter packages
-# 'qt5' installs PyQt5 for faster GUI response times
-pip install "chsimpy[interactive, qt5] @ git+https://github.com/uncertaintyhub/chsimpy.git"
-```
-
-For development clone this repository and install the requirements.
-If there are version issues with already existing python packages, use [python virtual environments](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/) or the chsimpy docker container build method (see section [Docker / Jupyter](#docker--jupyter)).
-
-```bash
-git clone https://github.com/uncertaintyhub/chsimpy.git
-cd chsimpy
-pip install -r requirements.txt  # edit if version requirements are too tight
-```
-
-### Installation in Python Virtual Environments
-
-```bash
-git clone https://github.com/uncertaintyhub/chsimpy.git
-conda create -n chsimpy_env python
-conda activate chsimpy_env
-conda install --file requirements.txt -c conda-forge
-python setup.py install
-```
+For installation please read our [INSTALL.md](installation instructions).
 
 ## Usage
 
-Go to the chsimpy examples folder and run the code via python:
+If chsimpy is installed as package, just run:
+
+```
+chsimpy --help
+```
+
+Alternatively, without package installation:
 
 ```bash
-# if installed just run
-chsimpy --help
-# and for developers:
 # git clone https://github.com/uncertaintyhub/chsimpy.git
 # cd chsimpy
 python -m chsimpy --help
@@ -182,7 +156,7 @@ A dockerfile is provided to create a chsimpy-based jupyter application container
 ```bash
 # git clone https://github.com/uncertaintyhub/chsimpy.git
 # cd chsimpy/docker
-# cat build-docker.sh                                                                                                                                             main ✭ ✱ ◼
+# cat build-docker.sh
 export DOCKER_BUILDKIT=1 # requires docker-buildx
 docker build -t chsimpy-docker:v1 .
 # cat run-docker.sh
