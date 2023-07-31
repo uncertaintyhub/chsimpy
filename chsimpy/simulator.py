@@ -91,7 +91,7 @@ class Simulator:
         params = self.params
         solution = self.solver.solution
         if solution.domtime is None:
-            time_total = (1 / (params.M * params.kappa) * (solution.computed_steps-1) * params.delt)
+            time_total = (1 / (params.M_tilde) * (solution.computed_steps-1) * params.delt)
         else:
             time_total = solution.domtime[-1] ** 3
         view.set_Umap(U=solution.U,

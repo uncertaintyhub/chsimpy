@@ -40,7 +40,8 @@ class Solution:
         self.Amr = 1 / self.Am
         self.A0 = params.func_A0(params.temp)  # [kJ / mol]
         self.A1 = params.func_A1(params.temp)  # [kJ / mol]
-        self.time_fac = (1 / (params.M * params.kappa)) * params.delt
+        self.time_fac = (1 / (params.M_tilde)) * params.delt
+        self.M = self.params.M_tilde / self.Am
 
         self.restime = 0
         self.tau0 = 0

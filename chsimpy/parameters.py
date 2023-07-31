@@ -21,8 +21,6 @@ class Parameters:
     def __init__(self):
         """Initial Simulation parameters"""
 
-        # TODO: kappa_tilde, M_tilde = M A_m, timefac, auto-detect kappa base
-
         self.seed = 2023
         self.N = 512  # [pixels]
         self.L = 2  # [µm]
@@ -35,11 +33,11 @@ class Parameters:
         self.R = 0.0083144626181532   # universal gas constant [ kJ / (K * mol) = (energy/(temperature * mol)) ]
         self.N_A = 6.02214076e+23  # and with the Avogadro constant [particles per mole]
 
-        self.__kappa_base = 0.0314434000476531 # 0.875 # 0.0376661840919272 # for 0.89
-        self.kappa = self.__kappa_base / 105.1939  # [kJ µm² / mol]
+        self.__kappa_base = 0.0314434000476531 # 0.875 # 0.0376661840919272 # for 0.89 # TODO: autodetect
+        self.kappa = self.__kappa_base / 105.1939  # [kJ µm² / mol] # TODO: kappa_tilde
         self.delt = 3e-8
         self.delt_max = 9e-8
-        self.M = 1.71e-8  # mobility factor [µm^2/(kJ * s)]
+        self.M_tilde = 1.71e-8  # mobility factor [µm^2/(kJ * s)]
 
         self.threshold = self.XXX  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls

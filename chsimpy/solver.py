@@ -193,7 +193,7 @@ class Solver:
                     delx2=self.solution.delx2)
 
             self.time_delta_sum += self.delt
-            self.time_passed = self.time_delta_sum / (self.params.M)
+            self.time_passed = self.time_delta_sum / (self.params.M_tilde)
             if time_limit is not None and self.time_passed > time_limit:
                 self.solution.stop_reason = 'time-limit'
                 break
