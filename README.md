@@ -8,7 +8,7 @@ Results and instructions for reproduction are provided in our [chsimpy-artifact 
 
 ## Installation
 
-For installation please read our [INSTALL.md](installation instructions).
+For installation please read our [installation instructions](INSTALL.md).
 
 ## Usage
 
@@ -30,7 +30,7 @@ The help provides information on the command-line interface (CLI) arguments:
 
 ```
 usage: chsimpy [-h] [--version] [-N N] [-n NTMAX] [-t TIME_MAX] [-z] [-a] [--cinit CINIT] [--threshold THRESHOLD] [--temperature TEMPERATURE] [--A0 A0] [--A1 A1] [-K KAPPA_BASE] [--dt DT]
-               [-g {uniform,perlin,sobol,lcg}] [-s SEED] [-j JITTER] [-p PARAMETER_FILE] [--Uinit-file UINIT_FILE] [-f FILE_ID] [--no-gui] [--png] [--png-anim] [--yaml]
+               [-g {uniform,simplex,sobol,lcg}] [-s SEED] [-j JITTER] [-p PARAMETER_FILE] [--Uinit-file UINIT_FILE] [-f FILE_ID] [--no-gui] [--png] [--png-anim] [--yaml]
                [--export-csv EXPORT_CSV] [-C] [--update-every UPDATE_EVERY] [--no-diagrams]
 
 Simulation of Phase Separation in Na2O-SiO2 Glasses under Uncertainty (solving the Cahn–Hilliard (CH) equation)
