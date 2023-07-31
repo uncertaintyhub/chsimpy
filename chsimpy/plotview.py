@@ -50,7 +50,7 @@ class PlotView:
             self.ax_SAlines.plot([], [])[0],
             self.ax_SAlines.plot([], [])[0]
         ]
-        self.ax_SAlines.set_ylim(0.2, 0.8)
+        self.ax_SAlines.set_ylim(0.0, 1.0)
         self.SAlegend = None
         self.SAlinesV = None
         self.Uhist = None
