@@ -1,6 +1,5 @@
 ruamel.yaml~=0.17.21
-numpy>=1.18.56.0
-llvmlite==0.39.1
+numpy~=1.18.56.0
 scipy~=1.9.0
 matplotlib~=3.6.0
 seaborn~=0.12.0
@@ -8,6 +7,5 @@ psutil~=5.9.0
 pandas~=1.5.0
 tqdm~=4.64.0
 sympy~=1.11.1
-versioneer~=0.28
 git+https://github.com/pvigier/perlin-numpy@5e26837db14042e51166eb6cad4c0df2c1907016
 threadpoolctl~=3.1.0
