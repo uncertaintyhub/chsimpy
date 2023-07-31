@@ -55,7 +55,7 @@ class Parameters:
         self.time_max = None  # time in minutes to simulate (ignores ntmax)
         # lcg - linear congruential generator for reproducible portable random numbers
         # sobol - quasi-random numbers
-        # perlin - perlin noise
+        # simplex - simplex noise
         self.generator = 'uniform'
         self.adaptive_time = False
         self.jitter = None

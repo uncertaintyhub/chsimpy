@@ -7,9 +7,7 @@ Model class that contains the actual simulation algorithm
 import numpy as np
 import scipy.fftpack as scifft
 from scipy.stats import qmc
-from perlin_numpy import (
-    generate_perlin_noise_2d, generate_fractal_noise_2d
-)
+import opensimplex
 
 from .solution import Solution, TimeData
 from . import mport
@@ -71,10 +69,10 @@ class Solver:
             # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.Sobol.html
             qrng = qmc.Sobol(d=N, seed=params.seed)  # 2D
             self.create_rand = lambda n: qrng.random(n)
-        elif params.generator == 'perlin':
-            # https://github.com/pvigier/perlin-numpy
-            np.random.seed(params.seed)
-            self.create_rand = lambda n: 0.5*generate_fractal_noise_2d((n, n), (8, 8), 5)+0.5
+        elif params.generator == 'simplex':
+            # https://pypi.org/project/opensimplex/
+            # 24 = feature size, 2D Slice of 3D Noise
+            self.create_rand = lambda n: opensimplex.noise2array(np.linspace(0,48,n), np.linspace(0,48,n))
         else:
             # https://builtin.com/data-science/numpy-random-seed
             rng = np.random.Generator(np.random.PCG64(params.seed))

@@ -65,7 +65,7 @@ class CLIParser:
                            default=3e-8,
                            help='Time delta of simulation')
         group.add_argument('-g', '--generator',
-                           choices=['uniform', 'perlin', 'sobol', 'lcg'],
+                           choices=['uniform', 'simplex', 'sobol', 'lcg'],
                            default='uniform',
                            help='Generator for initial random deviations in concentration')
         group.add_argument('-s', '--seed',

@@ -7,5 +7,5 @@ psutil~=5.9
 pandas~=1.5
 tqdm~=4.64
 sympy~=1.11
-git+https://github.com/pvigier/perlin-numpy@5e26837db14042e51166eb6cad4c0df2c1907016
+opensimplex~=0.4
 threadpoolctl~=3.1
