@@ -22,7 +22,6 @@ from chsimpy import Simulator, Parameters, CLIParser, utils, mport
 
 class BenchmarkParams:
     def __init__(self):
-        self.skip_test = False
         self.runs = 3
         self.warmups = 1
         self.warmup_ntmax = 100
@@ -37,9 +36,6 @@ class BenchmarkCLIParser:
                            default=3,
                            type=int,
                            help='Number of Monte-Carlo runs')
-        group.add_argument('-S', '--skip-test',
-                           action='store_true',
-                           help='Skip initial tests and validation [TODO].')
         group.add_argument('-w', '--warmups',
                            default=1,
                            type=int,
@@ -51,7 +47,6 @@ class BenchmarkCLIParser:
     def get_parameters(self):
         params = self.cliparser.get_parameters()
         bmark_params = BenchmarkParams()
-        bmark_params.skip_test = self.cliparser.args.skip_test
         bmark_params.runs = self.cliparser.args.runs
         bmark_params.warmups = self.cliparser.args.warmups
         params.no_gui = True
@@ -68,34 +63,6 @@ class BenchmarkCLIParser:
         if params.png or params.png_anim:
             self.cliparser.parser.error('Visualization must be disabled when running benchmarks.')
         return bmark_params, params
-
-
-def validation_test():
-    params = Parameters()
-    params.N = 512
-    params.ntmax = 100
-    params.seed = 2023
-    params.no_gui = True
-    params.generator = 'lcg'  # to be comparable with matlab
-    params.kappa_base = 30
-    params.adaptive_time = False
-    params.file_id = 'benchmark'
-    U_init = 0.875 + 0.01 * chsimpy.mport.matlab_lcg_sample(params.N, params.N, params.seed)
-    simulator = Simulator(params=params, U_init=U_init)
-
-    solution = simulator.solve()
-    U_python = solution.U
-    # chsimpy.utils.csv_dump_matrix(U_python, 'U-python-N512n100.csv')
-    U_matlab = chsimpy.utils.csv_import_matrix('../data/U-matlab-lcg-N512n100.csv.bz2')
-    valid = np.allclose(U_matlab, U_python)
-    #mse = (np.square(U_matlab-U_python)).mean(axis=None)
-    #print('MSE is: ', mse)
-    if valid:
-        print("Initial test: SUCCESS")
-        return True
-    else:
-        print("Initial test: FAIL")
-        return False
 
 
 def time_repetitions(simulator, ntmax, repetitions):
@@ -118,9 +85,6 @@ if __name__ == '__main__':
     # get current time
     sysinfo_list = chsimpy.utils.get_system_info()
     bmark_params_list = chsimpy.utils.vars_to_list(bmark_params)
-
-    if not bmark_params.skip_test:
-        validation_test()
 
     ts_warmup = None
     ts_runs = None

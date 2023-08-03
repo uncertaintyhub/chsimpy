@@ -101,6 +101,23 @@ class TestDumpSolution(unittest.TestCase):
         if os.path.isfile(fname):
             os.remove(fname)
 
+    def test_csv_compress(self):
+        """
+        Test if compression round-trip works
+        """
+        fname = 'test-matrix.csv.bz2'
+        rng = np.random.default_rng()
+        matrix = rng.random((54, 33))
+        chsimpy.utils.csv_export_matrix(matrix, fname)
+        matrix_test = chsimpy.utils.csv_import_matrix(fname)
+        valid = np.allclose(matrix, matrix_test)
+        mse = (np.square(matrix - matrix_test)).mean(axis=None)
+        print()
+        print(f"MSE = {mse} ({self.__str__()})")
+        self.assertTrue(valid)
+        if os.path.isfile(fname):
+            os.remove(fname)
+
 
 if __name__ == '__main__':
     unittest.main()

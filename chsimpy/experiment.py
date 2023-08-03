@@ -21,7 +21,6 @@ A_list = None  # list of A0, A1 values if --A-file is used
 
 class ExperimentParams:
     def __init__(self):
-        self.skip_test = False
         self.runs = 2
         self.jitter_Arellow = 0.995
         self.jitter_Arelhigh = 1.005
@@ -41,9 +40,6 @@ class ExperimentCLIParser:
                            default=3,
                            type=int,
                            help='Number of Monte-Carlo runs')
-        group.add_argument('-S', '--skip-test',
-                           action='store_true',
-                           help='Skip initial tests and validation [TODO].')
         group.add_argument('-P', '--processes',
                            default=-1,
                            type=int,
@@ -61,7 +57,6 @@ class ExperimentCLIParser:
     def get_parameters(self):
         params = self.cliparser.get_parameters()
         exp_params = ExperimentParams()
-        exp_params.skip_test = self.cliparser.args.skip_test
         exp_params.runs = self.cliparser.args.runs
         exp_params.independent = self.cliparser.args.independent
         exp_params.A_source = self.cliparser.args.A_source

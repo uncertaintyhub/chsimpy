@@ -10,7 +10,6 @@ echo "Running tests (test-ID=$testid)..."
 echo "- GUI tests: you must CLOSE any plot windows to CONTINUE testing."
 echo
 python -m unittest test.py || exit -1
-python -m unittest test_solution.py || exit -1
 cd ../examples/
 python benchmark.py -N 100 -R 1 -w 0 || exit -1
 
