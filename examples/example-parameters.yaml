@@ -1,7 +1,7 @@
 --- !Parameters
 B: 12.86
 L: 2
-M: 2e-11
+M_tilde: 1.71e-8
 N: 512
 N_A: 6.02214076e+23
 R: 0.0083144626181532
@@ -9,14 +9,13 @@ Uinit_file: null
 XXX: 0.89
 adaptive_time: false
 compress_csv: false
-delt: 1e-11
-delt_max: 9e-11
+delt: 4e-8
+delt_max: 8e-8
 file_id: auto
 export_csv: null
 full_sim: false
 generator: uniform
 jitter: null
-kappa_base: 30
 no_diagrams: false
 no_gui: false
 png: false
