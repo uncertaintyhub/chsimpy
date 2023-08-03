@@ -27,7 +27,7 @@ class ExperimentParams:
         self.processes = -1
         self.independent = False
         self.A_source = 'uniform'
-        self.A_seed = 85972  # seed for RNG based A0, A1 generation
+        self.A_seed = 2023  # seed for RNG based A0, A1 generation
 
 
 # parsing command-line-interface arguments
