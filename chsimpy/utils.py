@@ -160,7 +160,7 @@ def get_miscibility_gap(R, T, B, A0, A1, xlower=0.7, xupper=0.9999, prec=7):
     return sym.nsolve((eq1, eq2), (x1, x2), (xlower, xupper), prec=prec)
 
 
-def get_distance_common_tangent(R, T, B, A0, A1, at=0.875):
+def get_distance_common_tangent(R, T, B, A0, A1, at):
     x = sym.Symbol('x', real=True)
     c = x
     E = (R * T * (c * (sym.log(c) - B) + (1 - c) * sym.log(1 - c)) + (A0 + A1 * (1 - 2 * c)) * c * (1 - c))
@@ -168,7 +168,7 @@ def get_distance_common_tangent(R, T, B, A0, A1, at=0.875):
     m = (E.subs(x, cb) - E.subs(x, ca)) / (cb - ca)
     # distance E and tangent at 0.875 for kappa~ base
     dist = (E - m * (x - ca) - E.subs(x, ca)).subs(x, at)
-    return dist
+    return np.float64(dist)
 
 
 def get_roots_of_EPP(R, T, A0, A1):

@@ -40,7 +40,8 @@ class Solution:
                                                             T=self.params.temp,
                                                             B=self.params.B,
                                                             A0=self.A0,
-                                                            A1=self.A1)
+                                                            A1=self.A1,
+                                                            at=self.params.XXX)
         self.kappa_tilde = self.kappa_base / (0.1602564 * 64)**2
         self.kappa = self.kappa_tilde * self.Amr
 
