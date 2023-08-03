@@ -33,8 +33,6 @@ class Parameters:
         self.R = 0.0083144626181532   # universal gas constant [ kJ / (K * mol) = (energy/(temperature * mol)) ]
         self.N_A = 6.02214076e+23  # and with the Avogadro constant [particles per mole]
 
-        self.__kappa_base = 0.0314434000476531 # 0.875 # 0.0376661840919272 # for 0.89 # TODO: autodetect
-        self.kappa = self.__kappa_base / 105.1939  # [kJ µm² / mol] # TODO: kappa_tilde
         self.delt = 3e-8
         self.delt_max = 9e-8
         self.M_tilde = 1.71e-8  # mobility factor [µm^2/(kJ * s)]
@@ -64,19 +62,6 @@ class Parameters:
         self.func_A0 = lambda temp: utils.A0(temp)
         self.func_A1 = lambda temp: utils.A1(temp)
 
-    @property
-    def kappa_base(self):
-        return self.__kappa_base
-
-    @kappa_base.setter
-    def kappa_base(self, value):
-        self.__kappa_base = value
-        self.kappa = value / 105.1939
-
-    @kappa_base.deleter
-    def kappa_base(self):
-        del self.__kappa_base
-
     @classmethod
     def to_yaml(cls, representer, node):
         tag = getattr(cls, 'yaml_tag', '!' + cls.__name__)
@@ -104,11 +89,8 @@ class Parameters:
         for x in dir(iparams):
             if x.startswith('_'):
                 continue
-            if hasattr(self, x) and x != 'kappa':
-                if x == 'kappa_base':
-                    iv = iparams.__dict__['kappa_base']
-                else:
-                    iv = getattr(iparams, x)
+            if hasattr(self, x):
+                iv = getattr(iparams, x)
                 if callable(iv):
                     continue
                 setattr(self, x, iv)
@@ -119,7 +101,7 @@ class Parameters:
 
     def is_scalarwise_equal_with(self, other):
         if isinstance(other, Parameters):
-            entities_to_remove = ('func_A0', 'func_A1', '_Parameters__kappa_base', 'kappa_base', 'version')
+            entities_to_remove = ('func_A0', 'func_A1', 'version')
             sd = self.__dict__.copy()
             od = other.__dict__.copy()
             [sd.pop(k, None) for k in entities_to_remove]

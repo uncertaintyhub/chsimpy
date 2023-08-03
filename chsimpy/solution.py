@@ -1,5 +1,5 @@
 import numpy as np
-
+import sympy
 import ruamel.yaml
 
 from . import utils
@@ -17,8 +17,6 @@ class Solution:
     def __init__(self, params=None):
         """Simulation solution"""
         self.params = params
-        ntmax = self.params.ntmax
-        N = self.params.N
 
         self.U = None
         self.timedata = None
@@ -27,13 +25,8 @@ class Solution:
         self.Am = (25.13 * 1e6 / self.params.N_A) ** (2/3) * self.params.N_A  # (µm^2/mol)
 
         # discretizations
-        self.delx = self.params.L / (N - 1)
+        self.delx = self.params.L / (self.params.N - 1)
         self.delx2 = self.delx ** 2
-
-        self.CHeig, self.Seig = utils.get_coefficients(N=N,
-                                                       kappa=self.params.kappa,
-                                                       delt=self.params.delt,
-                                                       delx2=self.delx2)
 
         self.RT = params.R * params.temp
         self.BRT = params.B * params.R * params.temp
@@ -42,6 +35,19 @@ class Solution:
         self.A1 = params.func_A1(params.temp)  # [kJ / mol]
         self.time_fac = (1 / (params.M_tilde)) * params.delt
         self.M = self.params.M_tilde / self.Am
+
+        self.kappa_base = utils.get_distance_common_tangent(R=self.params.R,
+                                                            T=self.params.temp,
+                                                            B=self.params.B,
+                                                            A0=self.A0,
+                                                            A1=self.A1)
+        self.kappa_tilde = self.kappa_base / (0.1602564 * 64)**2
+        self.kappa = self.kappa_tilde * self.Amr
+
+        self.CHeig, self.Seig = utils.get_coefficients(N=self.params.N,
+                                                       kappa_tilde=self.kappa_tilde,
+                                                       delt=self.params.delt,
+                                                       delx2=self.delx2)
 
         self.restime = 0
         self.tau0 = 0
@@ -65,12 +71,14 @@ class Solution:
             v = getattr(node, x)
             if callable(v):
                 continue
-            if type(v)==np.float64:
+            if type(v) == np.float64:
                 v = float(v)
-            if type(v)==np.ndarray:
+            if type(v) == np.ndarray:
                 continue
-            if type(v)==TimeData:
+            if type(v) == TimeData:
                 continue
+            if type(v) == sympy.core.numbers.Float:
+                v = float(v)
             attribs[x] = v
         return representer.represent_mapping(tag, attribs)
 

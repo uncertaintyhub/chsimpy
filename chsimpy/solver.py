@@ -86,7 +86,7 @@ class Solver:
         # shortcuts (only for reading, values do not change)
         N = self.params.N
         delx = self.solution.delx
-        kappa = self.params.kappa
+        kappat = self.solution.kappa_tilde
         Amr = self.solution.Amr
         RT = self.solution.RT
         B = self.params.B
@@ -101,7 +101,7 @@ class Solver:
         Du2 = DUx ** 2 + DUy ** 2
 
         Uinv = 1 - U
-        E2 = 0.5 * Amr * kappa * self.params.L**2 * np.mean(Du2)
+        E2 = 0.5 * Amr * kappat * self.params.L**2 * np.mean(Du2)
         # Compute energy etc....
         E = Amr * self.params.L**2 * np.mean(
             # Energie
@@ -139,7 +139,7 @@ class Solver:
         assert(self._prepared is True)
         N = self.params.N
         delx = self.solution.delx
-        kappa = self.params.kappa
+        kappat = self.solution.kappa_tilde
         Amr = self.solution.Amr
         RT = self.solution.RT
         B = self.params.B
@@ -179,7 +179,7 @@ class Solver:
                     and self.solution.computed_steps > 500
                     and np.remainder(self.solution.computed_steps, 2) == 0
             ):
-                delt_alpha = 500 / (self.params.kappa_base/15)**3
+                delt_alpha = 500 / (2)**3
                 delt_dyn = np.linalg.norm(self.params.delt_max / np.sqrt(1 + delt_alpha*np.abs(EnergieEut)**2), ord=-1)
                 delt_new = max(self.params.delt, delt_dyn)
                 if delt_new/self.delt > 1.15:
@@ -188,12 +188,12 @@ class Solver:
                     self.delt = delt_new
                 CHeig, Seig = utils.get_coefficients(
                     N=N,
-                    kappa=self.params.kappa,
+                    kappa_tilde=self.solution.kappa_tilde,
                     delt=self.delt,
                     delx2=self.solution.delx2)
 
             self.time_delta_sum += self.delt
-            self.time_passed = self.time_delta_sum / (self.params.M_tilde)
+            self.time_passed = self.time_delta_sum / self.params.M_tilde
             if time_limit is not None and self.time_passed > time_limit:
                 self.solution.stop_reason = 'time-limit'
                 break
@@ -214,7 +214,7 @@ class Solver:
 
             Du2 = DUx ** 2 + DUy ** 2
             Uinv = 1 - U
-            E2 = 0.5 * Amr * kappa * self.params.L**2 * np.mean(Du2)
+            E2 = 0.5 * Amr * kappat * self.params.L**2 * np.mean(Du2)
             E = Amr * self.params.L**2 * np.mean(
                   np.real(
                     RT * (U * (np.log(U) - B) + Uinv * np.log(Uinv))

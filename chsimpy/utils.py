@@ -36,10 +36,10 @@ def eigenvalues(N):
         + np.ones((N, 1)) @ ((2 * np.cos(np.pi * (np.arange(0, N - 1 + 1)) / (N - 1))) - 2).reshape(1, N)
 
 
-def get_coefficients(N, kappa, delt, delx2):
+def get_coefficients(N, kappa_tilde, delt, delx2):
     # time marching update parameters
     lam1 = delt / delx2
-    lam2 = kappa * lam1 / delx2
+    lam2 = kappa_tilde * lam1 / delx2
     # matrix of eigenvalues of the DCT
     leig = eigenvalues(N)
     # scaled eigenvalues of stabilized CH update matrix
@@ -144,12 +144,10 @@ def get_miscibility_gap(R, T, B, A0, A1, xlower=0.7, xupper=0.9999, prec=7):
     x1 = sym.Symbol('x1', real=True)
     x2 = sym.Symbol('x2', real=True)
     c = x1
-    E = (R * T * (c * (sym.log(c) - B) + (1 - c) * sym.log(1 - c)) + (A0 + A1 * (1 - 2 * c)) * c * (
-                1 - c))
+    E = (R * T * (c * (sym.log(c) - B) + (1 - c) * sym.log(1 - c)) + (A0 + A1 * (1 - 2 * c)) * c * (1 - c))
     y1 = E.copy()
     c = x2
-    E = (R * T * (c * (sym.log(c) - B) + (1 - c) * sym.log(1 - c)) + (A0 + A1 * (1 - 2 * c)) * c * (
-                1 - c))
+    E = (R * T * (c * (sym.log(c) - B) + (1 - c) * sym.log(1 - c)) + (A0 + A1 * (1 - 2 * c)) * c * (1 - c))
     y2 = E.copy()
     # derivative of E at x1 and x2
     dy1 = sym.diff(y1, x1, 1)
@@ -160,6 +158,17 @@ def get_miscibility_gap(R, T, B, A0, A1, xlower=0.7, xupper=0.9999, prec=7):
     eq1 = sym.Eq(dy1, dy2)  # dy1 == dy2
     eq2 = sym.Eq(dy1, (y2 - y1) / (x2 - x1))
     return sym.nsolve((eq1, eq2), (x1, x2), (xlower, xupper), prec=prec)
+
+
+def get_distance_common_tangent(R, T, B, A0, A1, at=0.875):
+    x = sym.Symbol('x', real=True)
+    c = x
+    E = (R * T * (c * (sym.log(c) - B) + (1 - c) * sym.log(1 - c)) + (A0 + A1 * (1 - 2 * c)) * c * (1 - c))
+    ca, cb = get_miscibility_gap(R=R, T=T, B=B, A0=A0, A1=A1)
+    m = (E.subs(x, cb) - E.subs(x, ca)) / (cb - ca)
+    # distance E and tangent at 0.875 for kappa~ base
+    dist = (E - m * (x - ca) - E.subs(x, ca)).subs(x, at)
+    return dist
 
 
 def get_roots_of_EPP(R, T, A0, A1):
