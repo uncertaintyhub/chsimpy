@@ -29,13 +29,14 @@ python -m chsimpy --help
 The help provides information on the command-line interface (CLI) arguments:
 
 ```
-usage: chsimpy [-h] [--version] [-N N] [-n NTMAX] [-t TIME_MAX] [-z] [-a] [--cinit CINIT] [--threshold THRESHOLD] [--temperature TEMPERATURE] [--A0 A0] [--A1 A1] [-K KAPPA_BASE] [--dt DT]
+chsimpy 1.4.1 ('--help' for command parameters)
+usage: chsimpy [-h] [--version] [-N N] [-n NTMAX] [-t TIME_MAX] [-z] [-a] [--cinit CINIT] [--threshold THRESHOLD] [--temperature TEMPERATURE] [--A0 A0] [--A1 A1] [--dt DT]
                [-g {uniform,simplex,sobol,lcg}] [-s SEED] [-j JITTER] [-p PARAMETER_FILE] [--Uinit-file UINIT_FILE] [-f FILE_ID] [--no-gui] [--png] [--png-anim] [--yaml]
                [--export-csv EXPORT_CSV] [-C] [--update-every UPDATE_EVERY] [--no-diagrams]
 
 Simulation of Phase Separation in Na2O-SiO2 Glasses under Uncertainty (solving the Cahn–Hilliard (CH) equation)
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
 
@@ -51,14 +52,12 @@ Simulation:
   --threshold THRESHOLD
                         Threshold mole fraction value to determine c_A and c_B (should match --cinit) (default: 0.875)
   --temperature TEMPERATURE
-                        Temperature in Kelvin (default: None)
+                        Temperature in Kelvin (default: 923.15)
   --A0 A0               A0 value (ignores temperature) [kJ / mol] (default: None)
   --A1 A1               A1 value (ignores temperature) [kJ / mol] (default: None)
-  -K KAPPA_BASE, --kappa-base KAPPA_BASE
-                        Value for kappa = K/105.1939 [kappa = kJ/mol] (default: 30)
-  --dt DT               Time delta of simulation (default: 1e-11)
-  -g {uniform,perlin,sobol,lcg}, --generator {uniform,perlin,sobol,lcg}
-                        Generator for initial random deviations in concentration (default: None)
+  --dt DT               Time delta of simulation (default: 3e-08)
+  -g {uniform,simplex,sobol,lcg}, --generator {uniform,simplex,sobol,lcg}
+                        Generator for initial random deviations in concentration (default: uniform)
   -s SEED, --seed SEED  Start seed for random number generators (default: 2023)
   -j JITTER, --jitter JITTER
                         Adds noise based on -g in every step by provided factor [0, 0.1) (much slower) (default: None)
@@ -129,7 +128,6 @@ The help text includes the main help from above and additionally:
 # ...
 Experiment:
   -R RUNS, --runs RUNS  Number of Monte-Carlo runs (default: 3)
-  -S, --skip-test       Skip initial tests and validation [TODO]. (default: False)
   -P PROCESSES, --processes PROCESSES
                         Runs are distributed to P processes to run in parallel (-1 = auto) (default: -1)
   --independent         Independent A0, A1 runs, i.e. A0 and A1 do not vary at the same time (default: False)
