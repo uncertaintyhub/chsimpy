@@ -18,7 +18,7 @@ $chsimpy -n 100 --no-gui || exit -1
 $chsimpy -n 100 --no-diagrams --update-every=50 -g 'simplex' || exit -1
 
 cd ../experiments/
-$chsimpyexp --png --yaml --ntmax 50 -N 512 -s 2023 -R 2 -S -P 4 --file-id="$testid" || exit -1
+$chsimpyexp --png --yaml --ntmax 50 -N 512 -s 2023 -R 2 -P 4 --file-id="$testid" || exit -1
 rm *${testid}*
 
 
