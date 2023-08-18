@@ -36,6 +36,7 @@ class Parameters:
         self.delt = 3e-8
         self.delt_max = 9e-8
         self.M_tilde = 1.71e-8  # mobility factor [µm^2/(kJ * s)]
+        self.kappa_tilde = None # None = will be computed
 
         self.threshold = self.XXX  # value determines component A and B in U (U <> threshold)
         self.ntmax = int(1e6)  # stops earlier when energy falls

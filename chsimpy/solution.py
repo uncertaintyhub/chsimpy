@@ -36,13 +36,17 @@ class Solution:
         self.time_fac = (1 / (params.M_tilde)) * params.delt
         self.M = self.params.M_tilde / self.Am
 
-        self.kappa_base = utils.get_distance_common_tangent(R=self.params.R,
-                                                            T=self.params.temp,
-                                                            B=self.params.B,
-                                                            A0=self.A0,
-                                                            A1=self.A1,
-                                                            at=self.params.XXX)
-        self.kappa_tilde = self.kappa_base / (0.1602564 * 64)**2
+        if self.params.kappa_tilde is None:
+            self.kappa_base = utils.get_distance_common_tangent(R=self.params.R,
+                                                                T=self.params.temp,
+                                                                B=self.params.B,
+                                                                A0=self.A0,
+                                                                A1=self.A1,
+                                                                at=self.params.XXX)
+            self.kappa_tilde = self.kappa_base / (0.1602564 * 64)**2
+        else:
+            self.kappa_tilde = self.params.kappa_tilde
+
         self.kappa = self.kappa_tilde * self.Amr
 
         self.CHeig, self.Seig = utils.get_coefficients(N=self.params.N,

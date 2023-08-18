@@ -56,6 +56,9 @@ class CLIParser:
         group.add_argument('--A1',
                            type=float,
                            help='A1 value (ignores temperature) [kJ / mol]')
+        group.add_argument('-K', '--kappa-tilde',
+                           type=float,
+                           help='Value for kappa_tilde [kJ/mol]')
         group.add_argument('--dt',
                            type=float,
                            default=3e-8,
@@ -119,6 +122,8 @@ class CLIParser:
         params.file_id = self.args.file_id
         params.seed = self.args.seed
         params.full_sim = self.args.full_sim
+        if self.args.kappa_tilde is not None:
+            params.kappa_tilde = self.args.kappa_tilde
         params.compress_csv = self.args.compress_csv
         params.export_csv = self.args.export_csv
         params.png = self.args.png
