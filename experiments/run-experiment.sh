@@ -13,7 +13,8 @@ procs=$2  # number of cpu processes
 exportcsv='E,E2,SA'
 
 Asrcs='uniform'
-declare -a seeds=(2023)
+Aseed=85972  # seed for randomized values A0, A1
+declare -a seeds=(2023) # seed for randomized values in composition matrix
 declare -a c0s=(0.89)
 
 for Asrc in $Asrcs; do
@@ -21,7 +22,7 @@ for Asrc in $Asrcs; do
     for c0 in "${c0s[@]}"; do
       fname="$c0-$Asrc-$seed"
       fname_ind="$fname-independent"
-      options="--png --yaml -N 512 -s ${seed} -R ${runs} --A-source=${Asrc} -S -P ${procs} --threshold=${c0} --cinit=${c0} --kappa-tilde=0.0003580665255963738"
+      options="--png --yaml -N 512 -s ${seed} -R ${runs} --A-source=${Asrc} --A-seed=${Aseed} -P ${procs} --threshold=${c0} --cinit=${c0}"
       options="$options --export-csv=${exportcsv} -C"
       # A0xA1
       $chsimpy $options --file-id="${fname}"  > "${fname}.txt"
