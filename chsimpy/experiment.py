@@ -27,7 +27,7 @@ class ExperimentParams:
         self.processes = -1
         self.independent = False
         self.A_source = 'uniform'
-        self.A_seed = 2023  # seed for RNG based A0, A1 generation
+        self.A_seed = None  # seed for RNG based A0, A1 generation
 
 
 # parsing command-line-interface arguments
@@ -53,6 +53,10 @@ class ExperimentCLIParser:
                                 'Source for A0 x A1 numbers for the Monte-Carlo runs (uniform or sobol random numbers, '
                                 'evenly distributed grid points [sqrt(runs) x sqrt(runs)], '
                                 'location of text file with row-wise A0, A1 pairs)')
+        group.add_argument('--A-seed',
+                           default=85972,
+                           type=int,
+                           help='RNG seed for generating random A0, A1 (if --A-source is not file-based)')
 
     def get_parameters(self):
         params = self.cliparser.get_parameters()
@@ -73,6 +77,7 @@ class ExperimentCLIParser:
         if params.png_anim:
             self.cliparser.parser.error('ERROR: --png-anim is not allowed.')
         exp_params.processes = self.cliparser.args.processes
+        exp_params.A_seed = self.cliparser.args.A_seed
         return exp_params, params
 
 
