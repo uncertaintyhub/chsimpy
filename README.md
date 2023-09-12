@@ -6,6 +6,8 @@ Parameters can be changed via command-line interface (CLI), input data or within
 Data can also be exported for post-processing and reproducibility.
 Results and instructions for reproduction are provided in our [chsimpy-artifact github repository](https://github.com/uncertaintyhub/chsimpy-artifact).
 
+chsimpy is part of the publication: [Simulation of phase separation in Na2O-SiO2 glasses under uncertainty](https://www.sciencedirect.com/science/article/pii/S0022309323004003), Henning Höllwarth, Stephan A.H. Sander, Matthias Werner, Sindy Fuhrmann, Björn Sprungk; Journal of Non-Crystalline Solids, Volume 621, 2023, ISSN 0022-3093, <https://doi.org/10.1016/j.jnoncrysol.2023.122534>.
+
 ## Installation
 
 For installation please read our [installation instructions](INSTALL.md).
